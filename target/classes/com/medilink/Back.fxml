@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml" fx:controller="com.medilink.controller.BackController">
+    <padding>
+        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0"/>
+    </padding>
+
+    <children>
+        <Label text="Gestion des Événements &amp; Participations" style="-fx-font-size: 22px; -fx-text-fill: #2C3E50;"/>
+        <Separator/>
+
+        <VBox spacing="10.0" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+            <children>
+                <Label text="Informations de l'événement" style="-fx-font-weight: bold;"/>
+                <FlowPane hgap="10.0" vgap="10.0">
+                    <children>
+                        <TextField fx:id="txtTitre" promptText="Titre"/>
+                        <TextField fx:id="txtDescription" promptText="Description"/>
+                        <DatePicker fx:id="dpDateEvenement" promptText="Date"/>
+                        <TextField fx:id="txtLieu" promptText="Lieu"/>
+                        <TextField fx:id="txtType" promptText="Type (Conférence, Atelier...)"/>
+                        <TextField fx:id="txtPhoto" promptText="Lien Photo"/>
+                    </children>
+                </FlowPane>
+
+                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                    <children>
+                        <Button onAction="#onAdd" text="Ajouter"/>
+                        <Button onAction="#onUpdate" text="Modifier" style="-fx-background-color: #95a5a6;"/>
+                        <Button onAction="#onDelete" text="Supprimer" styleClass="btn-danger"/>
+                    </children>
+                    <padding><Insets top="10"/></padding>
+                </HBox>
+            </children>
+        </VBox>
+
+        <VBox spacing="8.0" VBox.vgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <children>
+                    <Label text="Liste des Événements (Card View)"/>
+                    <TextField fx:id="txtSearchEventName" promptText="Recherche par nom event" prefWidth="220.0"/>
+                    <Button text="Rechercher" onAction="#onSearchEventName"/>
+                    <Button text="Reset" onAction="#onResetSearch"/>
+                </children>
+            </HBox>
+            <ScrollPane fitToWidth="true" prefHeight="220.0">
+                <content>
+                    <FlowPane fx:id="eventCardsContainer" hgap="12.0" vgap="12.0" prefWrapLength="1000.0"/>
+                </content>
+            </ScrollPane>
+        </VBox>
+
+        <VBox spacing="8.0" VBox.vgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT" spacing="20.0">
+                <children>
+                    <Label text="Participations liées (Card View)"/>
+                    <HBox spacing="8.0">
+                        <children>
+                            <Button onAction="#onConfirmer" text="Confirmer" style="-fx-background-color: #27ae60; -fx-font-size: 11;"/>
+                            <Button onAction="#onRefuser" text="Refuser" styleClass="btn-danger" style="-fx-font-size: 11;"/>
+                        </children>
+                    </HBox>
+                </children>
+            </HBox>
+            <ScrollPane fitToWidth="true" prefHeight="200.0">
+                <content>
+                    <FlowPane fx:id="participationCardsContainer" hgap="12.0" vgap="12.0" prefWrapLength="1000.0"/>
+                </content>
+            </ScrollPane>
+        </VBox>
+    </children>
+</VBox>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="15.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.medilink.controller.FrontController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+    </padding>
+    <children>
+        <Label text="Front Page - Evenements" style="-fx-font-size: 20px;"/>
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+            <content>
+                <FlowPane fx:id="eventCardsContainer" hgap="14.0" vgap="14.0" prefWrapLength="1000.0"/>
+            </content>
+        </ScrollPane>
+    </children>
+</VBox>
