@@ -1,13 +1,9 @@
-module com.medilink {
+module gdons {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
 
-    opens com.medilink to javafx.fxml;
-    opens com.medilink.controller to javafx.fxml;
-    opens com.medilink.model to javafx.base;
-
-    exports com.medilink;
-    exports com.medilink.controller;
-    exports com.medilink.model;
+    opens test to javafx.graphics;
+    opens controllers to javafx.fxml;
+    opens models to javafx.base;
 }
