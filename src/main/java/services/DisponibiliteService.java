@@ -21,9 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Persistance alignée sur une table {@code disponibilite} <strong>sans</strong> colonne {@code medecin_id}
- * (schéma minimal : id, date, heure_debut, heure_fin, status, created_at).
- * <p>L’id médecin saisi dans l’UI sert à la validation / chevauchement côté application mais n’est pas stocké.</p>
+ * Persistance alignée sur la table Symfony {@code disponibilites}.
  */
 public class DisponibiliteService {
 
@@ -43,23 +41,24 @@ public class DisponibiliteService {
     public void ajouter(Disponibilite d) throws ServiceException {
         valider(d, null);
         String sql = """
-                INSERT INTO disponibilite (date, heure_debut, heure_fin, status, created_at)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO disponibilites (date, heure_debut, heure_fin, status, created_at, medecin_id)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """;
         LocalDateTime now = LocalDateTime.now();
         try (PreparedStatement ps = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setDate(1, Date.valueOf(d.getDate()));
             ps.setTime(2, Time.valueOf(d.getHeureDebut()));
             ps.setTime(3, Time.valueOf(d.getHeureFin()));
-            ps.setString(4, Disponibilite.STATUS_LIBRE);
+            ps.setString(4, toDbStatus(Disponibilite.STATUS_LIBRE));
             ps.setTimestamp(5, Timestamp.valueOf(now));
+            ps.setInt(6, d.getMedecin().getId());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
                     d.setId(keys.getInt(1));
                 }
             }
-            d.setStatus(Disponibilite.STATUS_LIBRE);
+            d.setStatus(toAppStatus(toDbStatus(Disponibilite.STATUS_LIBRE)));
             d.setCreatedAt(now);
         } catch (SQLException e) {
             throw new ServiceException("Erreur lors de l'ajout de la disponibilité.", e);
@@ -75,7 +74,7 @@ public class DisponibiliteService {
         }
         valider(d, d.getId());
         String sql = """
-                UPDATE disponibilite
+                UPDATE disponibilites
                 SET date = ?, heure_debut = ?, heure_fin = ?
                 WHERE id = ?
                 """;
@@ -97,7 +96,7 @@ public class DisponibiliteService {
         if (countRendezVousLies(id) > 0) {
             throw new ServiceException("Suppression interdite : un rendez-vous est lié à cette disponibilité.");
         }
-        String sql = "DELETE FROM disponibilite WHERE id = ?";
+        String sql = "DELETE FROM disponibilites WHERE id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
             int deleted = ps.executeUpdate();
@@ -114,21 +113,63 @@ public class DisponibiliteService {
     }
 
     /**
-     * Sans colonne {@code medecin_id} en base, le filtre par médecin est ignoré : toutes les lignes sont retournées.
+     * Retourne uniquement les créneaux réellement réservables :
+     * - statut LIBRE
+     * - date/heure de début strictement dans le futur.
      */
-    public List<Disponibilite> listerParMedecin(Integer medecinId) throws ServiceException {
+    public List<Disponibilite> listerReservables() throws ServiceException {
         String sql = """
-                SELECT id, date, heure_debut, heure_fin, status, created_at
-                FROM disponibilite
+                SELECT id, date, heure_debut, heure_fin, status, created_at, medecin_id
+                FROM disponibilites
+                WHERE UPPER(status) IN ('LIBRE', 'STATUS_LIBRE')
+                  AND (date > ? OR (date = ? AND heure_debut > ?))
                 ORDER BY date, heure_debut
                 """;
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        LocalDate nowDate = LocalDate.now();
+        LocalTime nowTime = LocalTime.now();
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setDate(1, Date.valueOf(nowDate));
+            ps.setDate(2, Date.valueOf(nowDate));
+            ps.setTime(3, Time.valueOf(nowTime));
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Disponibilite> list = new ArrayList<>();
+                while (rs.next()) {
+                    list.add(mapDisponibilite(rs));
+                }
+                return list;
+            }
+        } catch (SQLException e) {
+            throw new ServiceException("Erreur lors du chargement des créneaux réservables.", e);
+        }
+    }
+
+    /**
+     * Filtre optionnel par médecin (si {@code medecinId} fourni).
+     */
+    public List<Disponibilite> listerParMedecin(Integer medecinId) throws ServiceException {
+        String sql = medecinId == null
+                ? """
+                SELECT id, date, heure_debut, heure_fin, status, created_at, medecin_id
+                FROM disponibilites
+                ORDER BY date, heure_debut
+                """
+                : """
+                SELECT id, date, heure_debut, heure_fin, status, created_at, medecin_id
+                FROM disponibilites
+                WHERE medecin_id = ?
+                ORDER BY date, heure_debut
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            if (medecinId != null) {
+                ps.setInt(1, medecinId);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
             List<Disponibilite> list = new ArrayList<>();
             while (rs.next()) {
                 list.add(mapDisponibilite(rs));
             }
             return list;
+            }
         } catch (SQLException e) {
             throw new ServiceException("Erreur lors du chargement des disponibilités.", e);
         }
@@ -136,8 +177,8 @@ public class DisponibiliteService {
 
     public Optional<Disponibilite> findById(int id) throws ServiceException {
         String sql = """
-                SELECT id, date, heure_debut, heure_fin, status, created_at
-                FROM disponibilite
+                SELECT id, date, heure_debut, heure_fin, status, created_at, medecin_id
+                FROM disponibilites
                 WHERE id = ?
                 """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -155,8 +196,8 @@ public class DisponibiliteService {
 
     Optional<Disponibilite> findByIdForUpdate(Connection conn, int id) throws ServiceException {
         String sql = """
-                SELECT id, date, heure_debut, heure_fin, status, created_at
-                FROM disponibilite
+                SELECT id, date, heure_debut, heure_fin, status, created_at, medecin_id
+                FROM disponibilites
                 WHERE id = ?
                 FOR UPDATE
                 """;
@@ -174,9 +215,9 @@ public class DisponibiliteService {
     }
 
     void updateStatus(Connection conn, int disponibiliteId, String status) throws ServiceException {
-        String sql = "UPDATE disponibilite SET status = ? WHERE id = ?";
+        String sql = "UPDATE disponibilites SET status = ? WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, status);
+            ps.setString(1, toDbStatus(status));
             ps.setInt(2, disponibiliteId);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -222,23 +263,22 @@ public class DisponibiliteService {
     private boolean existeChevauchement(LocalDate date, LocalTime debut, LocalTime fin, Integer excludeId)
             throws ServiceException {
         String sql = """
-                SELECT COUNT(*) FROM disponibilite
-                WHERE date = ? AND status <> ?
+                SELECT COUNT(*) FROM disponibilites
+                WHERE date = ? AND UPPER(status) NOT IN ('ANNULEE', 'STATUS_ANNULEE')
                 AND (? IS NULL OR id <> ?)
                 AND heure_debut < ? AND heure_fin > ?
                 """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setDate(1, Date.valueOf(date));
-            ps.setString(2, Disponibilite.STATUS_ANNULEE);
             if (excludeId == null) {
+                ps.setNull(2, java.sql.Types.INTEGER);
                 ps.setNull(3, java.sql.Types.INTEGER);
-                ps.setNull(4, java.sql.Types.INTEGER);
             } else {
+                ps.setInt(2, excludeId);
                 ps.setInt(3, excludeId);
-                ps.setInt(4, excludeId);
             }
-            ps.setTime(5, Time.valueOf(fin));
-            ps.setTime(6, Time.valueOf(debut));
+            ps.setTime(4, Time.valueOf(fin));
+            ps.setTime(5, Time.valueOf(debut));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
@@ -256,19 +296,46 @@ public class DisponibiliteService {
         d.setDate(rs.getDate("date").toLocalDate());
         d.setHeureDebut(rs.getTime("heure_debut").toLocalTime());
         d.setHeureFin(rs.getTime("heure_fin").toLocalTime());
-        d.setStatus(rs.getString("status"));
+        d.setStatus(toAppStatus(rs.getString("status")));
         Timestamp ca = rs.getTimestamp("created_at");
         d.setCreatedAt(ca != null ? ca.toLocalDateTime() : null);
-        d.setMedecin(stubMedecinNonLie());
+        Integer medecinId = (Integer) rs.getObject("medecin_id");
+        d.setMedecin(stubMedecin(medecinId));
         return d;
     }
 
-    private static User stubMedecinNonLie() {
+    private static User stubMedecin(Integer id) {
         User u = new User();
-        u.setId(0);
-        u.setFullName("(médecin non stocké en BDD)");
+        u.setId(id != null ? id : 0);
+        u.setFullName(id != null ? "Médecin #" + id : "(médecin non assigné)");
         u.setEmail("");
         u.setRoles(Collections.emptyList());
         return u;
+    }
+
+    private static String toDbStatus(String appStatus) {
+        if (appStatus == null) {
+            return "libre";
+        }
+        String normalized = appStatus.trim().toUpperCase();
+        return switch (normalized) {
+            case "STATUS_RESERVEE", "RESERVEE", "RESERVEEE", "RESERVE" -> "reservee";
+            case "STATUS_ANNULEE", "ANNULEE" -> "annulee";
+            default -> "libre";
+        };
+    }
+
+    private static String toAppStatus(String dbStatus) {
+        if (dbStatus == null) {
+            return Disponibilite.STATUS_LIBRE;
+        }
+        String normalized = dbStatus.trim().toUpperCase();
+        if (normalized.equals("RESERVEE") || normalized.equals("STATUS_RESERVEE")) {
+            return Disponibilite.STATUS_RESERVEE;
+        }
+        if (normalized.equals("ANNULEE") || normalized.equals("STATUS_ANNULEE")) {
+            return Disponibilite.STATUS_ANNULEE;
+        }
+        return Disponibilite.STATUS_LIBRE;
     }
 }

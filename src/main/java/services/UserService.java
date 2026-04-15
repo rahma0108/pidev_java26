@@ -44,6 +44,27 @@ public class UserService {
         return Optional.empty();
     }
 
+    public Optional<User> findFirstByRole(String role) throws ServiceException {
+        String sql = """
+                SELECT id, full_name, email, roles, preferred_time, max_days_ahead
+                FROM `user`
+                WHERE UPPER(roles) LIKE ?
+                ORDER BY id
+                LIMIT 1
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, "%" + role.toUpperCase() + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapUser(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new ServiceException("Erreur lecture utilisateur par rôle.", e);
+        }
+        return Optional.empty();
+    }
+
     static User mapUser(ResultSet rs) throws SQLException {
         Time pref = rs.getTime("preferred_time");
         int maxDays = rs.getInt("max_days_ahead");

@@ -17,9 +17,9 @@ public class MediLinkFxApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
-                MediLinkFxApp.class.getResource("/fxml/ListeDisponibilitesView.fxml")));
-        Scene scene = new Scene(loader.load(), 920, 580);
-        stage.setTitle("MediLink — Disponibilités");
+                MediLinkFxApp.class.getResource("/fxml/LoginView.fxml")));
+        Scene scene = new Scene(loader.load(), 600, 380);
+        stage.setTitle("MediLink - Accueil");
         stage.setScene(scene);
         stage.show();
     }

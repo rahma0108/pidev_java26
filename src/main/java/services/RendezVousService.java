@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDate;
@@ -55,12 +56,8 @@ public class RendezVousService {
             Optional<Disponibilite> optDispo = disponibiliteService.findByIdForUpdate(connection, disponibiliteId);
             Disponibilite dispo = optDispo.orElseThrow(() -> new ServiceException("Disponibilité introuvable."));
 
-            if (!Disponibilite.STATUS_LIBRE.equals(dispo.getStatus())) {
+            if (!isStatutLibre(dispo.getStatus())) {
                 throw new ServiceException("Cette disponibilité n'est plus libre.");
-            }
-
-            if (dispo.getDate().isBefore(LocalDate.now())) {
-                throw new ServiceException("Impossible de réserver une disponibilité passée.");
             }
 
             if (patient.getMaxDaysAhead() != null) {
@@ -72,6 +69,12 @@ public class RendezVousService {
 
             LocalDateTime dateHeure = dispo.toDateHeureDebut();
             LocalDateTime now = LocalDateTime.now();
+            if (!dateHeure.isAfter(now)) {
+                throw new ServiceException("Cette disponibilité est déjà passée.");
+            }
+            if (rendezVousExistePourDisponibilite(connection, disponibiliteId)) {
+                throw new ServiceException("Cette disponibilité est déjà réservée.");
+            }
 
             String insertRdv = """
                     INSERT INTO rendez_vous (disponibilite_id, date_heure, statut, motif, created_at, patient_id)
@@ -108,6 +111,9 @@ public class RendezVousService {
 
             connection.commit();
             return rdv;
+        } catch (SQLIntegrityConstraintViolationException e) {
+            rollbackQuietly();
+            throw new ServiceException("Cette disponibilité est déjà réservée.", e);
         } catch (SQLException e) {
             rollbackQuietly();
             throw new ServiceException("Erreur lors de la réservation.", e);
@@ -369,6 +375,21 @@ public class RendezVousService {
         return false;
     }
 
+    private boolean rendezVousExistePourDisponibilite(Connection conn, int disponibiliteId) throws ServiceException {
+        String sql = "SELECT COUNT(*) FROM rendez_vous WHERE disponibilite_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, disponibiliteId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new ServiceException("Erreur vérification réservation existante.", e);
+        }
+        return false;
+    }
+
     private String baseSelectRdv() {
         return """
                 SELECT r.id r_id, r.date_heure, r.statut, r.motif, r.created_at r_created,
@@ -383,7 +404,7 @@ public class RendezVousService {
                        up.id up_id, up.full_name up_name, up.email up_email, up.roles up_roles,
                        up.preferred_time up_pref, up.max_days_ahead up_max
                 FROM rendez_vous r
-                JOIN disponibilite d ON d.id = r.disponibilite_id
+                JOIN disponibilites d ON d.id = r.disponibilite_id
                 JOIN `user` up ON up.id = r.patient_id
                 """;
     }
@@ -443,5 +464,13 @@ public class RendezVousService {
             connection.rollback();
         } catch (SQLException ignored) {
         }
+    }
+
+    private static boolean isStatutLibre(String statut) {
+        if (statut == null) {
+            return false;
+        }
+        String normalized = statut.trim().toUpperCase();
+        return normalized.equals("LIBRE") || normalized.equals("STATUS_LIBRE");
     }
 }

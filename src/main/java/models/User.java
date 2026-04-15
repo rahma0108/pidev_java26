@@ -52,7 +52,27 @@ public class User {
     }
 
     public boolean hasRole(String role) {
-        return roles != null && roles.contains(role);
+        if (roles == null || role == null || role.isBlank()) {
+            return false;
+        }
+        String expected = normalizeRole(role);
+        for (String r : roles) {
+            if (expected.equals(normalizeRole(r))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String normalizeRole(String role) {
+        String cleaned = role == null ? "" : role.trim().toUpperCase()
+                .replace("\"", "")
+                .replace("[", "")
+                .replace("]", "");
+        if (cleaned.startsWith("ROLE_")) {
+            cleaned = cleaned.substring("ROLE_".length());
+        }
+        return cleaned;
     }
 
     public int getId() {

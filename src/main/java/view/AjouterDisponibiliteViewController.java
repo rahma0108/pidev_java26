@@ -13,9 +13,11 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 import models.Disponibilite;
 import models.User;
 
@@ -24,10 +26,12 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.function.UnaryOperator;
 
 public class AjouterDisponibiliteViewController {
 
     private static final DateTimeFormatter HEURE_FMT = DateTimeFormatter.ofPattern("H:mm");
+    private static final DateTimeFormatter DATE_UI_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @FXML
     private TextField medecinIdTextField;
@@ -83,6 +87,7 @@ public class AjouterDisponibiliteViewController {
             ViewAlertUtil.erreur("Base de données", e.formatWithCauses());
             return;
         }
+        configurerAideSaisie();
 
         medecinIdTextField.focusedProperty().addListener((obs, oldV, focused) -> {
             if (!focused) {
@@ -94,6 +99,52 @@ public class AjouterDisponibiliteViewController {
         reinitialiserButton.setOnAction(e -> viderFormulaire());
         supprimerButton.setOnAction(e -> handleSupprimerApercu());
         reserverButton.setOnAction(e -> ouvrirReservation());
+    }
+
+    private void configurerAideSaisie() {
+        datePicker.setEditable(true);
+        datePicker.getEditor().setPromptText("jj/MM/aaaa");
+        datePicker.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(LocalDate date) {
+                return date == null ? "" : DATE_UI_FMT.format(date);
+            }
+
+            @Override
+            public LocalDate fromString(String text) {
+                if (text == null || text.isBlank()) {
+                    return null;
+                }
+                String s = text.trim();
+                try {
+                    return LocalDate.parse(s, DATE_UI_FMT);
+                } catch (DateTimeParseException ex) {
+                    return LocalDate.parse(s);
+                }
+            }
+        });
+        heureDebutTextField.setPromptText("HH:mm (ex: 09:30)");
+        heureFinTextField.setPromptText("HH:mm (ex: 10:30)");
+        heureDebutTextField.setTextFormatter(creerHeureFormatter());
+        heureFinTextField.setTextFormatter(creerHeureFormatter());
+    }
+
+    private static TextFormatter<String> creerHeureFormatter() {
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String next = change.getControlNewText();
+            if (next.isEmpty()) {
+                return change;
+            }
+            if (!next.matches("\\d{0,2}:?\\d{0,2}")) {
+                return null;
+            }
+            if (next.matches("\\d{2}") && !next.contains(":")) {
+                change.setText(change.getText() + ":");
+                change.setRange(change.getRangeStart(), change.getRangeEnd());
+            }
+            return change;
+        };
+        return new TextFormatter<>(filter);
     }
 
     private void rafraichirApercu() {
@@ -122,6 +173,10 @@ public class AjouterDisponibiliteViewController {
         try {
             int medId = Integer.parseInt(medecinIdTextField.getText().trim());
             LocalDate date = datePicker.getValue();
+            if (date == null && datePicker.getEditor().getText() != null && !datePicker.getEditor().getText().isBlank()) {
+                date = datePicker.getConverter().fromString(datePicker.getEditor().getText().trim());
+                datePicker.setValue(date);
+            }
             if (date == null) {
                 ViewAlertUtil.erreur("Saisie", "Choisissez une date.");
                 return;

@@ -37,6 +37,10 @@ public class DisponibiliteController {
         return disponibiliteService.listerToutes();
     }
 
+    public List<Disponibilite> afficherCreneauxReservables() throws ServiceException {
+        return disponibiliteService.listerReservables();
+    }
+
     /**
      * Filtre optionnel par médecin.
      */

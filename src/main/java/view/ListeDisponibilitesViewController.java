@@ -41,7 +41,7 @@ public class ListeDisponibilitesViewController {
     @FXML
     private Button supprimerButton;
     @FXML
-    private Button reserverButton;
+    private Button retourButton;
 
     private DisponibiliteController disponibiliteController;
     private Disponibilite selectionCourante;
@@ -58,7 +58,7 @@ public class ListeDisponibilitesViewController {
         rafraichirButton.setOnAction(e -> chargerDonnees());
         ajouterButton.setOnAction(e -> ouvrirFenetreAjout());
         supprimerButton.setOnAction(e -> supprimerSelection());
-        reserverButton.setOnAction(e -> ouvrirFenetreReservation());
+        retourButton.setOnAction(e -> retournerAccueil());
 
         chargerDonnees();
     }
@@ -193,24 +193,16 @@ public class ListeDisponibilitesViewController {
         }
     }
 
-    private void ouvrirFenetreReservation() {
+    private void retournerAccueil() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ReserverRendezVousView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/LoginView.fxml"));
             Parent root = loader.load();
-            ReserverRendezVousViewController ctrl = loader.getController();
-            if (selectionCourante != null) {
-                ctrl.prefillDisponibiliteId(selectionCourante.getId());
-            }
-            ctrl.setAfterReserveCallback(this::chargerDonnees);
-
-            Stage stage = new Stage();
-            stage.initModality(Modality.WINDOW_MODAL);
-            stage.initOwner(reserverButton.getScene().getWindow());
-            stage.setTitle("Réserver un rendez-vous");
-            stage.setScene(new Scene(root));
-            stage.show();
+            Stage stage = (Stage) retourButton.getScene().getWindow();
+            stage.setTitle("MediLink - Accueil");
+            stage.setScene(new Scene(root, 600, 380));
+            stage.centerOnScreen();
         } catch (IOException e) {
-            ViewAlertUtil.erreur("Interface", "Impossible d'ouvrir la réservation : " + e.getMessage());
+            ViewAlertUtil.erreur("Interface", "Impossible de revenir à l'accueil : " + e.getMessage());
         }
     }
 }
