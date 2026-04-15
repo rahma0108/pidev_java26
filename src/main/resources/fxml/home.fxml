@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" spacing="30" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.Controllers.MainController">
+    <padding>
+        <Insets top="40" right="40" bottom="40" left="40"/>
+    </padding>
+
+    <Label text="Gestion Médicale - Medilink" style="-fx-font-weight: bold;">
+        <font>
+            <Font size="28"/>
+        </font>
+    </Label>
+
+    <Label text="Choisissez une option :" style="-fx-font-size: 16px; -fx-text-fill: #666;"/>
+
+    <HBox alignment="CENTER" spacing="30">
+        <Button text="💊 Gérer les Médicaments" onAction="#gererMedicaments" style="-fx-font-size: 14px; -fx-padding: 10 20; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 5;"/>
+        <Button text="📄 Gérer les Ordonnances" onAction="#gererOrdonnances" style="-fx-font-size: 14px; -fx-padding: 10 20; -fx-background-color: #2196F3; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 5;"/>
+    </HBox>
+</VBox>

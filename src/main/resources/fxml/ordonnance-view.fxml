@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.Controllers.OrdonnanceController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Gestion des Ordonnances" style="-fx-font-weight: bold;">
+        <font>
+            <Font size="24"/>
+        </font>
+    </Label>
+
+    <Separator/>
+
+    <!-- Barre de recherche -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Rechercher patient :" prefWidth="120"/>
+        <TextField fx:id="searchField" promptText="Nom du patient..." prefWidth="250" onKeyReleased="#rechercherOrdonnance"/>
+        <Button text="🔍 Rechercher" onAction="#rechercherOrdonnance" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-cursor: hand;"/>
+        <Button text="🔄 Afficher tout" onAction="#rafraichirListe" style="-fx-background-color: #9E9E9E; -fx-text-fill: white; -fx-cursor: hand;"/>
+    </HBox>
+
+    <!-- Formulaire d'ajout/modification -->
+    <TitledPane text="Ajouter / Modifier une ordonnance" animated="true" expanded="true" collapsible="true">
+        <GridPane hgap="10" vgap="10">
+            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+            <Label text="Médecin :" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <ComboBox fx:id="medecinCombo" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="250" promptText="Sélectionner un médecin"/>
+
+            <Label text="Patient :" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <ComboBox fx:id="patientCombo" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="250" promptText="Sélectionner un patient"/>
+
+            <Label text="Instructions :" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <TextArea fx:id="instructionsArea" GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="350" prefHeight="100" promptText="Instructions médicales..."/>
+
+            <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                <Button text="➕ Ajouter" onAction="#ajouterOrdonnance" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"/>
+                <Button text="✏️ Modifier" onAction="#modifierOrdonnance" style="-fx-background-color: #FF9800; -fx-text-fill: white; -fx-cursor: hand;"/>
+                <Button text="🗑️ Supprimer" onAction="#supprimerOrdonnance" style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-cursor: hand;"/>
+                <Button text="❌ Annuler" onAction="#viderFormulaire" style="-fx-background-color: #9E9E9E; -fx-text-fill: white; -fx-cursor: hand;"/>
+            </HBox>
+        </GridPane>
+    </TitledPane>
+
+    <!-- Card View (Grid) -->
+    <Label text="Liste des ordonnances" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+
+    <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
+        <GridPane fx:id="cardGrid" hgap="15" vgap="15">
+            <padding><Insets top="10" bottom="10"/></padding>
+        </GridPane>
+    </ScrollPane>
+
+    <!-- Boutons en bas -->
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="📄 Exporter PDF" onAction="#exporterPDF" style="-fx-background-color: #9C27B0; -fx-text-fill: white; -fx-cursor: hand;"/>
+        <Button text="🏠 Retour Accueil" onAction="#retourAccueil" style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-cursor: hand;"/>
+    </HBox>
+</VBox>
