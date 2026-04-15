@@ -40,8 +40,8 @@ import java.util.regex.Pattern;
 
 public class AdminDonsController implements Initializable {
 
-    private static final String CARD_STYLE = "-fx-background-color: #ffffff; -fx-border-color: #d6d8db;"
-            + " -fx-border-radius: 8; -fx-background-radius: 8;";
+    private static final String CARD_STYLE = "-fx-background-color: #ffffff; -fx-border-color: #d7deea;"
+            + " -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 2;";
     private static final int RECHERCHE_MAX = 255;
     private static final Pattern ENTIER_POSITIF_OU_VIDE = Pattern.compile("\\d*");
 

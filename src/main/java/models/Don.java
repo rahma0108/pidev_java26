@@ -14,10 +14,9 @@ public class Don {
         private Date dateExpiration;
         private Date dateSoumission;
 
-        // 🔹 Constructeur vide
         public Don() {}
 
-        // 🔹 Constructeur sans id (pour insertion)
+
         public Don(int categorieId, String articleDescription, int quantite, String unite,
                    String detailsSupplementaires, String etat, String niveauUrgence,
                    String statut, Date dateExpiration) {
@@ -33,7 +32,7 @@ public class Don {
             this.dateExpiration = dateExpiration;
         }
 
-        // 🔹 GETTERS & SETTERS
+
 
         public int getId() { return id; }
         public void setId(int id) { this.id = id; }

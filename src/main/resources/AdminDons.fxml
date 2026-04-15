@@ -11,24 +11,24 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AdminDonsController">
+<BorderPane fx:id="rootPane" style="-fx-background-color: #eef2f7;" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AdminDonsController">
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
    </padding>
    <top>
-      <VBox spacing="8.0">
+      <VBox spacing="8.0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #d7deea; -fx-padding: 10;">
          <VBox spacing="4.0">
-            <Label style="-fx-font-size: 16; -fx-font-weight: bold;" text="Espace admin — Traitement des dons" />
-            <Label style="-fx-text-fill: #555;" text="Accepter ou rejeter les dons « en attente ». Modifier ou supprimer tout don." wrapText="true" />
+            <Label style="-fx-font-size: 30; -fx-font-weight: bold; -fx-text-fill: #26364b;" text="Espace admin" />
+            <Label style="-fx-text-fill: #64748b;" text="Accepter ou rejeter les dons en attente, puis modifier ou supprimer." wrapText="true" />
          </VBox>
          <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Label text="Recherche :" />
             <TextField fx:id="searchField" prefWidth="220.0" promptText="Texte, ID, catégorie…" />
             <Label text="Statut :" />
             <ComboBox fx:id="statutCombo" prefWidth="130.0" />
-            <Label style="-fx-text-fill: #555;" text="▼ Filtres / tri : panneaux repliables" />
+            <Label style="-fx-text-fill: #555;" text="▼ Filtres" />
          </HBox>
-         <TitledPane fx:id="paneFiltres" animated="true" expanded="false" maxWidth="1.7976931348623157E308" text="Filtres supplémentaires (urgence, état, unité, catégorie, quantités min/max)">
+         <TitledPane fx:id="paneFiltres" animated="true" expanded="false" maxWidth="1.7976931348623157E308" style="-fx-border-color: #d7deea; -fx-border-radius: 8; -fx-background-radius: 8;" text="Filtres supplémentaires">
             <content>
                <VBox spacing="8.0">
                   <padding>
@@ -53,7 +53,7 @@
                </VBox>
             </content>
          </TitledPane>
-         <TitledPane fx:id="paneTri" animated="true" expanded="false" maxWidth="1.7976931348623157E308" text="Tri multi-critères (jusqu'à 3 niveaux + ordre)">
+         <TitledPane fx:id="paneTri" animated="true" expanded="false" maxWidth="1.7976931348623157E308" style="-fx-border-color: #d7deea; -fx-border-radius: 8; -fx-background-radius: 8;" text="Tri multi-critères">
             <content>
                <VBox spacing="6.0">
                   <padding>
@@ -74,13 +74,13 @@
             </content>
          </TitledPane>
          <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Button fx:id="btnActualiser" mnemonicParsing="false" text="Actualiser" />
-            <Button fx:id="btnRetourListe" mnemonicParsing="false" text="Retour à la liste publique" />
+            <Button fx:id="btnActualiser" mnemonicParsing="false" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 9; -fx-font-weight: bold;" text="Actualiser" />
+            <Button fx:id="btnRetourListe" mnemonicParsing="false" style="-fx-background-radius: 9; -fx-font-weight: bold;" text="Retour à la liste publique" />
          </HBox>
       </VBox>
    </top>
    <center>
-      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" BorderPane.alignment="CENTER">
+      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
          <content>
             <VBox fx:id="cardsContainer" spacing="10.0">
                <padding>

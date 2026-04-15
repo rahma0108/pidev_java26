@@ -35,10 +35,10 @@ import java.util.ResourceBundle;
 
 public class ListeDonsController implements Initializable {
 
-    private static final String CARD_STYLE_BASE = "-fx-background-color: #ffffff; -fx-border-color: #d6d8db;"
-            + " -fx-border-radius: 8; -fx-background-radius: 8;";
+    private static final String CARD_STYLE_BASE = "-fx-background-color: #ffffff; -fx-border-color: #d7deea;"
+            + " -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 2;";
     private static final String CARD_STYLE_SELECTED = CARD_STYLE_BASE
-            + " -fx-border-color: #2f80ed; -fx-border-width: 2;";
+            + " -fx-border-color: #2563eb; -fx-border-width: 2;";
 
     @FXML
     private BorderPane rootPane;
