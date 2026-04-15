@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Recherche, filtres combinés et tri multi-niveaux pour l'écran liste des dons.
+ * Recherche, filtres combinés et tri multi-niveaux pour la liste publique et l'espace admin.
  */
 public final class DonFiltreTriUtil {
 

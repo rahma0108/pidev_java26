@@ -2,8 +2,11 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -13,9 +16,63 @@
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
    </padding>
    <top>
-      <VBox spacing="10.0">
-         <Label style="-fx-font-size: 16; -fx-font-weight: bold;" text="Espace admin — Traitement des dons" />
-         <Label style="-fx-text-fill: #555;" text="Accepter ou rejeter les dons « en attente ». Modifier ou supprimer tout don." wrapText="true" />
+      <VBox spacing="8.0">
+         <VBox spacing="4.0">
+            <Label style="-fx-font-size: 16; -fx-font-weight: bold;" text="Espace admin — Traitement des dons" />
+            <Label style="-fx-text-fill: #555;" text="Accepter ou rejeter les dons « en attente ». Modifier ou supprimer tout don." wrapText="true" />
+         </VBox>
+         <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label text="Recherche :" />
+            <TextField fx:id="searchField" prefWidth="220.0" promptText="Texte, ID, catégorie…" />
+            <Label text="Statut :" />
+            <ComboBox fx:id="statutCombo" prefWidth="130.0" />
+            <Label style="-fx-text-fill: #555;" text="▼ Filtres / tri : panneaux repliables" />
+         </HBox>
+         <TitledPane fx:id="paneFiltres" animated="true" expanded="false" maxWidth="1.7976931348623157E308" text="Filtres supplémentaires (urgence, état, unité, catégorie, quantités min/max)">
+            <content>
+               <VBox spacing="8.0">
+                  <padding>
+                     <Insets bottom="6.0" left="6.0" right="6.0" top="6.0" />
+                  </padding>
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <Label text="Urgence :" />
+                     <ComboBox fx:id="filtreUrgenceCombo" prefWidth="120.0" />
+                     <Label text="État :" />
+                     <ComboBox fx:id="filtreEtatCombo" prefWidth="170.0" />
+                  </HBox>
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <Label text="Unité :" />
+                     <ComboBox fx:id="filtreUniteCombo" prefWidth="120.0" />
+                     <Label text="Catégorie :" />
+                     <ComboBox fx:id="filtreCategorieCombo" prefWidth="220.0" />
+                     <Label text="Qté min :" />
+                     <TextField fx:id="tfQuantiteMin" prefWidth="72.0" promptText="vide ou entier" />
+                     <Label text="Qté max :" />
+                     <TextField fx:id="tfQuantiteMax" prefWidth="72.0" promptText="vide ou entier" />
+                  </HBox>
+               </VBox>
+            </content>
+         </TitledPane>
+         <TitledPane fx:id="paneTri" animated="true" expanded="false" maxWidth="1.7976931348623157E308" text="Tri multi-critères (jusqu'à 3 niveaux + ordre)">
+            <content>
+               <VBox spacing="6.0">
+                  <padding>
+                     <Insets bottom="6.0" left="6.0" right="6.0" top="6.0" />
+                  </padding>
+                  <HBox alignment="CENTER_LEFT" spacing="8.0">
+                     <Label style="-fx-font-weight: bold;" text="1" />
+                     <ComboBox fx:id="tri1ChampCombo" prefWidth="150.0" />
+                     <ComboBox fx:id="tri1OrdreCombo" prefWidth="110.0" />
+                     <Label style="-fx-font-weight: bold;" text="2" />
+                     <ComboBox fx:id="tri2ChampCombo" prefWidth="150.0" />
+                     <ComboBox fx:id="tri2OrdreCombo" prefWidth="110.0" />
+                     <Label style="-fx-font-weight: bold;" text="3" />
+                     <ComboBox fx:id="tri3ChampCombo" prefWidth="150.0" />
+                     <ComboBox fx:id="tri3OrdreCombo" prefWidth="110.0" />
+                  </HBox>
+               </VBox>
+            </content>
+         </TitledPane>
          <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Button fx:id="btnActualiser" mnemonicParsing="false" text="Actualiser" />
             <Button fx:id="btnRetourListe" mnemonicParsing="false" text="Retour à la liste publique" />
