@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+
+<HBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="LoginController"
+      prefWidth="900" prefHeight="580"
+      style="-fx-background-color: #f0f4f8;">
+
+    <!-- LEFT PANEL -->
+    <VBox prefWidth="420" prefHeight="580" alignment="CENTER" spacing="16"
+          style="-fx-background-color: #185FA5; -fx-padding: 50 40;">
+
+        <ImageView fitWidth="160" fitHeight="70" preserveRatio="true">
+            <image><Image url="@/logo.png"/></image>
+        </ImageView>
+
+        <Label text="Your Health, Our Priority"
+               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white; -fx-wrap-text: true; -fx-text-alignment: center;"/>
+        <Label text="Connect with doctors, manage appointments and medications all in one place."
+               style="-fx-font-size: 13px; -fx-text-fill: #aad4f5; -fx-wrap-text: true; -fx-text-alignment: center;"/>
+
+        <!-- Stats cards -->
+        <HBox spacing="12" alignment="CENTER" style="-fx-padding: 20 0 0 0;">
+            <VBox alignment="CENTER" prefWidth="110" prefHeight="80"
+                  style="-fx-background-color: rgba(255,255,255,0.15); -fx-background-radius: 12; -fx-padding: 12;">
+                <Label text="500+" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="Patients" style="-fx-font-size: 11px; -fx-text-fill: #aad4f5;"/>
+            </VBox>
+            <VBox alignment="CENTER" prefWidth="110" prefHeight="80"
+                  style="-fx-background-color: rgba(255,255,255,0.15); -fx-background-radius: 12; -fx-padding: 12;">
+                <Label text="50+" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="Doctors" style="-fx-font-size: 11px; -fx-text-fill: #aad4f5;"/>
+            </VBox>
+            <VBox alignment="CENTER" prefWidth="110" prefHeight="80"
+                  style="-fx-background-color: rgba(255,255,255,0.15); -fx-background-radius: 12; -fx-padding: 12;">
+                <Label text="24/7" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="Support" style="-fx-font-size: 11px; -fx-text-fill: #aad4f5;"/>
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <!-- RIGHT PANEL — LOGIN CARD -->
+    <VBox HBox.hgrow="ALWAYS" alignment="CENTER"
+          style="-fx-background-color: #f0f4f8; -fx-padding: 40;">
+
+        <VBox spacing="14" maxWidth="340"
+              style="-fx-background-color: white; -fx-padding: 36 32;
+                     -fx-background-radius: 16; -fx-border-radius: 16;
+                     -fx-border-color: #e0e0e0; -fx-border-width: 0.5;">
+
+            <Label text="Welcome back"
+                   style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
+            <Label text="Sign in to your MediLink account"
+                   style="-fx-font-size: 13px; -fx-text-fill: #888;"/>
+
+            <VBox spacing="5">
+                <Label text="Email" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+                <TextField fx:id="emailField" promptText="you@example.com"
+                           prefHeight="40" prefWidth="276"
+                           style="-fx-background-radius: 8; -fx-border-radius: 8;
+                                  -fx-border-color: #ddd; -fx-font-size: 13px; -fx-padding: 0 12;"/>
+            </VBox>
+
+            <VBox spacing="5">
+                <Label text="Password" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+                <PasswordField fx:id="passwordField" promptText="••••••••"
+                               prefHeight="40" prefWidth="276"
+                               style="-fx-background-radius: 8; -fx-border-radius: 8;
+                                      -fx-border-color: #ddd; -fx-font-size: 13px; -fx-padding: 0 12;"/>
+            </VBox>
+
+            <Label fx:id="errorLabel" text="" wrapText="true"
+                   style="-fx-font-size: 12px;"/>
+
+            <Button text="Sign In" onAction="#handleLogin"
+                    prefWidth="276" prefHeight="42"
+                    style="-fx-background-color: #185FA5; -fx-text-fill: white;
+                           -fx-font-size: 14px; -fx-font-weight: bold;
+                           -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
+
+            <Separator/>
+
+            <Label text="Don't have an account? Register here"
+                   onMouseClicked="#goToRegister"
+                   style="-fx-font-size: 12px; -fx-text-fill: #185FA5;
+                          -fx-cursor: hand; -fx-alignment: CENTER;"
+                   maxWidth="276"/>
+        </VBox>
+    </VBox>
+</HBox>
