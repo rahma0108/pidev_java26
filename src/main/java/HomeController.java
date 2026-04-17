@@ -46,24 +46,21 @@ public class HomeController {
     public void initialize() {
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
 
-        // Setup user info
         if (loggedInUser != null) {
             greetingLabel.setText("Hello, " + loggedInUser.getFullName().split(" ")[0] + "!");
             String role = loggedInUser.getRoles() != null
-                ? loggedInUser.getRoles().replace("[","").replace("]","").replace("\"","").replace("ROLE_","")
-                : "USER";
+                    ? loggedInUser.getRoles().replace("[","").replace("]","")
+                    .replace("\"","").replace("ROLE_","")
+                    : "USER";
             roleChipLabel.setText(role);
 
-            String initials = loggedInUser.getFullName().length() >= 2
-                ? loggedInUser.getFullName().substring(0,1).toUpperCase() +
-                  (loggedInUser.getFullName().contains(" ")
-                    ? String.valueOf(loggedInUser.getFullName().split(" ")[1].charAt(0)).toUpperCase()
-                    : "")
-                : "?";
+            String[] parts = loggedInUser.getFullName().trim().split(" ");
+            String initials = parts[0].substring(0,1).toUpperCase() +
+                    (parts.length > 1 ? String.valueOf(parts[1].charAt(0)).toUpperCase() : "");
             avatarLabel.setText(initials);
         }
 
-        // Start particles
+        // Particles
         double w = animCanvas.getWidth();
         double h = animCanvas.getHeight();
         for (int i = 0; i < 70; i++)
@@ -74,30 +71,30 @@ public class HomeController {
         };
         particleTimer.start();
 
-        // Animate hero fade in
-        heroLabel.setOpacity(0);
-        heroSub.setOpacity(0);
-        FadeTransition f1 = new FadeTransition(Duration.millis(900), heroLabel);
-        f1.setFromValue(0); f1.setToValue(1); f1.setDelay(Duration.millis(200)); f1.play();
-        FadeTransition f2 = new FadeTransition(Duration.millis(900), heroSub);
-        f2.setFromValue(0); f2.setToValue(1); f2.setDelay(Duration.millis(500)); f2.play();
+        // Fade in hero
+        heroLabel.setOpacity(0); heroSub.setOpacity(0);
+        fade(heroLabel, 900, 200); fade(heroSub, 900, 500);
 
-        // Animate cards sliding in
-        animateCardIn(cardRdv,   0);
-        animateCardIn(cardMed,   150);
-        animateCardIn(cardOrd,   300);
+        // Animate cards
+        animateCardIn(cardRdv, 0);
+        animateCardIn(cardMed, 150);
+        animateCardIn(cardOrd, 300);
         animateCardIn(cardEvent, 450);
 
-        // Load counts from DB
         loadCounts();
-
-        // Load AI tip
         loadAITip();
+    }
+
+    private void fade(javafx.scene.Node node, int ms, int delay) {
+        FadeTransition ft = new FadeTransition(Duration.millis(ms), node);
+        ft.setFromValue(0); ft.setToValue(1);
+        ft.setDelay(Duration.millis(delay));
+        ft.play();
     }
 
     private void drawFrame(double w, double h) {
         GraphicsContext gc = animCanvas.getGraphicsContext2D();
-        gc.setFill(ThemeManager.isDark() ? Color.web("#050d1a") : Color.web("#0a1628"));
+        gc.setFill(Color.web("#050d1a"));
         gc.fillRect(0, 0, w, h);
 
         for (int i = 0; i < particles.size(); i++) {
@@ -112,7 +109,6 @@ public class HomeController {
                 }
             }
         }
-
         for (LandingController.Particle p : particles) {
             p.update(w, h);
             gc.setFill(Color.web(p.color, p.opacity * 0.7));
@@ -121,47 +117,25 @@ public class HomeController {
     }
 
     private void animateCardIn(VBox card, int delayMs) {
-        card.setOpacity(0);
-        card.setTranslateY(30);
-
+        card.setOpacity(0); card.setTranslateY(30);
         FadeTransition ft = new FadeTransition(Duration.millis(600), card);
         ft.setFromValue(0); ft.setToValue(1);
         ft.setDelay(Duration.millis(delayMs + 400));
-
         TranslateTransition tt = new TranslateTransition(Duration.millis(600), card);
         tt.setFromY(30); tt.setToY(0);
         tt.setDelay(Duration.millis(delayMs + 400));
         tt.setInterpolator(Interpolator.EASE_OUT);
-
         ft.play(); tt.play();
     }
 
     private void loadCounts() {
         new Thread(() -> {
             try {
-                // Count from DB
                 java.sql.Connection conn = MyConnection.getInstance().getConnection();
-
-                // Appointments
-                java.sql.ResultSet rs1 = conn.createStatement()
-                    .executeQuery("SELECT COUNT(*) FROM rendez_vous");
-                int rdv = rs1.next() ? rs1.getInt(1) : 0;
-
-                // Medications
-                java.sql.ResultSet rs2 = conn.createStatement()
-                    .executeQuery("SELECT COUNT(*) FROM medicaments");
-                int meds = rs2.next() ? rs2.getInt(1) : 0;
-
-                // Ordonnances
-                java.sql.ResultSet rs3 = conn.createStatement()
-                    .executeQuery("SELECT COUNT(*) FROM ordonnances");
-                int ords = rs3.next() ? rs3.getInt(1) : 0;
-
-                // Events
-                java.sql.ResultSet rs4 = conn.createStatement()
-                    .executeQuery("SELECT COUNT(*) FROM evenements");
-                int events = rs4.next() ? rs4.getInt(1) : 0;
-
+                int rdv    = getCount(conn, "SELECT COUNT(*) FROM rendez_vous");
+                int meds   = getCount(conn, "SELECT COUNT(*) FROM medicaments");
+                int ords   = getCount(conn, "SELECT COUNT(*) FROM ordonnances");
+                int events = getCount(conn, "SELECT COUNT(*) FROM evenements");
                 Platform.runLater(() -> {
                     rdvCount.setText(rdv + " upcoming");
                     medCount.setText(meds + " items");
@@ -174,20 +148,21 @@ public class HomeController {
         }).start();
     }
 
-    @FXML
-    public void refreshAITip() {
-        loadAITip();
+    private int getCount(java.sql.Connection conn, String sql) throws Exception {
+        java.sql.ResultSet rs = conn.createStatement().executeQuery(sql);
+        return rs.next() ? rs.getInt(1) : 0;
     }
+
+    @FXML public void refreshAITip() { loadAITip(); }
 
     private void loadAITip() {
         aiTipLabel.setText("Loading your personalized health tip...");
         new Thread(() -> {
             String name = loggedInUser != null ? loggedInUser.getFullName().split(" ")[0] : "User";
-            String system = "You are a friendly medical assistant for MediLink. " +
-                            "Give ONE short, practical, positive health tip (max 2 sentences). " +
-                            "Make it feel personal and encouraging. Always reply in English.";
-            String prompt = "Give a health tip for a patient named " + name;
-            String tip = ClaudeAI.ask(system, prompt);
+            String tip  = ClaudeAI.ask(
+                    "You are a friendly medical assistant. Give ONE short practical health tip (max 2 sentences). Be encouraging. Always reply in English.",
+                    "Health tip for patient named " + name
+            );
             Platform.runLater(() -> {
                 aiTipLabel.setText(tip);
                 FadeTransition ft = new FadeTransition(Duration.millis(500), aiTipLabel);
@@ -197,57 +172,38 @@ public class HomeController {
     }
 
     // ── Hover effects ──
-    @FXML
-    public void onCardHover(javafx.scene.input.MouseEvent e) {
-        VBox card = (VBox) e.getSource();
-        ScaleTransition st = new ScaleTransition(Duration.millis(150), card);
+    @FXML public void onCardHover(javafx.scene.input.MouseEvent e) {
+        ScaleTransition st = new ScaleTransition(Duration.millis(150), (VBox) e.getSource());
         st.setToX(1.05); st.setToY(1.05); st.play();
     }
 
-    @FXML
-    public void onCardExit(javafx.scene.input.MouseEvent e) {
-        VBox card = (VBox) e.getSource();
-        ScaleTransition st = new ScaleTransition(Duration.millis(150), card);
+    @FXML public void onCardExit(javafx.scene.input.MouseEvent e) {
+        ScaleTransition st = new ScaleTransition(Duration.millis(150), (VBox) e.getSource());
         st.setToX(1.0); st.setToY(1.0); st.play();
     }
 
-    // ── Navigation ──
-    @FXML public void goToRdv()         { navigateTo("/rendez_vous.fxml"); }
-    @FXML public void goToMedicaments() { navigateTo("/medicaments.fxml"); }
-    @FXML public void goToOrdonnances() { navigateTo("/ordonnances.fxml"); }
-    @FXML public void goToEvents()      { navigateTo("/evenements.fxml"); }
+    // ── Navigation — Coming Soon for all ──
+    @FXML public void goToRdv()         { PopupHelper.showComingSoon("Appointments"); }
+    @FXML public void goToMedicaments() { PopupHelper.showComingSoon("Medications"); }
+    @FXML public void goToOrdonnances() { PopupHelper.showComingSoon("Prescriptions"); }
+    @FXML public void goToEvents()      { PopupHelper.showComingSoon("Events"); }
 
     @FXML
     public void handleLogout() {
-        stopAnimation();
-        navigateTo("/main.fxml");
+        if (PopupHelper.confirmLogout()) {
+            stopAnimation();
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
+                heroLabel.getScene().setRoot(root);
+                ThemeManager.apply(heroLabel.getScene());
+            } catch (Exception e) { e.printStackTrace(); }
+        }
     }
 
     @FXML
     public void toggleTheme() {
         ThemeManager.toggle(themeToggleBtn.getScene());
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
-    }
-
-    private void navigateTo(String fxml) {
-        stopAnimation();
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxml));
-            heroLabel.getScene().setRoot(root);
-            ThemeManager.apply(heroLabel.getScene());
-        } catch (Exception e) {
-            System.err.println("Page not built yet: " + fxml);
-            showComingSoon(fxml);
-        }
-    }
-
-    private void showComingSoon(String page) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Coming Soon");
-        alert.setHeaderText(null);
-        alert.setContentText("This page (" + page.replace("/","").replace(".fxml","") +
-                             ") will be built by your teammate. Stay tuned!");
-        alert.show();
     }
 
     private void stopAnimation() {

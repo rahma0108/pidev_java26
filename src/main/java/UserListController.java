@@ -315,116 +315,114 @@ public class UserListController {
     }
 
     private void handleDelete(User user) {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Delete User");
-        confirm.setHeaderText("Delete " + user.getFullName() + "?");
-        confirm.setContentText("This cannot be undone.");
-        confirm.showAndWait().ifPresent(r -> {
-            if (r == ButtonType.OK) {
-                userService.delete(user.getId());
-                showMessage("User deleted.", "green");
-                loadCards(null);
-            }
-        });
-    }
 
-    @FXML
-    public void handleClear() {
-        if (searchField != null) searchField.clear();
-        messageLabel.setText("");
-        aiNameLabel.setText("");
-        aiProfileLabel.setText("No user selected yet.");
-        loadCards(null);
-    }
 
-    @FXML
-    public void goToDashboard() {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/dashboard.fxml"));
-            cardsContainer.getScene().setRoot(root);
-        } catch (Exception e) { System.err.println("Navigation error: " + e.getMessage()); }
-    }
 
-    // ── HELPERS ──
-    private StackPane makeAvatar(User user, double radius) {
-        StackPane avatar = new StackPane();
-        Circle circle = new Circle(radius);
-        String[] bgs = {"#E6F1FB","#E1F5EE","#F1EFE8","#FBEAF0","#FAEEDA"};
-        String[] fgs = {"#0C447C","#085041","#444441","#72243E","#633806"};
-        int idx = Math.abs(user.getFullName().hashCode()) % bgs.length;
-        circle.setFill(Color.web(bgs[idx]));
-        Text initials = new Text(getInitials(user.getFullName()));
-        initials.setStyle("-fx-font-size: " + (int)(radius * 0.65) + "px; -fx-font-weight: bold;");
-        initials.setFill(Color.web(fgs[idx]));
-        avatar.getChildren().addAll(circle, initials);
-        return avatar;
-    }
 
-    private VBox makeNameBox(User user) {
-        VBox box = new VBox(2);
-        Label name = new Label(user.getFullName());
-        name.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;");
-        Label email = new Label(user.getEmail());
-        email.setStyle("-fx-font-size: 11px; -fx-text-fill: #888;");
-        email.setMaxWidth(160);
-        box.getChildren().addAll(name, email);
-        return box;
-    }
-
-    private Button makeBtn(String text, String color) {
-        Button btn = new Button(text);
-        btn.setPrefHeight(30);
-        btn.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; " +
-                "-fx-background-radius: 8; -fx-font-size: 11px; " +
-                "-fx-cursor: hand; -fx-border-color: transparent;");
-        return btn;
-    }
-
-    private Label fieldLabel(String text) {
-        Label l = new Label(text);
-        l.setStyle("-fx-font-size: 12px; -fx-text-fill: #555; -fx-padding: 4 0 0 0;");
-        return l;
-    }
-
-    private TextField styledField(String value, String placeholder) {
-        TextField tf = new TextField(value);
-        tf.setPromptText(placeholder);
-        tf.setPrefHeight(38);
-        tf.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; " +
-                "-fx-border-color: #ddd; -fx-font-size: 13px;");
-        return tf;
-    }
-
-    private Label makeRoleBadge(String roles) {
-        String role = "USER"; String bg = "#F1EFE8"; String fg = "#444441";
-        if (roles != null) {
-            if (roles.contains("ROLE_ADMIN"))        { role = "ADMIN";   bg = "#E6F1FB"; fg = "#0C447C"; }
-            else if (roles.contains("ROLE_MEDECIN")) { role = "MEDECIN"; bg = "#E1F5EE"; fg = "#085041"; }
+        if (PopupHelper.confirmDelete(user.getFullName())) {
+            userService.delete(user.getId());
+            showMessage("User deleted.", "green");
+            loadCards(null);
         }
-        Label b = new Label(role);
-        b.setStyle("-fx-background-color:" + bg + ";-fx-text-fill:" + fg + ";" +
-                "-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:3 8;-fx-background-radius:10;");
-        return b;
     }
 
-    private Label makeStatusBadge(String status) {
-        String bg = "#EAF3DE"; String fg = "#27500A";
-        if ("INACTIVE".equalsIgnoreCase(status)) { bg = "#FCEBEB"; fg = "#791F1F"; }
-        Label b = new Label(status != null ? status : "ACTIVE");
-        b.setStyle("-fx-background-color:" + bg + ";-fx-text-fill:" + fg + ";" +
-                "-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:3 8;-fx-background-radius:10;");
-        return b;
-    }
+@FXML
+public void handleClear() {
+    if (searchField != null) searchField.clear();
+    messageLabel.setText("");
+    aiNameLabel.setText("");
+    aiProfileLabel.setText("No user selected yet.");
+    loadCards(null);
+}
 
-    private String getInitials(String name) {
-        if (name == null || name.isEmpty()) return "?";
-        String[] p = name.trim().split(" ");
-        return p.length == 1 ? p[0].substring(0,1).toUpperCase()
-                : (p[0].substring(0,1) + p[1].substring(0,1)).toUpperCase();
-    }
+@FXML
+public void goToDashboard() {
+    try {
+        Parent root = FXMLLoader.load(getClass().getResource("/dashboard.fxml"));
+        cardsContainer.getScene().setRoot(root);
+    } catch (Exception e) { System.err.println("Navigation error: " + e.getMessage()); }
+}
 
-    private void showMessage(String msg, String color) {
-        messageLabel.setStyle("-fx-text-fill: " + color + ";");
-        messageLabel.setText(msg);
+// ── HELPERS ──
+private StackPane makeAvatar(User user, double radius) {
+    StackPane avatar = new StackPane();
+    Circle circle = new Circle(radius);
+    String[] bgs = {"#E6F1FB","#E1F5EE","#F1EFE8","#FBEAF0","#FAEEDA"};
+    String[] fgs = {"#0C447C","#085041","#444441","#72243E","#633806"};
+    int idx = Math.abs(user.getFullName().hashCode()) % bgs.length;
+    circle.setFill(Color.web(bgs[idx]));
+    Text initials = new Text(getInitials(user.getFullName()));
+    initials.setStyle("-fx-font-size: " + (int)(radius * 0.65) + "px; -fx-font-weight: bold;");
+    initials.setFill(Color.web(fgs[idx]));
+    avatar.getChildren().addAll(circle, initials);
+    return avatar;
+}
+
+private VBox makeNameBox(User user) {
+    VBox box = new VBox(2);
+    Label name = new Label(user.getFullName());
+    name.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;");
+    Label email = new Label(user.getEmail());
+    email.setStyle("-fx-font-size: 11px; -fx-text-fill: #888;");
+    email.setMaxWidth(160);
+    box.getChildren().addAll(name, email);
+    return box;
+}
+
+private Button makeBtn(String text, String color) {
+    Button btn = new Button(text);
+    btn.setPrefHeight(30);
+    btn.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; " +
+            "-fx-background-radius: 8; -fx-font-size: 11px; " +
+            "-fx-cursor: hand; -fx-border-color: transparent;");
+    return btn;
+}
+
+private Label fieldLabel(String text) {
+    Label l = new Label(text);
+    l.setStyle("-fx-font-size: 12px; -fx-text-fill: #555; -fx-padding: 4 0 0 0;");
+    return l;
+}
+
+private TextField styledField(String value, String placeholder) {
+    TextField tf = new TextField(value);
+    tf.setPromptText(placeholder);
+    tf.setPrefHeight(38);
+    tf.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; " +
+            "-fx-border-color: #ddd; -fx-font-size: 13px;");
+    return tf;
+}
+
+private Label makeRoleBadge(String roles) {
+    String role = "USER"; String bg = "#F1EFE8"; String fg = "#444441";
+    if (roles != null) {
+        if (roles.contains("ROLE_ADMIN"))        { role = "ADMIN";   bg = "#E6F1FB"; fg = "#0C447C"; }
+        else if (roles.contains("ROLE_MEDECIN")) { role = "MEDECIN"; bg = "#E1F5EE"; fg = "#085041"; }
     }
+    Label b = new Label(role);
+    b.setStyle("-fx-background-color:" + bg + ";-fx-text-fill:" + fg + ";" +
+            "-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:3 8;-fx-background-radius:10;");
+    return b;
+}
+
+private Label makeStatusBadge(String status) {
+    String bg = "#EAF3DE"; String fg = "#27500A";
+    if ("INACTIVE".equalsIgnoreCase(status)) { bg = "#FCEBEB"; fg = "#791F1F"; }
+    Label b = new Label(status != null ? status : "ACTIVE");
+    b.setStyle("-fx-background-color:" + bg + ";-fx-text-fill:" + fg + ";" +
+            "-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:3 8;-fx-background-radius:10;");
+    return b;
+}
+
+private String getInitials(String name) {
+    if (name == null || name.isEmpty()) return "?";
+    String[] p = name.trim().split(" ");
+    return p.length == 1 ? p[0].substring(0,1).toUpperCase()
+            : (p[0].substring(0,1) + p[1].substring(0,1)).toUpperCase();
+}
+
+private void showMessage(String msg, String color) {
+    messageLabel.setStyle("-fx-text-fill: " + color + ";");
+    messageLabel.setText(msg);
+}
 }

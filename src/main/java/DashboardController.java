@@ -105,7 +105,11 @@ public class DashboardController {
     @FXML public void showAppointments() { pageTitle.setText("Appointments — coming soon"); }
     @FXML public void showMedications()  { pageTitle.setText("Medications — coming soon"); }
     @FXML public void showEvents()       { pageTitle.setText("Events — coming soon"); }
-    @FXML public void handleLogout()     { navigateTo("/main.fxml"); }
+    @FXML public void handleLogout() {
+        if (PopupHelper.confirmLogout()) {
+            navigateTo("/main.fxml");
+        }
+    }
 
     private void navigateTo(String fxml) {
         try {
