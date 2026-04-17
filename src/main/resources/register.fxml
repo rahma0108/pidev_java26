@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+
+<HBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="RegisterController"
+      prefWidth="900" prefHeight="600"
+      style="-fx-background-color: #f0f4f8;">
+
+    <!-- LEFT PANEL -->
+    <VBox prefWidth="380" prefHeight="600" alignment="CENTER" spacing="20"
+          style="-fx-background-color: #0F6E56; -fx-padding: 50 36;">
+
+        <ImageView fitWidth="150" fitHeight="65" preserveRatio="true"
+                   onMouseClicked="#goToLanding"
+                   style="-fx-cursor: hand;">
+            <image><Image url="@/logo.png"/></image>
+        </ImageView>
+
+        <Label text="Join MediLink Today"
+               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;
+                      -fx-wrap-text: true; -fx-text-alignment: center;"/>
+        <Label text="Create your account and start managing your health journey with ease."
+               style="-fx-font-size: 13px; -fx-text-fill: #9FE1CB;
+                      -fx-wrap-text: true; -fx-text-alignment: center;"/>
+
+        <!-- Feature cards -->
+        <VBox spacing="10" style="-fx-padding: 16 0 0 0;">
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <VBox prefWidth="36" prefHeight="36" alignment="CENTER"
+                      style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 8;">
+                    <Label text="✓" style="-fx-text-fill: white; -fx-font-size: 16px;"/>
+                </VBox>
+                <Label text="Book appointments easily"
+                       style="-fx-text-fill: white; -fx-font-size: 13px;"/>
+            </HBox>
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <VBox prefWidth="36" prefHeight="36" alignment="CENTER"
+                      style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 8;">
+                    <Label text="✓" style="-fx-text-fill: white; -fx-font-size: 16px;"/>
+                </VBox>
+                <Label text="Track your medications"
+                       style="-fx-text-fill: white; -fx-font-size: 13px;"/>
+            </HBox>
+            <HBox spacing="12" alignment="CENTER_LEFT">
+                <VBox prefWidth="36" prefHeight="36" alignment="CENTER"
+                      style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 8;">
+                    <Label text="✓" style="-fx-text-fill: white; -fx-font-size: 16px;"/>
+                </VBox>
+                <Label text="Connect with top doctors"
+                       style="-fx-text-fill: white; -fx-font-size: 13px;"/>
+            </HBox>
+        </VBox>
+    </VBox>
+
+    <!-- RIGHT PANEL — REGISTER CARD -->
+    <VBox HBox.hgrow="ALWAYS" alignment="CENTER"
+          style="-fx-background-color: #f0f4f8; -fx-padding: 30 40;">
+
+        <VBox spacing="12" maxWidth="340"
+              style="-fx-background-color: white; -fx-padding: 32 32;
+                     -fx-background-radius: 16; -fx-border-radius: 16;
+                     -fx-border-color: #e0e0e0; -fx-border-width: 0.5;">
+
+            <Label text="Create account"
+                   style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
+            <Label text="Fill in your details to get started"
+                   style="-fx-font-size: 13px; -fx-text-fill: #888;"/>
+
+            <VBox spacing="5">
+                <Label text="Full Name" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+                <TextField fx:id="nameField" promptText="Your full name"
+                           prefHeight="38" prefWidth="276"
+                           style="-fx-background-radius: 8; -fx-border-radius: 8;
+                                  -fx-border-color: #ddd; -fx-font-size: 13px;"/>
+            </VBox>
+
+            <VBox spacing="5">
+                <Label text="Email" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+                <TextField fx:id="emailField" promptText="you@example.com"
+                           prefHeight="38" prefWidth="276"
+                           style="-fx-background-radius: 8; -fx-border-radius: 8;
+                                  -fx-border-color: #ddd; -fx-font-size: 13px;"/>
+            </VBox>
+
+            <HBox spacing="10">
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <Label text="Password" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+                    <PasswordField fx:id="passwordField" promptText="••••••••"
+                                   prefHeight="38"
+                                   style="-fx-background-radius: 8; -fx-border-radius: 8;
+                                          -fx-border-color: #ddd; -fx-font-size: 13px;"/>
+                </VBox>
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <Label text="Confirm" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+                    <PasswordField fx:id="confirmPasswordField" promptText="••••••••"
+                                   prefHeight="38"
+                                   style="-fx-background-radius: 8; -fx-border-radius: 8;
+                                          -fx-border-color: #ddd; -fx-font-size: 13px;"/>
+                </VBox>
+            </HBox>
+
+            <VBox spacing="5">
+                <Label text="Phone (optional)" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+                <TextField fx:id="phoneField" promptText="+216 xx xxx xxx"
+                           prefHeight="38" prefWidth="276"
+                           style="-fx-background-radius: 8; -fx-border-radius: 8;
+                                  -fx-border-color: #ddd; -fx-font-size: 13px;"/>
+            </VBox>
+
+            <Label fx:id="messageLabel" text="" wrapText="true"
+                   style="-fx-font-size: 12px;"/>
+
+            <Label fx:id="aiSuggestionLabel" text="" wrapText="true"
+                   style="-fx-font-size: 12px; -fx-text-fill: #0F6E56;
+                          -fx-background-color: #E1F5EE; -fx-background-radius: 8;
+                          -fx-padding: 8 12; -fx-border-radius: 8;"/>
+
+            <Button fx:id="registerBtn" text="Create Account" onAction="#handleRegister"
+                    prefWidth="276" prefHeight="42"
+                    style="-fx-background-color: #0F6E56; -fx-text-fill: white;
+                           -fx-font-size: 14px; -fx-font-weight: bold;
+                           -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
+
+            <Separator/>
+
+            <Label text="Already have an account? Sign in"
+                   onMouseClicked="#goToLogin"
+                   style="-fx-font-size: 12px; -fx-text-fill: #185FA5; -fx-cursor: hand;"/>
+        </VBox>
+    </VBox>
+</HBox>

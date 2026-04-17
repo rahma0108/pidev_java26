@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="UserListController"
+            prefWidth="980" prefHeight="660"
+            style="-fx-background-color: #f0f4f8;">
+
+    <!-- TOP BAR -->
+    <top>
+        <VBox fx:id="topBar" style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 14 24 10 24;">
+                <Label text="User Management"
+                       style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="+ Add User" onAction="#handleAdd"
+                        style="-fx-background-color: #0F6E56; -fx-text-fill: white;
+                               -fx-background-radius: 8; -fx-cursor: hand;
+                               -fx-border-color: transparent; -fx-padding: 8 16;"/>
+                <Button text="Back to Dashboard" onAction="#goToDashboard"
+                        style="-fx-background-color: #185FA5; -fx-text-fill: white;
+                               -fx-background-radius: 8; -fx-cursor: hand;
+                               -fx-border-color: transparent; -fx-padding: 8 16;"/>
+
+            </HBox>
+
+            <!-- AI SEARCH BAR -->
+            <HBox spacing="10" style="-fx-padding: 0 24 14 24;" alignment="CENTER_LEFT">
+                <TextField fx:id="searchField"
+                           promptText="AI Search... (try: 'show doctors', 'find active users')"
+                           prefHeight="36" prefWidth="420"
+                           style="-fx-background-radius: 8; -fx-border-radius: 8;
+                                  -fx-border-color: #ddd; -fx-font-size: 13px;"/>
+                <Button text="Search" onAction="#handleSearch"
+                        prefHeight="36"
+                        style="-fx-background-color: #534AB7; -fx-text-fill: white;
+                               -fx-background-radius: 8; -fx-cursor: hand;
+                               -fx-border-color: transparent; -fx-padding: 0 16;"/>
+                <Button text="Clear" onAction="#handleClear"
+                        prefHeight="36"
+                        style="-fx-background-color: #eee; -fx-text-fill: #333;
+                               -fx-background-radius: 8; -fx-cursor: hand;
+                               -fx-border-color: transparent; -fx-padding: 0 16;"/>
+                <Label fx:id="messageLabel" text=""
+                       style="-fx-font-size: 12px;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <HBox spacing="0">
+
+            <!-- CARDS AREA -->
+            <ScrollPane HBox.hgrow="ALWAYS" fitToWidth="true"
+                        style="-fx-background-color: transparent; -fx-background: transparent;">
+                <FlowPane fx:id="cardsContainer" hgap="14" vgap="14"
+                          style="-fx-padding: 20; -fx-background-color: transparent;"/>
+            </ScrollPane>
+
+            <!-- SIDE PANEL — AI PROFILE ONLY -->
+            <VBox fx:id="sidePanel" prefWidth="280" spacing="14"
+                  style="-fx-background-color: white; -fx-padding: 24;
+                         -fx-border-color: #e0e0e0; -fx-border-width: 0 0 0 1;">
+
+                <Label text="AI Profile Summary"
+                       style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #534AB7;"/>
+
+                <Label text="Click 'AI Summary' on any user card to generate a professional profile."
+                       wrapText="true"
+                       style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
+
+                <Separator/>
+
+                <!-- AI result box -->
+                <VBox fx:id="aiBox" style="-fx-background-color: #EEEDFE; -fx-background-radius: 10;
+                             -fx-border-color: #CECBF6; -fx-border-radius: 10; -fx-border-width: 0.5;
+                             -fx-padding: 14;">
+                    <Label fx:id="aiNameLabel" text=""
+                           style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #26215C;"/>
+                    <Label fx:id="aiProfileLabel" text="No user selected yet."
+                           wrapText="true" prefWidth="232"
+                           style="-fx-font-size: 12px; -fx-text-fill: #534AB7; -fx-padding: 6 0 0 0;"/>
+                </VBox>
+
+                <Region VBox.vgrow="ALWAYS"/>
+
+                <!-- Stats -->
+                <VBox fx:id="statsBox" spacing="8"
+                      style="-fx-background-color: #f8f8f8; -fx-background-radius: 10;
+                             -fx-padding: 14; -fx-border-color: #e0e0e0;
+                             -fx-border-radius: 10; -fx-border-width: 0.5;">
+                    <Label text="Quick Stats"
+                           style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                    <Label fx:id="totalUsersStatLabel" text="Total users: —"
+                           style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+                    <Label fx:id="activeUsersStatLabel" text="Active: —"
+                           style="-fx-font-size: 12px; -fx-text-fill: #0F6E56;"/>
+                    <Label fx:id="adminStatLabel" text="Admins: —"
+                           style="-fx-font-size: 12px; -fx-text-fill: #185FA5;"/>
+                    <Label fx:id="medecinStatLabel" text="Doctors: —"
+                           style="-fx-font-size: 12px; -fx-text-fill: #085041;"/>
+                </VBox>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>
