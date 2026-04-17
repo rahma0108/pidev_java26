@@ -82,10 +82,7 @@
                         style="-fx-background-color: #0F6E56; -fx-text-fill: white;
                                -fx-background-radius: 8; -fx-cursor: hand; -fx-border-color: transparent;"/>
 
-                <Button text="Save Changes" onAction="#handleUpdate"
-                        prefWidth="240" prefHeight="36"
-                        style="-fx-background-color: #185FA5; -fx-text-fill: white;
-                               -fx-background-radius: 8; -fx-cursor: hand; -fx-border-color: transparent;"/>
+
 
                 <Separator/>
 
