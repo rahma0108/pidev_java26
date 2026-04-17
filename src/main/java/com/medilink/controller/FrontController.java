@@ -37,6 +37,11 @@ public class FrontController implements Initializable {
         renderEventCards();
     }
 
+    @FXML
+    private void onRefreshEvents() {
+        loadEvents();
+    }
+
     private void onParticiper(Evenement selected) {
         String validationError = validateParticipationRequest(selected);
         if (validationError != null) {
@@ -71,6 +76,12 @@ public class FrontController implements Initializable {
 
     private void renderEventCards() {
         eventCardsContainer.getChildren().clear();
+        if (evenementList.isEmpty()) {
+            Label empty = new Label("Aucun événement disponible pour le moment.");
+            empty.getStyleClass().add("empty-state");
+            eventCardsContainer.getChildren().add(empty);
+            return;
+        }
         for (Evenement e : evenementList) {
             eventCardsContainer.getChildren().add(createEventCard(e));
         }
@@ -79,16 +90,22 @@ public class FrontController implements Initializable {
     private VBox createEventCard(Evenement e) {
         VBox card = new VBox(6);
         card.setPrefWidth(300);
-        card.setStyle("-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #c5d7f3;");
+        card.getStyleClass().add("event-card");
 
         Label title = new Label(e.getTitre());
-        title.setStyle("-fx-font-size: 15px; -fx-font-weight: bold;");
+        title.getStyleClass().add("card-title");
         Label description = new Label("Description: " + safeText(e.getDescription()));
         Label date = new Label("Date: " + (e.getDateEvenement() != null ? e.getDateEvenement().toString() : "-"));
         Label lieu = new Label("Lieu: " + safeText(e.getLieu()));
         Label type = new Label("Type: " + safeText(e.getType()));
+        description.getStyleClass().add("card-meta");
+        date.getStyleClass().add("card-meta");
+        lieu.getStyleClass().add("card-meta");
+        type.getStyleClass().add("card-meta");
+        description.setWrapText(true);
 
         Button participer = new Button("Participer");
+        participer.getStyleClass().add("btn-primary");
         participer.setOnAction(event -> onParticiper(e));
 
         card.getChildren().addAll(title, description, date, lieu, type, participer);

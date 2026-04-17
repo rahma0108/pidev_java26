@@ -5,66 +5,71 @@
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <AnchorPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="view.ListeDisponibilitesViewController"
             prefWidth="900.0" prefHeight="560.0"
-            style="-fx-background-color: #f4f6f9;">
+            stylesheets="@style.css" styleClass="app-root">
 
     <VBox AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-          spacing="14.0"
-          style="-fx-background-color: transparent;">
+          spacing="14.0" styleClass="main-content page-container">
         <padding>
             <Insets bottom="20.0" left="24.0" right="24.0" top="20.0"/>
         </padding>
 
-        <Label text="Disponibilités"
-               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a2b3c;"/>
+        <HBox alignment="CENTER_LEFT" styleClass="navbar" spacing="10.0">
+            <children>
+                <StackPane styleClass="brand-badge">
+                    <children>
+                        <Label text="ML" styleClass="brand-icon"/>
+                    </children>
+                </StackPane>
+                <Label text="MediLink" styleClass="brand-title"/>
+                <Label text="Accueil" styleClass="nav-link"/>
+                <Label text="Événements" styleClass="nav-link"/>
+                <Label text="Rendez-vous" styleClass="nav-link nav-link-active"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Connexion" styleClass="nav-action-outline"/>
+                <Button text="Inscription" styleClass="nav-action-solid"/>
+            </children>
+        </HBox>
 
-        <HBox spacing="12.0" alignment="CENTER_LEFT">
+        <Label text="Disponibilités" styleClass="page-title"/>
+        <Label text="Visualisez et gérez rapidement les créneaux disponibles." styleClass="subtitle-text"/>
+
+        <HBox spacing="12.0" alignment="CENTER_LEFT" styleClass="filters-bar">
             <VBox spacing="6.0" HBox.hgrow="ALWAYS">
-                <Label text="Filtrer par médecin (id, optionnel)" labelFor="$filtreMedecinTextField"
-                       style="-fx-font-weight: bold; -fx-text-fill: #334155;"/>
-                <TextField fx:id="filtreMedecinTextField" promptText="Laisser vide pour tout afficher"/>
-            </VBox>
-            <VBox spacing="6.0">
-                <Label text="À partir du" labelFor="$filtreDatePicker"
-                       style="-fx-font-weight: bold; -fx-text-fill: #334155;"/>
-                <DatePicker fx:id="filtreDatePicker" promptText="Date min." prefWidth="200.0"/>
+                <Label text="Filtrer par date" labelFor="$filtreDatePicker" styleClass="field-label"/>
+                <DatePicker fx:id="filtreDatePicker" promptText="Date min." prefWidth="220.0"/>
             </VBox>
             <VBox spacing="6.0" alignment="BOTTOM_LEFT">
                 <Label visible="false" managed="false"/>
-                <Button fx:id="rafraichirButton" text="Rafraîchir"
-                        style="-fx-background-color: #e2e8f0; -fx-text-fill: #1e293b; -fx-background-radius: 6; -fx-padding: 8 16; -fx-cursor: hand;"/>
+                <Button fx:id="rafraichirButton" text="Rafraîchir" styleClass="btn-muted"/>
             </VBox>
         </HBox>
 
-        <Label fx:id="selectionInfoLabel" text="Aucune disponibilité sélectionnée."
-               style="-fx-text-fill: #64748b; -fx-font-style: italic;"/>
+        <Label fx:id="selectionInfoLabel" text="Aucune disponibilité sélectionnée." styleClass="muted-text"/>
 
-        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="card-soft">
             <content>
                 <FlowPane fx:id="cardsFlowPane"
                           hgap="12.0"
                           vgap="12.0"
-                          prefWrapLength="820.0"
-                          style="-fx-padding: 4 2 4 2;"/>
+                          prefWrapLength="820.0"/>
             </content>
         </ScrollPane>
 
-        <HBox spacing="12.0" alignment="CENTER_RIGHT">
-            <Button fx:id="retourButton" text="Retour"
-                    style="-fx-background-color: #64748b; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 8 18; -fx-cursor: hand;"/>
-            <Button fx:id="ajouterButton" text="Ajouter"
-                    style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 8 18; -fx-cursor: hand;"/>
-            <Button fx:id="supprimerButton" text="Supprimer la sélection"
-                    style="-fx-background-color: #dc2626; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 8 18; -fx-cursor: hand;"/>
+        <HBox spacing="12.0" alignment="CENTER_RIGHT" styleClass="actions-bar">
+            <Button fx:id="retourButton" text="Retour" styleClass="btn-back"/>
+            <Button fx:id="ajouterButton" text="Ajouter" styleClass="btn-primary"/>
+            <Button fx:id="supprimerButton" text="Supprimer la sélection" styleClass="btn-danger"/>
         </HBox>
     </VBox>
 </AnchorPane>

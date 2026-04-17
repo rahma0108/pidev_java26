@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Objects;
 
 /**
@@ -18,8 +19,14 @@ public class MediLinkFxApp extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
                 MediLinkFxApp.class.getResource("/fxml/LoginView.fxml")));
-        Scene scene = new Scene(loader.load(), 600, 380);
+        Scene scene = new Scene(loader.load(), 980, 620);
+        URL globalCss = MediLinkFxApp.class.getResource("/fxml/style.css");
+        if (globalCss != null) {
+            scene.getStylesheets().add(globalCss.toExternalForm());
+        }
         stage.setTitle("MediLink - Accueil");
+        stage.setMinWidth(900);
+        stage.setMinHeight(560);
         stage.setScene(scene);
         stage.show();
     }

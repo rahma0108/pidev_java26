@@ -6,18 +6,27 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 
 <BorderPane fx:id="rootPane" prefHeight="750.0" prefWidth="1100.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.medilink.controller.MainController">
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="navbar">
+        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="navbar">
             <padding>
-                <Insets bottom="15.0" left="25.0" right="25.0" top="15.0" />
+                <Insets bottom="10.0" left="22.0" right="22.0" top="10.0" />
             </padding>
             <children>
-                <Label styleClass="logo-text" text="MEDILINK" />
+                <StackPane styleClass="logo-badge">
+                    <children>
+                        <Label styleClass="logo-icon" text="ML" />
+                    </children>
+                </StackPane>
+                <Label styleClass="logo-text" text="MediLink" />
+                <Button fx:id="btnFront" mnemonicParsing="false" onAction="#onShowFront" styleClass="nav-button" text="Accueil" />
+                <Button fx:id="btnBack" mnemonicParsing="false" onAction="#onShowBack" styleClass="nav-button" text="Événements" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button mnemonicParsing="false" onAction="#onShowFront" styleClass="nav-button" text="Client" />
-                <Button mnemonicParsing="false" onAction="#onShowBack" styleClass="nav-button-active" text="Gestion Dashboard" />
+                <Button mnemonicParsing="false" styleClass="auth-outline" text="Connexion" />
+                <Button mnemonicParsing="false" styleClass="auth-solid" text="Inscription" />
+                <Button mnemonicParsing="false" styleClass="auth-outline" text="Contact" />
             </children>
         </HBox>
     </top>

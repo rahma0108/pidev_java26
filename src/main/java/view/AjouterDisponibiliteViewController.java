@@ -2,19 +2,17 @@ package view;
 
 import controllers.DisponibiliteController;
 import exceptions.ServiceException;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -26,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.function.UnaryOperator;
 
 public class AjouterDisponibiliteViewController {
@@ -42,17 +41,7 @@ public class AjouterDisponibiliteViewController {
     @FXML
     private TextField heureFinTextField;
     @FXML
-    private TableView<Disponibilite> apercuTableView;
-    @FXML
-    private TableColumn<Disponibilite, Integer> colonneApercuId;
-    @FXML
-    private TableColumn<Disponibilite, LocalDate> colonneApercuDate;
-    @FXML
-    private TableColumn<Disponibilite, String> colonneApercuDebut;
-    @FXML
-    private TableColumn<Disponibilite, String> colonneApercuFin;
-    @FXML
-    private TableColumn<Disponibilite, String> colonneApercuStatut;
+    private FlowPane apercuCardsContainer;
     @FXML
     private Button ajouterButton;
     @FXML
@@ -64,6 +53,7 @@ public class AjouterDisponibiliteViewController {
 
     private DisponibiliteController disponibiliteController;
     private Runnable afterSaveCallback;
+    private Disponibilite selectionApercu;
 
     public void setAfterSaveCallback(Runnable afterSaveCallback) {
         this.afterSaveCallback = afterSaveCallback;
@@ -71,16 +61,6 @@ public class AjouterDisponibiliteViewController {
 
     @FXML
     private void initialize() {
-        colonneApercuId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colonneApercuDate.setCellValueFactory(new PropertyValueFactory<>("date"));
-        colonneApercuDebut.setCellValueFactory(c ->
-                new ReadOnlyObjectWrapper<>(c.getValue().getHeureDebut() != null ? c.getValue().getHeureDebut().toString() : ""));
-        colonneApercuFin.setCellValueFactory(c ->
-                new ReadOnlyObjectWrapper<>(c.getValue().getHeureFin() != null ? c.getValue().getHeureFin().toString() : ""));
-        colonneApercuStatut.setCellValueFactory(new PropertyValueFactory<>("status"));
-
-        apercuTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-
         try {
             disponibiliteController = new DisponibiliteController();
         } catch (ServiceException e) {
@@ -154,13 +134,15 @@ public class AjouterDisponibiliteViewController {
         try {
             String t = medecinIdTextField.getText();
             if (t == null || t.isBlank()) {
-                apercuTableView.getItems().clear();
+                selectionApercu = null;
+                apercuCardsContainer.getChildren().clear();
                 return;
             }
             int id = Integer.parseInt(t.trim());
-            apercuTableView.getItems().setAll(disponibiliteController.afficherDisponibilitesMedecin(id));
+            renderApercuCards(disponibiliteController.afficherDisponibilitesMedecin(id));
         } catch (NumberFormatException e) {
-            apercuTableView.getItems().clear();
+            selectionApercu = null;
+            apercuCardsContainer.getChildren().clear();
         } catch (ServiceException e) {
             ViewAlertUtil.erreur("Aperçu", e.formatWithCauses());
         }
@@ -229,13 +211,14 @@ public class AjouterDisponibiliteViewController {
         datePicker.setValue(null);
         heureDebutTextField.clear();
         heureFinTextField.clear();
-        apercuTableView.getItems().clear();
+        selectionApercu = null;
+        apercuCardsContainer.getChildren().clear();
     }
 
     private void handleSupprimerApercu() {
-        Disponibilite sel = apercuTableView.getSelectionModel().getSelectedItem();
+        Disponibilite sel = selectionApercu;
         if (sel == null) {
-            ViewAlertUtil.erreur("Suppression", "Sélectionnez une ligne dans l'aperçu.");
+            ViewAlertUtil.erreur("Suppression", "Sélectionnez une carte dans l'aperçu.");
             return;
         }
         if (!ViewAlertUtil.confirmer("Suppression", "Supprimer la disponibilité n° " + sel.getId() + " ?")) {
@@ -254,7 +237,7 @@ public class AjouterDisponibiliteViewController {
     }
 
     private void ouvrirReservation() {
-        Disponibilite sel = apercuTableView.getSelectionModel().getSelectedItem();
+        Disponibilite sel = selectionApercu;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ReserverRendezVousView.fxml"));
             Parent root = loader.load();
@@ -277,6 +260,63 @@ public class AjouterDisponibiliteViewController {
             stage.show();
         } catch (IOException e) {
             ViewAlertUtil.erreur("Interface", "Impossible d'ouvrir la réservation : " + e.getMessage());
+        }
+    }
+
+    private void renderApercuCards(List<Disponibilite> disponibilites) {
+        apercuCardsContainer.getChildren().clear();
+        selectionApercu = null;
+        if (disponibilites == null || disponibilites.isEmpty()) {
+            Label vide = new Label("Aucune disponibilité trouvée.");
+            vide.getStyleClass().add("subtitle");
+            apercuCardsContainer.getChildren().add(vide);
+            return;
+        }
+        for (Disponibilite d : disponibilites) {
+            apercuCardsContainer.getChildren().add(createApercuCard(d));
+        }
+    }
+
+    private VBox createApercuCard(Disponibilite d) {
+        Label titre = new Label("Disponibilité #" + d.getId());
+        titre.getStyleClass().add("card-title");
+        Label date = new Label("Date: " + (d.getDate() != null ? d.getDate() : "-"));
+        Label heure = new Label("Heure: "
+                + (d.getHeureDebut() != null ? d.getHeureDebut() : "-")
+                + " - "
+                + (d.getHeureFin() != null ? d.getHeureFin() : "-"));
+        Label statut = new Label("Statut: " + (d.getStatus() != null ? d.getStatus() : "-"));
+        date.getStyleClass().add("card-text");
+        heure.getStyleClass().add("card-text");
+        statut.getStyleClass().add("card-text");
+
+        VBox card = new VBox(6, titre, date, heure, statut);
+        card.setPrefWidth(230);
+        applyCardState(card, d.equals(selectionApercu));
+        card.setOnMouseClicked(e -> {
+            selectionApercu = d;
+            refreshApercuSelectionStyle();
+        });
+        return card;
+    }
+
+    private void refreshApercuSelectionStyle() {
+        for (javafx.scene.Node node : apercuCardsContainer.getChildren()) {
+            if (!(node instanceof VBox box) || box.getChildren().isEmpty()) {
+                continue;
+            }
+            boolean selected = false;
+            if (selectionApercu != null && box.getChildren().get(0) instanceof Label label) {
+                selected = label.getText().equals("Disponibilité #" + selectionApercu.getId());
+            }
+            applyCardState(box, selected);
+        }
+    }
+
+    private static void applyCardState(VBox card, boolean selected) {
+        card.getStyleClass().setAll("availability-card");
+        if (selected) {
+            card.getStyleClass().add("selected");
         }
     }
 }

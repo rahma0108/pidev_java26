@@ -9,7 +9,6 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -286,6 +285,12 @@ public class BackController implements Initializable {
 
     private void renderEventCards(ObservableList<Evenement> source) {
         eventCardsContainer.getChildren().clear();
+        if (source == null || source.isEmpty()) {
+            Label empty = new Label("Aucun événement trouvé.");
+            empty.getStyleClass().add("empty-state");
+            eventCardsContainer.getChildren().add(empty);
+            return;
+        }
         for (Evenement e : source) {
             eventCardsContainer.getChildren().add(createEventCard(e));
         }
@@ -294,29 +299,32 @@ public class BackController implements Initializable {
     private VBox createEventCard(Evenement e) {
         VBox card = new VBox(6);
         card.setPrefWidth(290);
-        card.setStyle(baseCardStyle(e == selectedEvent));
-
-        Label title = new Label(e.getTitre());
-        title.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-        Label date = new Label("Date: " + (e.getDateEvenement() != null ? e.getDateEvenement().toString() : "-"));
-        Label lieu = new Label("Lieu: " + safeText(e.getLieu()));
-        Label type = new Label("Type: " + safeText(e.getType()));
-        Label desc = new Label("Description: " + safeText(e.getDescription()));
-
-        Button select = new Button("Selectionner");
-        select.setOnAction(event -> {
+        card.getStyleClass().add(e == selectedEvent ? "event-card-selected" : "event-card");
+        card.setOnMouseClicked(event -> {
             selectedEvent = e;
             fillEventForm(e);
             loadParticipationsByEvent(e.getId());
             renderEventCards(evenementList);
         });
 
-        card.getChildren().addAll(title, date, lieu, type, desc, select);
+        Label title = new Label(e.getTitre());
+        title.getStyleClass().add("card-title");
+        Label date = new Label("Date: " + (e.getDateEvenement() != null ? e.getDateEvenement().toString() : "-"));
+        Label lieu = new Label("Lieu: " + safeText(e.getLieu()));
+        date.getStyleClass().add("card-meta");
+        lieu.getStyleClass().add("card-meta");
+        card.getChildren().addAll(title, date, lieu);
         return card;
     }
 
     private void renderParticipationCards() {
         participationCardsContainer.getChildren().clear();
+        if (participationList.isEmpty()) {
+            Label empty = new Label("Aucune participation liée à cet événement.");
+            empty.getStyleClass().add("empty-state");
+            participationCardsContainer.getChildren().add(empty);
+            return;
+        }
         for (Participation p : participationList) {
             participationCardsContainer.getChildren().add(createParticipationCard(p));
         }
@@ -325,27 +333,22 @@ public class BackController implements Initializable {
     private VBox createParticipationCard(Participation p) {
         VBox card = new VBox(6);
         card.setPrefWidth(290);
-        card.setStyle(baseCardStyle(p == selectedParticipation));
-
-        Label id = new Label("Participation #" + p.getId());
-        id.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-        Label user = new Label("User ID: " + p.getUserId());
-        Label statut = new Label("Statut: " + safeText(p.getStatut()));
-        Label date = new Label("Date: " + (p.getDateInscription() != null ? p.getDateInscription().toString() : "-"));
-
-        Button select = new Button("Selectionner");
-        select.setOnAction(event -> {
+        card.getStyleClass().add(p == selectedParticipation ? "event-card-selected" : "event-card");
+        card.setOnMouseClicked(event -> {
             selectedParticipation = p;
             renderParticipationCards();
         });
 
-        card.getChildren().addAll(id, user, statut, date, select);
+        Label id = new Label("Participation #" + p.getId());
+        id.getStyleClass().add("card-title");
+        Label user = new Label("User ID: " + p.getUserId());
+        Label statut = new Label("Statut: " + safeText(p.getStatut()));
+        Label date = new Label("Date: " + (p.getDateInscription() != null ? p.getDateInscription().toString() : "-"));
+        user.getStyleClass().add("card-meta");
+        statut.getStyleClass().add("card-meta");
+        date.getStyleClass().add("card-meta");
+        card.getChildren().addAll(id, user, statut, date);
         return card;
-    }
-
-    private String baseCardStyle(boolean selected) {
-        String border = selected ? "#1e5fcc" : "#c5d7f3";
-        return "-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: " + border + "; -fx-border-width: 2;";
     }
 
     private String safeText(String value) {

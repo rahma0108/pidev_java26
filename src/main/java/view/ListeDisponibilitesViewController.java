@@ -10,7 +10,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -26,8 +25,6 @@ import java.util.stream.Collectors;
 
 public class ListeDisponibilitesViewController {
 
-    @FXML
-    private TextField filtreMedecinTextField;
     @FXML
     private DatePicker filtreDatePicker;
     @FXML
@@ -68,13 +65,7 @@ public class ListeDisponibilitesViewController {
             return;
         }
         try {
-            List<Disponibilite> list;
-            String mid = filtreMedecinTextField.getText();
-            if (mid != null && !mid.isBlank()) {
-                list = disponibiliteController.afficherDisponibilitesMedecin(Integer.parseInt(mid.trim()));
-            } else {
-                list = disponibiliteController.afficherDisponibilites();
-            }
+            List<Disponibilite> list = disponibiliteController.afficherDisponibilites();
             LocalDate dateMin = filtreDatePicker.getValue();
             if (dateMin != null) {
                 list = list.stream()
@@ -82,8 +73,6 @@ public class ListeDisponibilitesViewController {
                         .collect(Collectors.toList());
             }
             renderCards(list);
-        } catch (NumberFormatException e) {
-            ViewAlertUtil.erreur("Filtre", "Identifiant médecin invalide (nombre entier attendu).");
         } catch (ServiceException e) {
             ViewAlertUtil.erreur("Chargement", e.formatWithCauses());
         }
@@ -96,7 +85,7 @@ public class ListeDisponibilitesViewController {
 
         if (disponibilites == null || disponibilites.isEmpty()) {
             Label vide = new Label("Aucune disponibilité trouvée.");
-            vide.setStyle("-fx-text-fill: #64748b; -fx-font-style: italic;");
+            vide.getStyleClass().add("subtitle");
             cardsFlowPane.getChildren().add(vide);
             return;
         }
@@ -109,7 +98,7 @@ public class ListeDisponibilitesViewController {
 
     private VBox createCard(Disponibilite d) {
         Label titre = new Label("Disponibilité #" + d.getId());
-        titre.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        titre.getStyleClass().add("card-title");
 
         Label date = new Label("Date: " + (d.getDate() != null ? d.getDate() : "-"));
         Label heure = new Label("Heure: "
@@ -119,14 +108,18 @@ public class ListeDisponibilitesViewController {
         Label statut = new Label("Statut: " + (d.getStatus() != null ? d.getStatus() : "-"));
         Label medecin = new Label("Médecin: "
                 + (d.getMedecin() != null && d.getMedecin().getFullName() != null ? d.getMedecin().getFullName() : "-"));
+        date.getStyleClass().add("card-text");
+        heure.getStyleClass().add("card-text");
+        statut.getStyleClass().add("card-text");
+        medecin.getStyleClass().add("card-text");
 
         HBox row = new HBox(statut);
         HBox.setHgrow(statut, Priority.ALWAYS);
 
         VBox card = new VBox(8, titre, date, heure, medecin, row);
-        card.setPadding(new Insets(12));
-        card.setPrefWidth(250);
-        card.setStyle(styleCard(false));
+        card.setPadding(new Insets(14));
+        card.setPrefWidth(280);
+        applyCardState(card, false);
 
         card.setOnMouseClicked(e -> {
             selectionCourante = d;
@@ -145,17 +138,15 @@ public class ListeDisponibilitesViewController {
             if (selectionCourante != null && box.getChildren().get(0) instanceof Label l) {
                 selected = l.getText().equals("Disponibilité #" + selectionCourante.getId());
             }
-            box.setStyle(styleCard(selected));
+            applyCardState(box, selected);
         }
     }
 
-    private String styleCard(boolean selected) {
+    private static void applyCardState(VBox card, boolean selected) {
+        card.getStyleClass().setAll("availability-card");
         if (selected) {
-            return "-fx-background-color: #dbeafe; -fx-border-color: #2563eb; -fx-border-width: 2; "
-                    + "-fx-border-radius: 10; -fx-background-radius: 10; -fx-cursor: hand;";
+            card.getStyleClass().add("selected");
         }
-        return "-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-width: 1; "
-                + "-fx-border-radius: 10; -fx-background-radius: 10; -fx-cursor: hand;";
     }
 
     private void ouvrirFenetreAjout() {

@@ -27,7 +27,7 @@ public class LoginViewController {
     }
 
     private void ouvrirEspacePatient() {
-        changerVue("/fxml/ReserverRendezVousView.fxml", "MediLink - Espace Patient", 820, 580);
+        changerVue("/fxml/ReserverRendezVousView.fxml", "MediLink - Espace Patient", 1180, 780);
     }
 
     private void changerVue(String fxmlPath, String titre, double width, double height) {
