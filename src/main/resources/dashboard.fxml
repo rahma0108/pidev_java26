@@ -3,18 +3,18 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
+<?import javafx.scene.chart.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="DashboardController"
-            prefWidth="960" prefHeight="620"
+            prefWidth="960" prefHeight="640"
             style="-fx-background-color: #f0f4f8;">
 
     <!-- SIDEBAR -->
     <left>
-        <VBox prefWidth="220" prefHeight="620"
+        <VBox prefWidth="220" prefHeight="640"
               style="-fx-background-color: #185FA5;">
 
-            <!-- Logo -->
             <VBox alignment="CENTER" style="-fx-padding: 24 16 16 16;">
                 <ImageView fitWidth="140" fitHeight="60" preserveRatio="true">
                     <image><Image url="@/logo.png"/></image>
@@ -23,7 +23,6 @@
 
             <Separator style="-fx-background-color: rgba(255,255,255,0.2);"/>
 
-            <!-- Nav -->
             <VBox spacing="4" style="-fx-padding: 16 12;">
                 <Button text="  Dashboard" onAction="#showDashboard"
                         prefWidth="196" prefHeight="42"
@@ -54,8 +53,7 @@
 
             <Region VBox.vgrow="ALWAYS"/>
 
-            <!-- User info card at bottom -->
-            <VBox style="-fx-padding: 12;">
+            <VBox style="-fx-padding: 12;" spacing="8">
                 <VBox style="-fx-background-color: rgba(255,255,255,0.15);
                              -fx-background-radius: 12; -fx-padding: 12 14;">
                     <Label fx:id="welcomeLabel" text="Welcome!"
@@ -63,11 +61,17 @@
                     <Label fx:id="roleLabel" text=""
                            style="-fx-font-size: 11px; -fx-text-fill: #aad4f5;"/>
                 </VBox>
+                <VBox style="-fx-background-color: rgba(255,255,255,0.1);
+                             -fx-background-radius: 10; -fx-padding: 10;">
+                    <Label fx:id="aiWelcomeLabel" text="Loading..."
+                           wrapText="true" maxWidth="190"
+                           style="-fx-font-size: 11px; -fx-text-fill: #cce4f7;"/>
+                </VBox>
                 <Button text="Logout" onAction="#handleLogout"
                         prefWidth="196" prefHeight="36"
                         style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white;
                                -fx-font-size: 12px; -fx-background-radius: 10;
-                               -fx-cursor: hand; -fx-border-color: transparent; -fx-margin: 8 0 0 0;"/>
+                               -fx-cursor: hand; -fx-border-color: transparent;"/>
             </VBox>
         </VBox>
     </left>
@@ -78,123 +82,110 @@
                     style="-fx-background-color: transparent; -fx-background: transparent;">
             <VBox spacing="20" style="-fx-padding: 28;">
 
-                <!-- Page title -->
                 <Label fx:id="pageTitle" text="Dashboard"
                        style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
 
-                <!-- AI Welcome -->
-                <Label fx:id="aiWelcomeLabel" text="" wrapText="true"
-                       style="-fx-font-size: 12px; -fx-text-fill: #185FA5;
-                              -fx-background-color: #E6F1FB; -fx-background-radius: 8;
-                              -fx-padding: 10 14; -fx-border-radius: 8;"/>
-
-                <!-- STAT CARDS -->
+                <!-- STAT CARDS ROW -->
                 <HBox spacing="14">
-                    <!-- Total Users -->
-                    <VBox HBox.hgrow="ALWAYS" prefHeight="100" alignment="CENTER" spacing="6"
+                    <VBox HBox.hgrow="ALWAYS" prefHeight="90" alignment="CENTER" spacing="4"
                           style="-fx-background-color: white; -fx-background-radius: 14;
                                  -fx-border-color: #e0e0e0; -fx-border-radius: 14; -fx-border-width: 0.5;">
-                        <Label text="Total Users"
-                               style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
+                        <Label text="Total Users" style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
                         <Label fx:id="totalUsersLabel" text="—"
-                               style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #185FA5;"/>
-                        <Label text="registered accounts"
-                               style="-fx-font-size: 11px; -fx-text-fill: #aaa;"/>
+                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #185FA5;"/>
                     </VBox>
-
-                    <!-- Appointments -->
-                    <VBox HBox.hgrow="ALWAYS" prefHeight="100" alignment="CENTER" spacing="6"
+                    <VBox HBox.hgrow="ALWAYS" prefHeight="90" alignment="CENTER" spacing="4"
                           style="-fx-background-color: white; -fx-background-radius: 14;
                                  -fx-border-color: #e0e0e0; -fx-border-radius: 14; -fx-border-width: 0.5;">
-                        <Label text="Appointments"
-                               style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
+                        <Label text="Appointments" style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
                         <Label fx:id="totalAppointmentsLabel" text="—"
-                               style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #0F6E56;"/>
-                        <Label text="scheduled"
-                               style="-fx-font-size: 11px; -fx-text-fill: #aaa;"/>
+                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0F6E56;"/>
                     </VBox>
-
-                    <!-- Medications -->
-                    <VBox HBox.hgrow="ALWAYS" prefHeight="100" alignment="CENTER" spacing="6"
+                    <VBox HBox.hgrow="ALWAYS" prefHeight="90" alignment="CENTER" spacing="4"
                           style="-fx-background-color: white; -fx-background-radius: 14;
                                  -fx-border-color: #e0e0e0; -fx-border-radius: 14; -fx-border-width: 0.5;">
-                        <Label text="Medications"
-                               style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
+                        <Label text="Medications" style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
                         <Label fx:id="totalMedsLabel" text="—"
-                               style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #993C1D;"/>
-                        <Label text="in stock"
-                               style="-fx-font-size: 11px; -fx-text-fill: #aaa;"/>
+                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #993C1D;"/>
                     </VBox>
-
-                    <!-- Events -->
-                    <VBox HBox.hgrow="ALWAYS" prefHeight="100" alignment="CENTER" spacing="6"
+                    <VBox HBox.hgrow="ALWAYS" prefHeight="90" alignment="CENTER" spacing="4"
                           style="-fx-background-color: white; -fx-background-radius: 14;
                                  -fx-border-color: #e0e0e0; -fx-border-radius: 14; -fx-border-width: 0.5;">
-                        <Label text="Events"
-                               style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
+                        <Label text="Events" style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
                         <Label fx:id="totalEventsLabel" text="—"
-                               style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #534AB7;"/>
-                        <Label text="upcoming"
-                               style="-fx-font-size: 11px; -fx-text-fill: #aaa;"/>
+                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #534AB7;"/>
                     </VBox>
                 </HBox>
 
-                <!-- QUICK ACTION CARDS -->
-                <Label text="Quick Actions"
-                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                <!-- CHART + QUICK ACTIONS ROW -->
                 <HBox spacing="14">
-                    <VBox HBox.hgrow="ALWAYS" prefHeight="110" alignment="CENTER" spacing="8"
-                          onMouseClicked="#showUsers"
-                          style="-fx-background-color: #E6F1FB; -fx-background-radius: 14;
-                                 -fx-border-color: #B5D4F4; -fx-border-radius: 14; -fx-border-width: 0.5;
-                                 -fx-cursor: hand;">
-                        <Label text="Manage Users"
-                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0C447C;"/>
-                        <Label text="Add, edit, delete users"
-                               style="-fx-font-size: 11px; -fx-text-fill: #185FA5;"/>
+
+                    <!-- PIE CHART CARD -->
+                    <VBox HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-color: #e0e0e0; -fx-border-radius: 14;
+                                 -fx-border-width: 0.5; -fx-padding: 16;">
+                        <Label text="Users by Role"
+                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                        <PieChart fx:id="usersPieChart"
+                                  prefHeight="220" prefWidth="300"
+                                  legendVisible="true"
+                                  labelsVisible="true"
+                                  style="-fx-background-color: transparent;"/>
                     </VBox>
-                    <VBox HBox.hgrow="ALWAYS" prefHeight="110" alignment="CENTER" spacing="8"
-                          onMouseClicked="#showAppointments"
-                          style="-fx-background-color: #E1F5EE; -fx-background-radius: 14;
-                                 -fx-border-color: #9FE1CB; -fx-border-radius: 14; -fx-border-width: 0.5;
-                                 -fx-cursor: hand;">
-                        <Label text="Appointments"
-                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #085041;"/>
-                        <Label text="View &amp; manage schedule"
-                               style="-fx-font-size: 11px; -fx-text-fill: #0F6E56;"/>
-                    </VBox>
-                    <VBox HBox.hgrow="ALWAYS" prefHeight="110" alignment="CENTER" spacing="8"
-                          onMouseClicked="#showMedications"
-                          style="-fx-background-color: #FAECE7; -fx-background-radius: 14;
-                                 -fx-border-color: #F5C4B3; -fx-border-radius: 14; -fx-border-width: 0.5;
-                                 -fx-cursor: hand;">
-                        <Label text="Medications"
-                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #712B13;"/>
-                        <Label text="Stock &amp; prescriptions"
-                               style="-fx-font-size: 11px; -fx-text-fill: #993C1D;"/>
-                    </VBox>
-                    <VBox HBox.hgrow="ALWAYS" prefHeight="110" alignment="CENTER" spacing="8"
-                          onMouseClicked="#showEvents"
-                          style="-fx-background-color: #EEEDFE; -fx-background-radius: 14;
-                                 -fx-border-color: #CECBF6; -fx-border-radius: 14; -fx-border-width: 0.5;
-                                 -fx-cursor: hand;">
-                        <Label text="Events"
-                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #26215C;"/>
-                        <Label text="Upcoming events"
-                               style="-fx-font-size: 11px; -fx-text-fill: #534AB7;"/>
+
+                    <!-- QUICK ACTIONS -->
+                    <VBox spacing="10" prefWidth="260">
+                        <Label text="Quick Actions"
+                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                        <VBox prefHeight="70" alignment="CENTER" spacing="4"
+                              onMouseClicked="#showUsers"
+                              style="-fx-background-color: #E6F1FB; -fx-background-radius: 12;
+                                     -fx-border-color: #B5D4F4; -fx-border-radius: 12;
+                                     -fx-border-width: 0.5; -fx-cursor: hand; -fx-padding: 10;">
+                            <Label text="Manage Users"
+                                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0C447C;"/>
+                            <Label text="Add, edit, delete users"
+                                   style="-fx-font-size: 11px; -fx-text-fill: #185FA5;"/>
+                        </VBox>
+                        <VBox prefHeight="70" alignment="CENTER" spacing="4"
+                              onMouseClicked="#showAppointments"
+                              style="-fx-background-color: #E1F5EE; -fx-background-radius: 12;
+                                     -fx-border-color: #9FE1CB; -fx-border-radius: 12;
+                                     -fx-border-width: 0.5; -fx-cursor: hand; -fx-padding: 10;">
+                            <Label text="Appointments"
+                                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #085041;"/>
+                            <Label text="View and manage schedule"
+                                   style="-fx-font-size: 11px; -fx-text-fill: #0F6E56;"/>
+                        </VBox>
+                        <VBox prefHeight="70" alignment="CENTER" spacing="4"
+                              onMouseClicked="#showMedications"
+                              style="-fx-background-color: #FAECE7; -fx-background-radius: 12;
+                                     -fx-border-color: #F5C4B3; -fx-border-radius: 12;
+                                     -fx-border-width: 0.5; -fx-cursor: hand; -fx-padding: 10;">
+                            <Label text="Medications"
+                                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #712B13;"/>
+                            <Label text="Stock and prescriptions"
+                                   style="-fx-font-size: 11px; -fx-text-fill: #993C1D;"/>
+                        </VBox>
                     </VBox>
                 </HBox>
 
-                <!-- RECENT USERS — Futuristic Panel -->
-                <HBox alignment="CENTER_LEFT" spacing="8">
-                    <Label text="●" style="-fx-font-size: 9px; -fx-text-fill: #00e5a0;"/>
-                    <Label text="LIVE  ·  Recent Users"
-                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e; -fx-letter-spacing: 0.5;"/>
-                </HBox>
-                <VBox fx:id="recentUsersContainer"
-                      style="-fx-background-color: #0b1622; -fx-background-radius: 16;
-                             -fx-border-color: #1e3a5f; -fx-border-radius: 16; -fx-border-width: 1;
-                             -fx-effect: dropshadow(gaussian, rgba(0,100,255,0.08), 18, 0, 0, 4);"/>
+                <!-- RECENT USERS TABLE -->
+                <Label text="Recent Users"
+                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                <VBox style="-fx-background-color: white; -fx-background-radius: 14;
+                             -fx-border-color: #e0e0e0; -fx-border-radius: 14; -fx-border-width: 0.5;">
+                    <TableView fx:id="recentUsersTable" prefHeight="180"
+                               style="-fx-background-color: transparent;">
+                        <columns>
+                            <TableColumn fx:id="nameCol"   text="Full Name" prefWidth="200"/>
+                            <TableColumn fx:id="emailCol"  text="Email"     prefWidth="230"/>
+                            <TableColumn fx:id="rolesCol"  text="Role"      prefWidth="150"/>
+                            <TableColumn fx:id="statusCol" text="Status"    prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                </VBox>
 
             </VBox>
         </ScrollPane>
