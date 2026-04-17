@@ -111,7 +111,12 @@
             <Label fx:id="messageLabel" text="" wrapText="true"
                    style="-fx-font-size: 12px;"/>
 
-            <Button text="Create Account" onAction="#handleRegister"
+            <Label fx:id="aiSuggestionLabel" text="" wrapText="true"
+                   style="-fx-font-size: 12px; -fx-text-fill: #0F6E56;
+                          -fx-background-color: #E1F5EE; -fx-background-radius: 8;
+                          -fx-padding: 8 12; -fx-border-radius: 8;"/>
+
+            <Button fx:id="registerBtn" text="Create Account" onAction="#handleRegister"
                     prefWidth="276" prefHeight="42"
                     style="-fx-background-color: #0F6E56; -fx-text-fill: white;
                            -fx-font-size: 14px; -fx-font-weight: bold;
