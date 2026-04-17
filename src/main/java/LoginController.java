@@ -36,14 +36,16 @@ public class LoginController {
         User user = us.login(email, password);
 
         if (user != null) {
-            DashboardController.setLoggedInUser(user);
-            try {
-                Parent root = FXMLLoader.load(getClass().getResource("/dashboard.fxml"));
-                emailField.getScene().setRoot(root);
-                ThemeManager.apply(emailField.getScene());
-            } catch (Exception e) {
-                showMessage("Could not load dashboard.", "red");
-                e.printStackTrace();
+            String roles = user.getRoles() != null ? user.getRoles() : "";
+
+            if (roles.contains("ROLE_ADMIN") || roles.contains("ROLE_MEDECIN")) {
+                // ── ADMIN / DOCTOR → Dashboard ──
+                DashboardController.setLoggedInUser(user);
+                navigateTo("/dashboard.fxml");
+            } else {
+                // ── SIMPLE USER → Patient Home ──
+                HomeController.setUser(user);
+                navigateTo("/home.fxml");
             }
         } else {
             showMessage("Invalid email or password.", "red");
@@ -58,6 +60,17 @@ public class LoginController {
             ThemeManager.apply(emailField.getScene());
         } catch (Exception e) {
             System.err.println("Navigation error: " + e.getMessage());
+        }
+    }
+
+    private void navigateTo(String fxml) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxml));
+            emailField.getScene().setRoot(root);
+            ThemeManager.apply(emailField.getScene());
+        } catch (Exception e) {
+            showMessage("Could not load page.", "red");
+            e.printStackTrace();
         }
     }
 
