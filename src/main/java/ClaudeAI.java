@@ -5,14 +5,20 @@ import java.util.*;
 
 public class ClaudeAI {
 
-    private static final String API_URL = "https://api.anthropic.com/v1/messages";
+    private static final String API_URL = "https://api.openai.com/v1/chat/completions";
     private static String API_KEY = loadApiKey();
 
     private static String loadApiKey() {
         try {
             java.util.Properties props = new java.util.Properties();
-            props.load(ClaudeAI.class.getResourceAsStream("/config.properties"));
-            return props.getProperty("openai.api.key");
+            var stream = ClaudeAI.class.getResourceAsStream("/config.properties");
+            if (stream == null) {
+                System.err.println("config.properties NOT FOUND in resources!");
+                return "";
+            }
+            props.load(stream);
+            String key = props.getProperty("openai.api.key");
+            return key;
         } catch (Exception e) {
             System.err.println("Could not load API key: " + e.getMessage());
             return "";
@@ -26,40 +32,55 @@ public class ClaudeAI {
         try {
             HttpClient client = HttpClient.newHttpClient();
 
-            JsonObject body = new JsonObject();
-            body.addProperty("model", "claude-sonnet-4-20250514");
-            body.addProperty("max_tokens", 1024);
+            JsonArray messages = new JsonArray();
 
             if (systemPrompt != null && !systemPrompt.isEmpty()) {
-                body.addProperty("system", systemPrompt);
+                JsonObject sysMsg = new JsonObject();
+                sysMsg.addProperty("role", "system");
+                sysMsg.addProperty("content", systemPrompt);
+                messages.add(sysMsg);
             }
 
-            JsonArray messages = new JsonArray();
             JsonObject userMsg = new JsonObject();
             userMsg.addProperty("role", "user");
             userMsg.addProperty("content", userMessage);
             messages.add(userMsg);
+
+            JsonObject body = new JsonObject();
+            body.addProperty("model", "gpt-4o");
+            body.addProperty("max_tokens", 300);
             body.add("messages", messages);
 
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_URL))
-                .header("Content-Type", "application/json")
-                .header("x-api-key", API_KEY)
-                .header("anthropic-version", "2023-06-01")
-                .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
-                .build();
+                    .uri(URI.create(API_URL))
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + API_KEY)
+                    .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
+                    .build();
 
             HttpResponse<String> response = client.send(request,
-                HttpResponse.BodyHandlers.ofString());
+                    HttpResponse.BodyHandlers.ofString());
+
+            // Print full response for debugging
+
 
             JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
-            JsonArray content = json.getAsJsonArray("content");
-            if (content != null && content.size() > 0) {
-                return content.get(0).getAsJsonObject()
-                    .get("text").getAsString().trim();
+
+            if (json.has("error")) {
+                System.err.println("OpenAI error: " +
+                        json.getAsJsonObject("error").get("message").getAsString());
+                return "AI unavailable at the moment.";
             }
+
+            JsonArray choices = json.getAsJsonArray("choices");
+            if (choices != null && choices.size() > 0) {
+                return choices.get(0).getAsJsonObject()
+                        .getAsJsonObject("message")
+                        .get("content").getAsString().trim();
+            }
+
         } catch (Exception e) {
-            System.err.println("Claude API error: " + e.getMessage());
+            e.printStackTrace();
         }
         return "AI unavailable at the moment.";
     }
