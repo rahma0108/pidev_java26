@@ -20,7 +20,7 @@
         <!-- TOP BAR -->
         <HBox alignment="CENTER_LEFT" prefWidth="1000"
               style="-fx-padding: 20 32; -fx-background-color: transparent;">
-            <ImageView fitWidth="130" fitHeight="55" preserveRatio="true">
+            <ImageView fx:id="logoImage" fitWidth="130" fitHeight="55" preserveRatio="true">
                 <image><Image url="@/logo.png"/></image>
             </ImageView>
             <Region HBox.hgrow="ALWAYS"/>

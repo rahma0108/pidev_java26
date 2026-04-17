@@ -4,6 +4,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.canvas.*;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
@@ -21,6 +23,7 @@ public class LandingController {
     @FXML private Label counter3;
     @FXML private Label counter4;
     @FXML private Button themeToggleBtn;
+    @FXML private ImageView logoImage;
 
     private final Random rand = new Random();
     private final List<Particle> particles = new ArrayList<>();
@@ -53,6 +56,7 @@ public class LandingController {
     @FXML
     public void initialize() {
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
+        applyLogo();
 
         double w = animCanvas.getWidth();
         double h = animCanvas.getHeight();
@@ -173,6 +177,14 @@ public class LandingController {
         isDarkBg = !isDarkBg;
         ThemeManager.toggle(themeToggleBtn.getScene());
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
+        applyLogo();
+    }
+
+    private void applyLogo() {
+        if (logoImage == null) return;
+        String res = ThemeManager.isDark() ? "/logo2.png" : "/logo.png";
+        var url = getClass().getResource(res);
+        if (url != null) logoImage.setImage(new Image(url.toExternalForm()));
     }
 
     @FXML

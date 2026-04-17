@@ -10,10 +10,10 @@ public class ThemeManager {
         "-fx-control-inner-background: white;";
 
     private static final String DARK_STYLE =
-        "-fx-base: #1a1a2e;" +
-        "-fx-background: #1a1a2e;" +
+        "-fx-base: #0f1626;" +
+        "-fx-background: #0f1626;" +
         "-fx-control-inner-background: #16213e;" +
-        "-fx-text-fill: white;";
+        "-fx-accent: #185FA5;";
 
     public static boolean isDark() {
         return isDark;

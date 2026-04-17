@@ -5,6 +5,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.canvas.*;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
@@ -27,6 +29,7 @@ public class HomeController {
     @FXML private Label ordCount;
     @FXML private Label eventCount;
     @FXML private Button themeToggleBtn;
+    @FXML private ImageView logoImage;
 
     @FXML private VBox cardRdv;
     @FXML private VBox cardMed;
@@ -45,6 +48,7 @@ public class HomeController {
     @FXML
     public void initialize() {
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
+        applyLogo();
 
         if (loggedInUser != null) {
             greetingLabel.setText("Hello, " + loggedInUser.getFullName().split(" ")[0] + "!");
@@ -204,6 +208,14 @@ public class HomeController {
     public void toggleTheme() {
         ThemeManager.toggle(themeToggleBtn.getScene());
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
+        applyLogo();
+    }
+
+    private void applyLogo() {
+        if (logoImage == null) return;
+        String res = ThemeManager.isDark() ? "/logo2.png" : "/logo.png";
+        var url = getClass().getResource(res);
+        if (url != null) logoImage.setImage(new Image(url.toExternalForm()));
     }
 
     private void stopAnimation() {

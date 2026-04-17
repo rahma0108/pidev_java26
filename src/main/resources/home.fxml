@@ -22,7 +22,7 @@
                      -fx-background-color: rgba(5,13,26,0.85);
                      -fx-border-color: rgba(24,95,165,0.2);
                      -fx-border-width: 0 0 1 0;">
-            <ImageView fitWidth="110" fitHeight="46" preserveRatio="true">
+            <ImageView fx:id="logoImage" fitWidth="110" fitHeight="46" preserveRatio="true">
                 <image><Image url="@/logo.png"/></image>
             </ImageView>
             <Region HBox.hgrow="ALWAYS"/>

@@ -10,7 +10,7 @@
 
     <!-- TOP BAR -->
     <top>
-        <VBox style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+        <VBox fx:id="topBar" style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
             <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 14 24 10 24;">
                 <Label text="User Management"
                        style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
@@ -60,7 +60,7 @@
             </ScrollPane>
 
             <!-- SIDE PANEL — AI PROFILE ONLY -->
-            <VBox prefWidth="280" spacing="14"
+            <VBox fx:id="sidePanel" prefWidth="280" spacing="14"
                   style="-fx-background-color: white; -fx-padding: 24;
                          -fx-border-color: #e0e0e0; -fx-border-width: 0 0 0 1;">
 
@@ -74,7 +74,7 @@
                 <Separator/>
 
                 <!-- AI result box -->
-                <VBox style="-fx-background-color: #EEEDFE; -fx-background-radius: 10;
+                <VBox fx:id="aiBox" style="-fx-background-color: #EEEDFE; -fx-background-radius: 10;
                              -fx-border-color: #CECBF6; -fx-border-radius: 10; -fx-border-width: 0.5;
                              -fx-padding: 14;">
                     <Label fx:id="aiNameLabel" text=""
@@ -87,7 +87,7 @@
                 <Region VBox.vgrow="ALWAYS"/>
 
                 <!-- Stats -->
-                <VBox spacing="8"
+                <VBox fx:id="statsBox" spacing="8"
                       style="-fx-background-color: #f8f8f8; -fx-background-radius: 10;
                              -fx-padding: 14; -fx-border-color: #e0e0e0;
                              -fx-border-radius: 10; -fx-border-width: 0.5;">

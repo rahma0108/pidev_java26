@@ -23,12 +23,45 @@ public class UserListController {
     @FXML private Label activeUsersStatLabel;
     @FXML private Label adminStatLabel;
     @FXML private Label medecinStatLabel;
+    @FXML private VBox topBar;
+    @FXML private VBox sidePanel;
+    @FXML private VBox aiBox;
+    @FXML private VBox statsBox;
 
     private UserService userService = new UserService();
 
     @FXML
     public void initialize() {
+        applyTheme();
         loadCards(null);
+    }
+
+    private void applyTheme() {
+        boolean dark = ThemeManager.isDark();
+        String panelBg    = dark ? "#1a2540" : "white";
+        String panelBorder = dark ? "#2a3a5a" : "#e0e0e0";
+
+        if (topBar != null)
+            topBar.setStyle("-fx-background-color: " + panelBg + "; " +
+                    "-fx-border-color: " + panelBorder + "; -fx-border-width: 0 0 1 0;");
+
+        if (sidePanel != null)
+            sidePanel.setStyle("-fx-background-color: " + panelBg + "; -fx-padding: 24; " +
+                    "-fx-border-color: " + panelBorder + "; -fx-border-width: 0 0 0 1;");
+
+        if (aiBox != null)
+            aiBox.setStyle(dark
+                ? "-fx-background-color: rgba(83,74,183,0.2); -fx-background-radius: 10; " +
+                  "-fx-border-color: rgba(83,74,183,0.4); -fx-border-radius: 10; -fx-border-width: 0.5; -fx-padding: 14;"
+                : "-fx-background-color: #EEEDFE; -fx-background-radius: 10; " +
+                  "-fx-border-color: #CECBF6; -fx-border-radius: 10; -fx-border-width: 0.5; -fx-padding: 14;");
+
+        if (statsBox != null)
+            statsBox.setStyle(dark
+                ? "-fx-background-color: #16213e; -fx-background-radius: 10; " +
+                  "-fx-padding: 14; -fx-border-color: #2a3a5a; -fx-border-radius: 10; -fx-border-width: 0.5;"
+                : "-fx-background-color: #f8f8f8; -fx-background-radius: 10; " +
+                  "-fx-padding: 14; -fx-border-color: #e0e0e0; -fx-border-radius: 10; -fx-border-width: 0.5;");
     }
 
     private void loadCards(String filter) {
@@ -281,11 +314,15 @@ public class UserListController {
 
     // ── CREATE CARD ──
     private VBox createCard(User user) {
+        boolean dark = ThemeManager.isDark();
         VBox card = new VBox(10);
         card.setPrefWidth(240);
         card.setPadding(new Insets(16));
-        card.setStyle("-fx-background-color: white; -fx-border-color: #e0e0e0; " +
-                "-fx-border-width: 0.5; -fx-border-radius: 12; -fx-background-radius: 12;");
+        card.setStyle(dark
+            ? "-fx-background-color: #1a2540; -fx-border-color: #2a3a5a; " +
+              "-fx-border-width: 0.5; -fx-border-radius: 12; -fx-background-radius: 12;"
+            : "-fx-background-color: white; -fx-border-color: #e0e0e0; " +
+              "-fx-border-width: 0.5; -fx-border-radius: 12; -fx-background-radius: 12;");
 
         HBox header = new HBox(12);
         header.setAlignment(Pos.CENTER_LEFT);
@@ -361,7 +398,8 @@ private StackPane makeAvatar(User user, double radius) {
 private VBox makeNameBox(User user) {
     VBox box = new VBox(2);
     Label name = new Label(user.getFullName());
-    name.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;");
+    name.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: "
+            + (ThemeManager.isDark() ? "#e0e0e0" : "#1a1a2e") + ";");
     Label email = new Label(user.getEmail());
     email.setStyle("-fx-font-size: 11px; -fx-text-fill: #888;");
     email.setMaxWidth(160);
