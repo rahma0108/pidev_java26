@@ -1,6 +1,4 @@
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -20,13 +18,8 @@ public class DashboardController {
     @FXML private Label totalEventsLabel;
     @FXML private Label aiWelcomeLabel;
 
-    @FXML private PieChart usersPieChart;
-
-    @FXML private TableView<User> recentUsersTable;
-    @FXML private TableColumn<User, String> nameCol;
-    @FXML private TableColumn<User, String> emailCol;
-    @FXML private TableColumn<User, String> rolesCol;
-    @FXML private TableColumn<User, String> statusCol;
+    @FXML private PieChart rolesPieChart;
+    @FXML private PieChart statusPieChart;
 
     private static User loggedInUser;
 
@@ -45,25 +38,16 @@ public class DashboardController {
             roleLabel.setText(role);
 
             // AI welcome message
-            aiWelcomeLabel.setText("Loading your personalized message...");
+            aiWelcomeLabel.setText("Loading...");
             new Thread(() -> {
                 String system = "You are a friendly assistant for MediLink medical platform. " +
-                        "Write a short personalized welcome message (max 2 sentences) " +
-                        "based on the user role. Be professional and warm. " +
-                        "For ADMIN: mention managing the platform. " +
-                        "For ROLE_MEDECIN: mention their patients. " +
-                        "For ROLE_USER: mention their health journey. " +
+                        "Write a short personalized welcome (max 2 sentences) based on role. " +
                         "Always reply in English.";
                 String prompt = "Name: " + loggedInUser.getFullName() + "\nRole: " + role;
                 String reply  = ClaudeAI.ask(system, prompt);
                 Platform.runLater(() -> aiWelcomeLabel.setText(reply));
             }).start();
         }
-
-        nameCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getFullName()));
-        emailCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEmail()));
-        rolesCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getRoles()));
-        statusCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getStatus()));
 
         loadStats();
     }
@@ -72,44 +56,52 @@ public class DashboardController {
         UserService us = new UserService();
         List<User> users = us.getAll();
 
-        // Count by role
+        // Role counts
         long admins   = users.stream().filter(u -> u.getRoles() != null && u.getRoles().contains("ROLE_ADMIN")).count();
         long medecins = users.stream().filter(u -> u.getRoles() != null && u.getRoles().contains("ROLE_MEDECIN")).count();
-        long patients = users.stream().filter(u -> u.getRoles() != null && u.getRoles().contains("ROLE_USER") && !u.getRoles().contains("ROLE_MEDECIN") && !u.getRoles().contains("ROLE_ADMIN")).count();
+        long patients = users.stream().filter(u -> u.getRoles() != null
+                && !u.getRoles().contains("ROLE_ADMIN")
+                && !u.getRoles().contains("ROLE_MEDECIN")).count();
 
-        // Count by status
+        // Status counts
         long active   = users.stream().filter(u -> "ACTIVE".equalsIgnoreCase(u.getStatus())).count();
-        long inactive = users.stream().filter(u -> "INACTIVE".equalsIgnoreCase(u.getStatus())).count();
+        long inactive = users.stream().filter(u -> !"ACTIVE".equalsIgnoreCase(u.getStatus())).count();
 
-        // Update stat cards
+        // Stat cards
         totalUsersLabel.setText(String.valueOf(users.size()));
         totalAppointmentsLabel.setText("—");
         totalMedsLabel.setText("—");
         totalEventsLabel.setText("3");
 
-        // Update pie chart
-        usersPieChart.getData().clear();
+        // ── CHART 1: Roles ──
+        rolesPieChart.getData().clear();
+        if (admins > 0)   rolesPieChart.getData().add(new PieChart.Data("Admins ("   + admins   + ")", admins));
+        if (medecins > 0) rolesPieChart.getData().add(new PieChart.Data("Doctors ("  + medecins + ")", medecins));
+        if (patients > 0) rolesPieChart.getData().add(new PieChart.Data("Patients (" + patients + ")", patients));
 
-        PieChart.Data adminSlice   = new PieChart.Data("Admins (" + admins + ")", admins > 0 ? admins : 0.01);
-        PieChart.Data medecinSlice = new PieChart.Data("Doctors (" + medecins + ")", medecins > 0 ? medecins : 0.01);
-        PieChart.Data patientSlice = new PieChart.Data("Patients (" + patients + ")", patients > 0 ? patients : 0.01);
-        PieChart.Data activeSlice  = new PieChart.Data("Active (" + active + ")", active > 0 ? active : 0.01);
-        PieChart.Data inactiveSlice= new PieChart.Data("Inactive (" + inactive + ")", inactive > 0 ? inactive : 0.01);
+        // ── CHART 2: Status ──
+        statusPieChart.getData().clear();
+        if (active > 0)   statusPieChart.getData().add(new PieChart.Data("Active ("   + active   + ")", active));
+        if (inactive > 0) statusPieChart.getData().add(new PieChart.Data("Inactive (" + inactive + ")", inactive));
 
-        usersPieChart.getData().addAll(adminSlice, medecinSlice, patientSlice, activeSlice, inactiveSlice);
-
-        // Apply colors after adding to chart
+        // Apply colors after rendering
         Platform.runLater(() -> {
-            String[] colors = {"#185FA5", "#0F6E56", "#534AB7", "#1D9E75", "#c0392b"};
-            for (int i = 0; i < usersPieChart.getData().size(); i++) {
-                PieChart.Data slice = usersPieChart.getData().get(i);
-                if (slice.getNode() != null) {
-                    slice.getNode().setStyle("-fx-pie-color: " + colors[i] + ";");
-                }
+            // Roles chart colors
+            String[] roleColors = {"#185FA5", "#0F6E56", "#534AB7"};
+            for (int i = 0; i < rolesPieChart.getData().size(); i++) {
+                PieChart.Data slice = rolesPieChart.getData().get(i);
+                if (slice.getNode() != null)
+                    slice.getNode().setStyle("-fx-pie-color: " + roleColors[i % roleColors.length] + ";");
+            }
+
+            // Status chart colors
+            String[] statusColors = {"#1D9E75", "#E24B4A"};
+            for (int i = 0; i < statusPieChart.getData().size(); i++) {
+                PieChart.Data slice = statusPieChart.getData().get(i);
+                if (slice.getNode() != null)
+                    slice.getNode().setStyle("-fx-pie-color: " + statusColors[i % statusColors.length] + ";");
             }
         });
-
-        recentUsersTable.setItems(FXCollections.observableArrayList(users));
     }
 
     @FXML public void showDashboard()    { pageTitle.setText("Dashboard"); loadStats(); }
