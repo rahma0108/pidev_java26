@@ -18,11 +18,12 @@
         </ImageView>
 
         <Label text="Your Health, Our Priority"
-               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white; -fx-wrap-text: true; -fx-text-alignment: center;"/>
+               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;
+                      -fx-wrap-text: true; -fx-text-alignment: center;"/>
         <Label text="Connect with doctors, manage appointments and medications all in one place."
-               style="-fx-font-size: 13px; -fx-text-fill: #aad4f5; -fx-wrap-text: true; -fx-text-alignment: center;"/>
+               style="-fx-font-size: 13px; -fx-text-fill: #aad4f5;
+                      -fx-wrap-text: true; -fx-text-alignment: center;"/>
 
-        <!-- Stats cards -->
         <HBox spacing="12" alignment="CENTER" style="-fx-padding: 20 0 0 0;">
             <VBox alignment="CENTER" prefWidth="110" prefHeight="80"
                   style="-fx-background-color: rgba(255,255,255,0.15); -fx-background-radius: 12; -fx-padding: 12;">
@@ -42,7 +43,7 @@
         </HBox>
     </VBox>
 
-    <!-- RIGHT PANEL — LOGIN CARD -->
+    <!-- RIGHT PANEL -->
     <VBox HBox.hgrow="ALWAYS" alignment="CENTER"
           style="-fx-background-color: #f0f4f8; -fx-padding: 40;">
 
@@ -50,6 +51,13 @@
               style="-fx-background-color: white; -fx-padding: 36 32;
                      -fx-background-radius: 16; -fx-border-radius: 16;
                      -fx-border-color: #e0e0e0; -fx-border-width: 0.5;">
+
+            <!-- Theme toggle top right -->
+            <HBox alignment="CENTER_RIGHT">
+                <Button fx:id="themeToggleBtn" text="🌙" onAction="#toggleTheme"
+                        style="-fx-background-color: transparent; -fx-font-size: 18px;
+                               -fx-cursor: hand; -fx-border-color: transparent; -fx-padding: 0;"/>
+            </HBox>
 
             <Label text="Welcome back"
                    style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
@@ -61,7 +69,7 @@
                 <TextField fx:id="emailField" promptText="you@example.com"
                            prefHeight="40" prefWidth="276"
                            style="-fx-background-radius: 8; -fx-border-radius: 8;
-                                  -fx-border-color: #ddd; -fx-font-size: 13px; -fx-padding: 0 12;"/>
+                                  -fx-border-color: #ddd; -fx-font-size: 13px;"/>
             </VBox>
 
             <VBox spacing="5">
@@ -69,7 +77,7 @@
                 <PasswordField fx:id="passwordField" promptText="••••••••"
                                prefHeight="40" prefWidth="276"
                                style="-fx-background-radius: 8; -fx-border-radius: 8;
-                                      -fx-border-color: #ddd; -fx-font-size: 13px; -fx-padding: 0 12;"/>
+                                      -fx-border-color: #ddd; -fx-font-size: 13px;"/>
             </VBox>
 
             <Label fx:id="errorLabel" text="" wrapText="true"
@@ -85,9 +93,7 @@
 
             <Label text="Don't have an account? Register here"
                    onMouseClicked="#goToRegister"
-                   style="-fx-font-size: 12px; -fx-text-fill: #185FA5;
-                          -fx-cursor: hand; -fx-alignment: CENTER;"
-                   maxWidth="276"/>
+                   style="-fx-font-size: 12px; -fx-text-fill: #185FA5; -fx-cursor: hand;"/>
         </VBox>
     </VBox>
 </HBox>

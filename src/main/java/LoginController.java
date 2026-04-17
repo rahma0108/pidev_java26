@@ -8,10 +8,23 @@ public class LoginController {
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
+    @FXML private Button themeToggleBtn;
+
+    @FXML
+    public void initialize() {
+        themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
+        ThemeManager.apply(themeToggleBtn.getScene());
+    }
+
+    @FXML
+    public void toggleTheme() {
+        ThemeManager.toggle(themeToggleBtn.getScene());
+        themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
+    }
 
     @FXML
     public void handleLogin() {
-        String email = emailField.getText().trim();
+        String email    = emailField.getText().trim();
         String password = passwordField.getText().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
@@ -27,6 +40,7 @@ public class LoginController {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/dashboard.fxml"));
                 emailField.getScene().setRoot(root);
+                ThemeManager.apply(emailField.getScene());
             } catch (Exception e) {
                 showMessage("Could not load dashboard.", "red");
                 e.printStackTrace();
@@ -41,8 +55,9 @@ public class LoginController {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/register.fxml"));
             emailField.getScene().setRoot(root);
+            ThemeManager.apply(emailField.getScene());
         } catch (Exception e) {
-            System.err.println("Cannot open register: " + e.getMessage());
+            System.err.println("Navigation error: " + e.getMessage());
         }
     }
 

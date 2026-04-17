@@ -23,6 +23,7 @@
                         style="-fx-background-color: #185FA5; -fx-text-fill: white;
                                -fx-background-radius: 8; -fx-cursor: hand;
                                -fx-border-color: transparent; -fx-padding: 8 16;"/>
+
             </HBox>
 
             <!-- AI SEARCH BAR -->
