@@ -11,6 +11,17 @@ public class LoginController {
     @FXML private Button themeToggleBtn;
 
     @FXML
+    public void goToLanding() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/landing.fxml"));
+            emailField.getScene().setRoot(root);
+            ThemeManager.apply(emailField.getScene());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
     public void initialize() {
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
         ThemeManager.apply(themeToggleBtn.getScene());

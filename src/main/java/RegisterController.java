@@ -139,4 +139,14 @@ public class RegisterController {
         messageLabel.setStyle("-fx-text-fill: " + color + ";");
         messageLabel.setText(msg);
     }
+    @FXML
+    public void goToLanding() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/landing.fxml"));
+            nameField.getScene().setRoot(root);
+            ThemeManager.apply(nameField.getScene());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
