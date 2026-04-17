@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.canvas.*?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="LandingController"
+           prefWidth="1000" prefHeight="650"
+           style="-fx-background-color: #050d1a;">
+
+    <!-- Animated canvas background -->
+    <Canvas fx:id="animCanvas" width="1000" height="650"/>
+
+    <!-- Content overlay -->
+    <VBox alignment="CENTER" spacing="0"
+          style="-fx-padding: 0;">
+
+        <!-- TOP BAR -->
+        <HBox alignment="CENTER_LEFT" prefWidth="1000"
+              style="-fx-padding: 20 32; -fx-background-color: transparent;">
+            <ImageView fitWidth="130" fitHeight="55" preserveRatio="true">
+                <image><Image url="@/logo.png"/></image>
+            </ImageView>
+            <Region HBox.hgrow="ALWAYS"/>
+            <!-- Nav links -->
+            <HBox spacing="24" alignment="CENTER" style="-fx-padding: 0 24 0 0;">
+                <Label text="Home"
+                       style="-fx-text-fill: white; -fx-font-size: 13px; -fx-cursor: hand;"/>
+                <Label text="Features"
+                       style="-fx-text-fill: #aad4f5; -fx-font-size: 13px; -fx-cursor: hand;"/>
+                <Label text="About"
+                       style="-fx-text-fill: #aad4f5; -fx-font-size: 13px; -fx-cursor: hand;"/>
+            </HBox>
+            <!-- Theme toggle -->
+            <Button fx:id="themeToggleBtn" text="🌙" onAction="#toggleTheme"
+                    style="-fx-background-color: rgba(255,255,255,0.1);
+                           -fx-text-fill: white; -fx-font-size: 16px;
+                           -fx-cursor: hand; -fx-border-color: transparent;
+                           -fx-background-radius: 20; -fx-padding: 6 12;"/>
+        </HBox>
+
+        <!-- HERO SECTION -->
+        <VBox alignment="CENTER" spacing="20" VBox.vgrow="ALWAYS"
+              style="-fx-padding: 40 80;">
+
+            <!-- Badge -->
+            <HBox alignment="CENTER">
+                <Label text="✦  Next Generation Medical Platform"
+                       style="-fx-background-color: rgba(24,95,165,0.3);
+                              -fx-text-fill: #7fc4fd;
+                              -fx-font-size: 12px; -fx-font-weight: bold;
+                              -fx-padding: 6 16; -fx-background-radius: 20;
+                              -fx-border-color: rgba(24,95,165,0.5);
+                              -fx-border-radius: 20; -fx-border-width: 1;"/>
+            </HBox>
+
+            <!-- Main title -->
+            <Label fx:id="titleLabel" text="MediLink Care"
+                   style="-fx-font-size: 64px; -fx-font-weight: bold;
+                          -fx-text-fill: white; -fx-text-alignment: center;"/>
+
+            <!-- Animated subtitle -->
+            <Label fx:id="subtitleLabel" text="Connecting patients with doctors"
+                   style="-fx-font-size: 20px; -fx-text-fill: #7fc4fd;
+                          -fx-text-alignment: center;"/>
+
+            <Label text="Experience healthcare reimagined. Manage appointments,\nprescriptions and your health journey — all in one place."
+                   style="-fx-font-size: 14px; -fx-text-fill: #8899aa;
+                          -fx-text-alignment: center; -fx-wrap-text: true;"
+                   maxWidth="500"/>
+
+            <!-- CTA Buttons -->
+            <HBox spacing="16" alignment="CENTER" style="-fx-padding: 16 0 0 0;">
+                <Button text="Get Started →" onAction="#goToLogin"
+                        prefWidth="160" prefHeight="46"
+                        style="-fx-background-color: #185FA5;
+                               -fx-text-fill: white; -fx-font-size: 14px;
+                               -fx-font-weight: bold; -fx-background-radius: 12;
+                               -fx-cursor: hand; -fx-border-color: transparent;"/>
+                <Button text="Create Account" onAction="#goToRegister"
+                        prefWidth="160" prefHeight="46"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: white; -fx-font-size: 14px;
+                               -fx-background-radius: 12; -fx-cursor: hand;
+                               -fx-border-color: rgba(255,255,255,0.3);
+                               -fx-border-width: 1; -fx-border-radius: 12;"/>
+            </HBox>
+
+            <!-- Stats row -->
+            <HBox spacing="40" alignment="CENTER" style="-fx-padding: 32 0 0 0;">
+                <VBox alignment="CENTER" spacing="4">
+                    <Label fx:id="counter1" text="0"
+                           style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                    <Label text="Patients"
+                           style="-fx-font-size: 12px; -fx-text-fill: #667788;"/>
+                </VBox>
+                <Label text="|" style="-fx-text-fill: #223344; -fx-font-size: 32px;"/>
+                <VBox alignment="CENTER" spacing="4">
+                    <Label fx:id="counter2" text="0"
+                           style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                    <Label text="Doctors"
+                           style="-fx-font-size: 12px; -fx-text-fill: #667788;"/>
+                </VBox>
+                <Label text="|" style="-fx-text-fill: #223344; -fx-font-size: 32px;"/>
+                <VBox alignment="CENTER" spacing="4">
+                    <Label fx:id="counter3" text="0"
+                           style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                    <Label text="Appointments"
+                           style="-fx-font-size: 12px; -fx-text-fill: #667788;"/>
+                </VBox>
+                <Label text="|" style="-fx-text-fill: #223344; -fx-font-size: 32px;"/>
+                <VBox alignment="CENTER" spacing="4">
+                    <Label fx:id="counter4" text="0"
+                           style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                    <Label text="Medications"
+                           style="-fx-font-size: 12px; -fx-text-fill: #667788;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- FEATURE CARDS ROW -->
+        <HBox spacing="16" alignment="CENTER"
+              style="-fx-padding: 0 40 40 40;">
+            <VBox alignment="CENTER" spacing="8" prefWidth="200" prefHeight="100"
+                  style="-fx-background-color: rgba(24,95,165,0.15);
+                         -fx-background-radius: 14; -fx-padding: 18;
+                         -fx-border-color: rgba(24,95,165,0.3);
+                         -fx-border-radius: 14; -fx-border-width: 1;">
+                <Label text="🏥" style="-fx-font-size: 24px;"/>
+                <Label text="Smart Appointments"
+                       style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="Book in seconds"
+                       style="-fx-font-size: 11px; -fx-text-fill: #667788;"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="8" prefWidth="200" prefHeight="100"
+                  style="-fx-background-color: rgba(15,110,86,0.15);
+                         -fx-background-radius: 14; -fx-padding: 18;
+                         -fx-border-color: rgba(15,110,86,0.3);
+                         -fx-border-radius: 14; -fx-border-width: 1;">
+                <Label text="💊" style="-fx-font-size: 24px;"/>
+                <Label text="Medication Tracker"
+                       style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="Never miss a dose"
+                       style="-fx-font-size: 11px; -fx-text-fill: #667788;"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="8" prefWidth="200" prefHeight="100"
+                  style="-fx-background-color: rgba(83,74,183,0.15);
+                         -fx-background-radius: 14; -fx-padding: 18;
+                         -fx-border-color: rgba(83,74,183,0.3);
+                         -fx-border-radius: 14; -fx-border-width: 1;">
+                <Label text="🤖" style="-fx-font-size: 24px;"/>
+                <Label text="AI Assistant"
+                       style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="Powered by OpenAI"
+                       style="-fx-font-size: 11px; -fx-text-fill: #667788;"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="8" prefWidth="200" prefHeight="100"
+                  style="-fx-background-color: rgba(29,158,117,0.15);
+                         -fx-background-radius: 14; -fx-padding: 18;
+                         -fx-border-color: rgba(29,158,117,0.3);
+                         -fx-border-radius: 14; -fx-border-width: 1;">
+                <Label text="🔒" style="-fx-font-size: 24px;"/>
+                <Label text="Secure &amp; Private"
+                       style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="Your data is safe"
+                       style="-fx-font-size: 11px; -fx-text-fill: #667788;"/>
+            </VBox>
+        </HBox>
+
+    </VBox>
+</StackPane>
