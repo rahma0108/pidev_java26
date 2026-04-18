@@ -195,7 +195,9 @@ public class ModifierDonController implements Initializable {
         try {
             Stage stage = (Stage) btnAnnuler.getScene().getWindow();
             Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(retourFxml)));
-            stage.setScene(new Scene(root, 960, 680));
+            int w = "/GestionDonsAdmin.fxml".equals(retourFxml) ? 1180 : 960;
+            int h = "/GestionDonsAdmin.fxml".equals(retourFxml) ? 780 : 680;
+            stage.setScene(new Scene(root, w, h));
         } catch (IOException ex) {
             Alert a = new Alert(Alert.AlertType.ERROR);
             a.setContentText("Impossible de revenir : " + ex.getMessage());
