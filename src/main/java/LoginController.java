@@ -92,12 +92,25 @@ public class LoginController {
 
     private void navigateByRole(String roles, User user) {
         String safeRoles = roles != null ? roles : "";
-        if (safeRoles.contains("ROLE_ADMIN") || safeRoles.contains("ROLE_MEDECIN")) {
+        String normalizedRoles = safeRoles.toUpperCase();
+
+        if (hasRole(normalizedRoles, "ADMIN")) {
             DashboardController.setLoggedInUser(user);
             navigateTo("/dashboard.fxml");
             return;
         }
+
+        if (hasRole(normalizedRoles, "MEDECIN")) {
+            navigateTo("/fxml/ListeDisponibilitesView.fxml");
+            return;
+        }
+
         HomeController.setUser(user);
         navigateTo("/home.fxml");
+    }
+
+    private boolean hasRole(String normalizedRoles, String role) {
+        String withPrefix = "ROLE_" + role;
+        return normalizedRoles.contains(withPrefix) || normalizedRoles.contains(role);
     }
 }

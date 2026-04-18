@@ -16,16 +16,16 @@
 <AnchorPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="view.AjouterDisponibiliteViewController"
             prefWidth="560.0" prefHeight="520.0"
-            stylesheets="@style.css" styleClass="app-root">
+            stylesheets="@style.css" styleClass="app-root medecin-page">
 
     <VBox AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-          spacing="14.0" styleClass="main-content page-container">
+          spacing="14.0" styleClass="main-content page-container medecin-layout">
         <padding>
             <Insets bottom="20.0" left="24.0" right="24.0" top="20.0"/>
         </padding>
 
-        <HBox alignment="CENTER_LEFT" styleClass="navbar" spacing="10.0">
+        <HBox alignment="CENTER_LEFT" styleClass="navbar doctor-topbar" spacing="10.0">
             <children>
                 <StackPane styleClass="brand-badge">
                     <children>
@@ -34,19 +34,23 @@
                 </StackPane>
                 <Label text="MediLink" styleClass="brand-title"/>
                 <Label text="Accueil" styleClass="nav-link"/>
-                <Label text="Événements" styleClass="nav-link"/>
+                <Label text="Evenements" styleClass="nav-link"/>
                 <Label text="Rendez-vous" styleClass="nav-link nav-link-active"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="Connexion" styleClass="nav-action-outline"/>
-                <Button text="Inscription" styleClass="nav-action-solid"/>
+                <Label text="Espace medecin" styleClass="nav-status-chip"/>
+                <Label text="Ajout de creneau" styleClass="nav-status-chip nav-status-chip-soft"/>
             </children>
         </HBox>
 
-        <Label text="Nouvelle disponibilité" styleClass="page-title"/>
-        <Label text="Ajoutez des créneaux précis pour faciliter la réservation." styleClass="subtitle-text"/>
+        <VBox spacing="6.0" styleClass="doctor-hero-card">
+            <children>
+                <Label text="Nouvelle disponibilite" styleClass="page-title doctor-page-title"/>
+                <Label text="Ajoutez des creneaux precis dans un formulaire coherent avec l'espace medecin." styleClass="subtitle-text doctor-page-subtitle"/>
+            </children>
+        </VBox>
 
         <VBox spacing="6.0">
-            <Label text="Identifiant médecin" labelFor="$medecinIdTextField" styleClass="field-label"/>
+            <Label text="Identifiant medecin" labelFor="$medecinIdTextField" styleClass="field-label"/>
             <TextField fx:id="medecinIdTextField" promptText="ex : 1" maxWidth="200.0"/>
         </VBox>
 
@@ -57,7 +61,7 @@
 
         <HBox spacing="16.0" alignment="CENTER_LEFT">
             <VBox spacing="6.0" HBox.hgrow="ALWAYS">
-                <Label text="Heure début" labelFor="$heureDebutTextField" styleClass="field-label"/>
+                <Label text="Heure debut" labelFor="$heureDebutTextField" styleClass="field-label"/>
                 <TextField fx:id="heureDebutTextField" promptText="HH:mm"/>
             </VBox>
             <VBox spacing="6.0" HBox.hgrow="ALWAYS">
@@ -66,19 +70,19 @@
             </VBox>
         </HBox>
 
-        <Label text="Aperçu des créneaux (médecin sélectionné)" styleClass="field-label"/>
+        <Label text="Apercu des creneaux (medecin selectionne)" styleClass="field-label"/>
 
-        <ScrollPane fitToWidth="true" prefHeight="160.0" minHeight="120.0" styleClass="card-soft">
+        <ScrollPane fitToWidth="true" prefHeight="160.0" minHeight="120.0" styleClass="card-soft availability-panel">
             <content>
                 <FlowPane fx:id="apercuCardsContainer" hgap="10.0" vgap="10.0" prefWrapLength="500.0"/>
             </content>
         </ScrollPane>
 
         <HBox spacing="12.0" alignment="CENTER_LEFT" styleClass="actions-bar">
-            <Button fx:id="ajouterButton" text="Ajouter" defaultButton="true" styleClass="btn-primary"/>
-            <Button fx:id="supprimerButton" text="Supprimer" styleClass="btn-danger"/>
-            <Button fx:id="reserverButton" text="Réserver" styleClass="btn-success"/>
-            <Button fx:id="reinitialiserButton" text="Réinitialiser" styleClass="btn-secondary"/>
+            <Button fx:id="ajouterButton" text="Ajouter" defaultButton="true" styleClass="primary-button"/>
+            <Button fx:id="supprimerButton" text="Supprimer" styleClass="danger-button"/>
+            <Button fx:id="reserverButton" text="Reserver" styleClass="secondary-button"/>
+            <Button fx:id="reinitialiserButton" text="Reinitialiser" styleClass="secondary-button"/>
         </HBox>
     </VBox>
 </AnchorPane>

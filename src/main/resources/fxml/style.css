@@ -6,19 +6,19 @@
 
 /* ===== Couleurs principales ===== */
 * {
-    -color-primary: #2f80ed;
-    -color-primary-dark: #1f5fbf;
+    -color-primary: #185FA5;
+    -color-primary-dark: #0f4f8c;
     -color-success: #29b67a;
     -color-success-dark: #1f8d5f;
     -color-danger: #e74c3c;
     -color-danger-dark: #c0392b;
     -color-secondary: #5f7fa8;
-    -color-bg: #eef4fb;
+    -color-bg: #f0f4f8;
     -color-surface: #ffffff;
-    -color-surface-soft: #f7faff;
-    -color-border: #d8e3f2;
-    -color-text: #17345f;
-    -color-text-soft: #6f86a8;
+    -color-surface-soft: #f8fbff;
+    -color-border: #e0e0e0;
+    -color-text: #1a1a2e;
+    -color-text-soft: #7b8698;
 }
 
 /* ===== Containers ===== */
@@ -50,6 +50,15 @@
     -fx-spacing: 12;
 }
 
+.filter-bar {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 14;
+    -fx-padding: 14;
+    -fx-spacing: 12;
+}
+
 /* ===== Navbar ===== */
 .navbar,
 .top-header {
@@ -76,7 +85,7 @@
 .brand-title {
     -fx-font-size: 24px;
     -fx-font-weight: 800;
-    -fx-text-fill: -color-text;
+    -fx-text-fill: #1a1a2e;
 }
 
 .nav-link {
@@ -102,9 +111,14 @@
 
 /* ===== Titres / textes ===== */
 .page-title {
-    -fx-font-size: 26px;
+    -fx-font-size: 28px;
     -fx-font-weight: 800;
-    -fx-text-fill: -color-text;
+    -fx-text-fill: #0f2f6b;
+}
+
+.section-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-soft;
 }
 
 .section-title {
@@ -143,6 +157,15 @@
     -fx-border-radius: 18;
     -fx-padding: 18;
     -fx-effect: dropshadow(gaussian, rgba(30, 70, 120, 0.07), 10, 0.14, 0, 2);
+}
+
+.section-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 14;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 14;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(26, 26, 46, 0.06), 8, 0.12, 0, 2);
 }
 
 .login-shell {
@@ -249,6 +272,15 @@
     -fx-text-fill: white;
 }
 
+.primary-button {
+    -fx-background-color: #1f67c1;
+    -fx-text-fill: white;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-padding: 12 22 12 22;
+    -fx-font-weight: 800;
+}
+
 .btn-primary:hover {
     -fx-background-color: -color-primary-dark;
 }
@@ -256,6 +288,11 @@
 .btn-secondary,
 .btn-muted {
     -fx-background-color: #eaf1fb;
+    -fx-text-fill: #31517b;
+}
+
+.secondary-button {
+    -fx-background-color: #eef3f8;
     -fx-text-fill: #31517b;
 }
 
@@ -276,6 +313,22 @@
 .btn-danger {
     -fx-background-color: -color-danger;
     -fx-text-fill: white;
+}
+
+.danger-button {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-padding: 12 22 12 22;
+    -fx-font-weight: 800;
+}
+
+.action-button {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-font-weight: 700;
+    -fx-padding: 10 18;
 }
 
 .btn-danger:hover {
@@ -343,22 +396,33 @@
 
 /* ===== Conteneurs cartes dynamiques ===== */
 .availability-card {
-    -fx-background-color: -color-surface;
-    -fx-background-radius: 16;
-    -fx-border-color: -color-border;
-    -fx-border-radius: 16;
-    -fx-padding: 14;
+    -fx-background-color: #fbfdff;
+    -fx-background-radius: 22;
+    -fx-border-radius: 22;
+    -fx-border-color: #d8e7ff;
+    -fx-border-width: 1.4;
+    -fx-padding: 18;
     -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.07), 14, 0.12, 0, 2);
+}
+
+.item-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 14;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 14;
+    -fx-padding: 14;
 }
 
 .availability-card:hover {
-    -fx-border-color: #b7cae5;
+    -fx-border-color: #6aa7ff;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.14), 18, 0.18, 0, 4);
 }
 
 .availability-card.selected {
-    -fx-background-color: #f8fbff;
-    -fx-border-color: -color-primary;
-    -fx-border-width: 1.6;
+    -fx-background-color: #eef4ff;
+    -fx-border-color: #1f67c1;
+    -fx-border-width: 2;
 }
 
 .card-title {
@@ -454,4 +518,329 @@
 /* ===== Separator ===== */
 .separator .line {
     -fx-border-color: #e6eef8;
+}
+
+/* ===== Medecin page composition ===== */
+.medecin-page {
+    -fx-background-color: linear-gradient(to bottom, #eef4fb 0%, #e8f0fb 100%);
+}
+
+.medecin-page .page-shell {
+    -fx-spacing: 24;
+    -fx-padding: 24;
+}
+
+.medecin-page .page-frame {
+    -fx-background-color: transparent;
+}
+
+.medecin-page .header-stack {
+    -fx-spacing: 22;
+}
+
+.medecin-page .header-card,
+.medecin-page .hero-card,
+.medecin-page .compact-card,
+.medecin-page .content-card,
+.medecin-page .action-card {
+    -fx-background-color: white;
+    -fx-background-radius: 26;
+    -fx-border-color: #d9e6f7;
+    -fx-border-radius: 26;
+    -fx-border-width: 1;
+    -fx-background-insets: 0;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.14), 24, 0.20, 0, 6);
+}
+
+.medecin-page .topbar-card {
+    -fx-padding: 16 20 16 20;
+    -fx-background-color: white;
+    -fx-background-radius: 24;
+    -fx-border-radius: 24;
+    -fx-border-color: #cfdff4;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.16), 20, 0.18, 0, 4);
+}
+
+.medecin-page .doctor-topbar {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.medecin-page .hero-card {
+    -fx-background-color: white;
+    -fx-background-radius: 26;
+    -fx-border-radius: 26;
+    -fx-border-color: #d4e1f4;
+    -fx-border-width: 1;
+    -fx-padding: 22 24 22 24;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.14), 22, 0.18, 0, 5);
+}
+
+.medecin-page .doctor-hero-card {
+    -fx-background-color: linear-gradient(to right, #ffffff 0%, #f9fbff 62%, #f4f8ff 100%);
+}
+
+.medecin-page .hero-title-row {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.medecin-page .hero-meta-row {
+    -fx-padding: 10 0 0 0;
+    -fx-spacing: 10;
+}
+
+.medecin-page .hero-info-card {
+    -fx-background-color: linear-gradient(to bottom, #f8fbff 0%, #eef5ff 100%);
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: #d3e4ff;
+    -fx-border-width: 1;
+    -fx-padding: 16 18 16 18;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.08), 14, 0.14, 0, 2);
+}
+
+.medecin-page .hero-info-list {
+    -fx-padding: 4 0 0 0;
+}
+
+.medecin-page .doctor-hero-icon-shell {
+    -fx-background-color: linear-gradient(to bottom right, #2f80ed, #1f67c1);
+    -fx-background-radius: 20;
+    -fx-padding: 14;
+    -fx-min-width: 58;
+    -fx-min-height: 58;
+}
+
+.medecin-page .doctor-hero-icon {
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+.medecin-page .page-title,
+.medecin-page .doctor-page-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0f2f6b;
+}
+
+.medecin-page .page-subtitle,
+.medecin-page .doctor-page-subtitle,
+.medecin-page .section-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #5f6f86;
+}
+
+.medecin-page .field-label {
+    -fx-text-fill: #17345f;
+}
+
+.medecin-page .nav-status-chip {
+    -fx-background-color: linear-gradient(to right, #eef4ff, #e2eeff);
+    -fx-background-radius: 999;
+    -fx-padding: 6 12 6 12;
+    -fx-text-fill: #1f67c1;
+    -fx-font-weight: 700;
+    -fx-border-color: #cfe0fb;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+}
+
+.medecin-page .nav-status-chip-soft,
+.medecin-page .doctor-context-pill-soft {
+    -fx-background-color: #f5f8fd;
+    -fx-text-fill: #5f6f86;
+    -fx-border-color: #e1e9f5;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+}
+
+.medecin-page .doctor-context-pill {
+    -fx-background-color: linear-gradient(to right, #eef4ff, #e2eeff);
+    -fx-background-radius: 999;
+    -fx-padding: 6 12 6 12;
+    -fx-text-fill: #1f67c1;
+    -fx-font-weight: 700;
+    -fx-border-color: #cfe0fb;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+}
+
+.medecin-page .compact-card {
+    -fx-background-color: white;
+    -fx-background-radius: 22;
+    -fx-border-radius: 22;
+    -fx-border-color: #d9e6f7;
+    -fx-border-width: 1;
+    -fx-padding: 18;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.06), 14, 0.10, 0, 2);
+}
+
+.medecin-page .section-heading {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.medecin-page .filter-toolbar {
+    -fx-alignment: BOTTOM_LEFT;
+}
+
+.medecin-page .doctor-filter-button {
+    -fx-min-width: 150;
+}
+
+.medecin-page .selection-pill,
+.medecin-page .doctor-selection-pill {
+    -fx-background-color: linear-gradient(to right, #eef4ff, #e5efff);
+    -fx-background-radius: 999;
+    -fx-padding: 6 12 6 12;
+    -fx-text-fill: #1f67c1;
+    -fx-font-weight: 700;
+    -fx-border-color: #d0e0fa;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+}
+
+.medecin-page .content-card {
+    -fx-background-color: white;
+    -fx-background-radius: 24;
+    -fx-border-radius: 24;
+    -fx-border-color: #d9e6f7;
+    -fx-border-width: 1;
+    -fx-padding: 18;
+    -fx-spacing: 12;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.07), 16, 0.12, 0, 2);
+}
+
+.medecin-page .content-header {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.medecin-page .availability-panel {
+    -fx-background-color: white;
+}
+
+.medecin-page .availability-scroll,
+.medecin-page .availability-scroll > .viewport {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.medecin-page .availability-grid {
+    -fx-padding: 4;
+}
+
+.medecin-page .availability-card {
+    -fx-background-color: #fbfdff;
+    -fx-background-radius: 22;
+    -fx-border-radius: 22;
+    -fx-border-color: #d8e7ff;
+    -fx-border-width: 1.4;
+    -fx-padding: 18;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.07), 14, 0.12, 0, 2);
+}
+
+.medecin-page .availability-card:hover {
+    -fx-border-color: #6aa7ff;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.14), 18, 0.18, 0, 4);
+}
+
+.medecin-page .availability-card.selected {
+    -fx-background-color: #eef4ff;
+    -fx-border-color: #1f67c1;
+    -fx-border-width: 2;
+}
+
+.medecin-page .card-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #163a70;
+}
+
+.medecin-page .card-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: #5f6f86;
+}
+
+.medecin-page .action-card {
+    -fx-background-color: white;
+    -fx-background-radius: 22;
+    -fx-border-radius: 22;
+    -fx-border-color: #d9e6f7;
+    -fx-border-width: 1;
+    -fx-padding: 14 18 14 18;
+}
+
+.medecin-page .actions-bar {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 10 0 0 0;
+}
+
+.medecin-page .secondary-button,
+.medecin-page .primary-button,
+.medecin-page .danger-button {
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-padding: 12 22 12 22;
+    -fx-font-weight: 800;
+}
+
+.medecin-page .primary-button {
+    -fx-background-color: #1f67c1;
+    -fx-text-fill: white;
+    -fx-background-radius: 18;
+    -fx-padding: 12 22 12 22;
+    -fx-font-weight: 700;
+}
+
+.medecin-page .primary-button:hover {
+    -fx-background-color: #1857a5;
+}
+
+.medecin-page .secondary-button {
+    -fx-background-color: white;
+    -fx-text-fill: #1f67c1;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: #1f67c1;
+    -fx-border-width: 1.2;
+    -fx-padding: 12 22 12 22;
+    -fx-font-weight: 800;
+}
+
+.medecin-page .secondary-button:hover {
+    -fx-background-color: #f4f8ff;
+}
+
+.medecin-page .danger-button {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-background-radius: 18;
+    -fx-padding: 12 22 12 22;
+    -fx-font-weight: 800;
+}
+
+.medecin-page .danger-button:hover {
+    -fx-background-color: #d94435;
+}
+
+.medecin-page .text-field,
+.medecin-page .date-picker,
+.medecin-page .combo-box {
+    -fx-background-color: #fdfefe;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: #d6e2f3;
+    -fx-border-width: 1.2;
+    -fx-padding: 10 14 10 14;
+}
+
+.medecin-page .date-picker .text-field {
+    -fx-background-color: #fdfefe;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: #d6e2f3;
+    -fx-border-width: 1.2;
+    -fx-padding: 10 14 10 14;
 }

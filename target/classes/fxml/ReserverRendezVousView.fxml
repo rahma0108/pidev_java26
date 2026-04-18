@@ -18,16 +18,16 @@
 <AnchorPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="view.ReserverRendezVousViewController"
             prefWidth="1120.0" prefHeight="740.0"
-            stylesheets="@style.css" styleClass="app-root">
+            stylesheets="@style.css" styleClass="app-root medecin-page">
 
     <VBox AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-          spacing="16.0" styleClass="main-content page-container">
+          spacing="18.0" styleClass="main-content page-container medecin-layout">
         <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
         </padding>
 
-        <HBox alignment="CENTER_LEFT" styleClass="navbar" spacing="10.0">
+        <HBox alignment="CENTER_LEFT" styleClass="topbar-card" spacing="12.0">
             <children>
                 <StackPane styleClass="brand-badge">
                     <children>
@@ -51,11 +51,11 @@
                 <Label text="Prendre rendez-vous" styleClass="page-title"/>
             </children>
         </HBox>
-        <Label text="Choisissez une disponibilité chez un médecin et réservez votre rendez-vous." styleClass="subtitle-text"/>
+        <Label text="Choisissez une disponibilité chez un médecin et réservez votre rendez-vous." styleClass="page-subtitle"/>
 
         <HBox alignment="CENTER_LEFT">
             <children>
-                <Button fx:id="mesRendezVousButton" text="⚙ Mes préférences" styleClass="btn-outline"/>
+                <Button fx:id="mesRendezVousButton" text="⚙ Mes préférences" styleClass="secondary-button"/>
             </children>
         </HBox>
 
@@ -66,9 +66,9 @@
             </children>
         </HBox>
 
-        <VBox styleClass="card">
+        <VBox styleClass="panel-card">
             <children>
-                <HBox styleClass="filters-bar" alignment="CENTER_LEFT">
+                <HBox styleClass="filter-card" alignment="CENTER_LEFT">
                     <children>
                         <VBox spacing="6.0">
                             <Label text="Date souhaitée (filtre visuel)" labelFor="$dateFiltrePicker" styleClass="field-label"/>
@@ -79,15 +79,15 @@
                             <TextField fx:id="motifTextField" promptText="Consultation, suivi…"/>
                         </VBox>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <Button fx:id="reserverButton" text="Réserver" defaultButton="true" styleClass="btn-success"/>
+                        <Button fx:id="reserverButton" text="Réserver" defaultButton="true" styleClass="primary-button"/>
                     </children>
                 </HBox>
 
-                <StackPane styleClass="card-soft">
+                <StackPane styleClass="section-card">
                     <children>
                         <ScrollPane fitToWidth="true" minHeight="150.0" maxHeight="210.0">
                             <content>
-                                <FlowPane fx:id="creneauxCardsContainer" hgap="10.0" vgap="10.0" prefWrapLength="980.0"/>
+                                <FlowPane fx:id="creneauxCardsContainer" hgap="16.0" vgap="16.0" styleClass="availability-grid" prefWrapLength="980.0"/>
                             </content>
                         </ScrollPane>
                         <VBox fx:id="disponibilitesEmptyBox" visible="false" managed="false" alignment="CENTER" spacing="6.0" styleClass="empty-state">
@@ -106,11 +106,11 @@
                 <Label text="☰" styleClass="section-title"/>
                 <Label text="Mes rendez-vous" styleClass="section-title"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="retourButton" text="Retour" styleClass="btn-back"/>
+                <Button fx:id="retourButton" text="Retour" styleClass="secondary-button"/>
             </children>
         </HBox>
 
-        <VBox styleClass="card" VBox.vgrow="ALWAYS">
+        <VBox styleClass="panel-card" VBox.vgrow="ALWAYS">
             <children>
                 <TableView fx:id="mesRendezVousTable" VBox.vgrow="ALWAYS">
                     <columns>

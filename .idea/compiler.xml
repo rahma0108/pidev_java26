@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="medilink-crud" />
+        <module name="pidev_java" />
       </profile>
     </annotationProcessing>
   </component>

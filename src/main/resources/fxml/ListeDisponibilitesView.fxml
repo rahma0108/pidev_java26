@@ -15,61 +15,156 @@
 <AnchorPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="view.ListeDisponibilitesViewController"
             prefWidth="900.0" prefHeight="560.0"
-            stylesheets="@style.css" styleClass="app-root">
+            stylesheets="@style.css" styleClass="app-root medecin-page">
 
-    <VBox AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
-          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-          spacing="14.0" styleClass="main-content page-container">
-        <padding>
-            <Insets bottom="20.0" left="24.0" right="24.0" top="20.0"/>
-        </padding>
+    <StackPane AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
+               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+               styleClass="page-shell">
+        <children>
+            <VBox maxWidth="1120.0"
+                  prefWidth="1000.0"
+                  spacing="24.0"
+                  styleClass="main-content medecin-layout page-frame">
+                <padding>
+                    <Insets top="28.0" right="30.0" bottom="30.0" left="30.0"/>
+                </padding>
 
-        <HBox alignment="CENTER_LEFT" styleClass="navbar" spacing="10.0">
-            <children>
-                <StackPane styleClass="brand-badge">
+                <VBox spacing="18.0" styleClass="header-stack">
                     <children>
-                        <Label text="ML" styleClass="brand-icon"/>
+                        <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="topbar-card header-card doctor-topbar">
+                            <children>
+                                <StackPane styleClass="brand-badge">
+                                    <children>
+                                        <Label text="ML" styleClass="brand-icon"/>
+                                    </children>
+                                </StackPane>
+                                <VBox spacing="2.0">
+                                    <children>
+                                        <Label text="MediLink" styleClass="brand-title"/>
+                                        <Label text="Doctor workspace" styleClass="section-subtitle"/>
+                                    </children>
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <HBox spacing="8.0" alignment="CENTER">
+                                    <children>
+                                        <Label text="Accueil" styleClass="nav-link"/>
+                                        <Label text="Evenements" styleClass="nav-link"/>
+                                        <Label text="Rendez-vous" styleClass="nav-link nav-link-active"/>
+                                    </children>
+                                </HBox>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <VBox spacing="6.0" alignment="CENTER_RIGHT">
+                                    <children>
+                                        <Label text="Espace medecin" styleClass="nav-status-chip"/>
+                                        <Label text="Gestion des creneaux" styleClass="nav-status-chip nav-status-chip-soft"/>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="18.0" styleClass="doctor-hero-card hero-card">
+                            <children>
+                                <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="hero-title-row">
+                                            <children>
+                                                <StackPane styleClass="doctor-hero-icon-shell">
+                                                    <children>
+                                                        <Label text="MD" styleClass="doctor-hero-icon"/>
+                                                    </children>
+                                                </StackPane>
+                                                <VBox spacing="5.0">
+                                                    <children>
+                                                        <Label text="Mes disponibilites" styleClass="page-title doctor-page-title"/>
+                                                        <Label text="Organisez vos creneaux dans une interface plus claire, plus structuree et plus proche de l'univers visuel landing/dashboard." styleClass="page-subtitle doctor-page-subtitle"/>
+                                                    </children>
+                                                </VBox>
+                                            </children>
+                                        </HBox>
+                                        <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="hero-meta-row">
+                                            <children>
+                                                <Label text="Vue medecin" styleClass="doctor-context-pill"/>
+                                                <Label text="Disponibilites actives" styleClass="doctor-context-pill doctor-context-pill-soft"/>
+                                                <Label text="Actions rapides" styleClass="doctor-context-pill doctor-context-pill-soft"/>
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+
+                                <VBox prefWidth="250.0" spacing="10.0" styleClass="hero-info-card">
+                                    <children>
+                                        <Label text="Espace de gestion" styleClass="section-title"/>
+                                        <Label text="Ajoutez, filtrez et supprimez vos disponibilites sans quitter cette page." wrapText="true" styleClass="section-subtitle"/>
+                                        <VBox spacing="8.0" styleClass="hero-info-list">
+                                            <children>
+                                                <Label text="• filtre par date" styleClass="muted-text"/>
+                                                <Label text="• selection visuelle des cartes" styleClass="muted-text"/>
+                                                <Label text="• actions directes en bas de page" styleClass="muted-text"/>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
                     </children>
-                </StackPane>
-                <Label text="MediLink" styleClass="brand-title"/>
-                <Label text="Accueil" styleClass="nav-link"/>
-                <Label text="Événements" styleClass="nav-link"/>
-                <Label text="Rendez-vous" styleClass="nav-link nav-link-active"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button text="Connexion" styleClass="nav-action-outline"/>
-                <Button text="Inscription" styleClass="nav-action-solid"/>
-            </children>
-        </HBox>
+                </VBox>
 
-        <Label text="Disponibilités" styleClass="page-title"/>
-        <Label text="Visualisez et gérez rapidement les créneaux disponibles." styleClass="subtitle-text"/>
+                <VBox spacing="12.0" styleClass="filter-card doctor-filter-card compact-card">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="section-heading">
+                            <children>
+                                <Label text="Filtres" styleClass="section-title"/>
+                                <Label text="Affinez rapidement la liste affichee avant de selectionner un creneau." styleClass="section-subtitle"/>
+                            </children>
+                        </HBox>
+                        <HBox spacing="14.0" alignment="BOTTOM_LEFT" styleClass="doctor-filter-row filter-toolbar">
+                            <children>
+                                <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                    <Label text="Filtrer par date" labelFor="$filtreDatePicker" styleClass="field-label"/>
+                                    <DatePicker fx:id="filtreDatePicker" promptText="Date min." prefWidth="280.0"/>
+                                </VBox>
+                                <Button fx:id="rafraichirButton" text="Rafraichir" styleClass="secondary-button doctor-filter-button"/>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
 
-        <HBox spacing="12.0" alignment="CENTER_LEFT" styleClass="filters-bar">
-            <VBox spacing="6.0" HBox.hgrow="ALWAYS">
-                <Label text="Filtrer par date" labelFor="$filtreDatePicker" styleClass="field-label"/>
-                <DatePicker fx:id="filtreDatePicker" promptText="Date min." prefWidth="220.0"/>
+                <VBox spacing="14.0" VBox.vgrow="ALWAYS" styleClass="panel-card availability-panel content-card">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="content-header">
+                            <children>
+                                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Label text="Disponibilites" styleClass="section-title"/>
+                                        <Label text="Selectionnez un creneau depuis la grille pour agir dessus." styleClass="section-subtitle"/>
+                                    </children>
+                                </VBox>
+                                <Label fx:id="selectionInfoLabel"
+                                       text="Aucune disponibilite selectionnee."
+                                       styleClass="selection-pill doctor-selection-pill"/>
+                            </children>
+                        </HBox>
+
+                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="availability-scroll">
+                            <content>
+                                <FlowPane fx:id="cardsFlowPane"
+                                          hgap="18.0"
+                                          vgap="18.0"
+                                          prefWrapLength="900.0"
+                                          styleClass="availability-grid"/>
+                            </content>
+                        </ScrollPane>
+                    </children>
+                </VBox>
+
+                <HBox spacing="12.0" alignment="CENTER_RIGHT" styleClass="actions-bar doctor-actions-bar action-card">
+                    <children>
+                        <Button fx:id="retourButton" text="Retour" styleClass="secondary-button"/>
+                        <Button fx:id="ajouterButton" text="Ajouter" styleClass="primary-button"/>
+                        <Button fx:id="supprimerButton" text="Supprimer la selection" styleClass="danger-button"/>
+                    </children>
+                </HBox>
             </VBox>
-            <VBox spacing="6.0" alignment="BOTTOM_LEFT">
-                <Label visible="false" managed="false"/>
-                <Button fx:id="rafraichirButton" text="Rafraîchir" styleClass="btn-muted"/>
-            </VBox>
-        </HBox>
-
-        <Label fx:id="selectionInfoLabel" text="Aucune disponibilité sélectionnée." styleClass="muted-text"/>
-
-        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="card-soft">
-            <content>
-                <FlowPane fx:id="cardsFlowPane"
-                          hgap="12.0"
-                          vgap="12.0"
-                          prefWrapLength="820.0"/>
-            </content>
-        </ScrollPane>
-
-        <HBox spacing="12.0" alignment="CENTER_RIGHT" styleClass="actions-bar">
-            <Button fx:id="retourButton" text="Retour" styleClass="btn-back"/>
-            <Button fx:id="ajouterButton" text="Ajouter" styleClass="btn-primary"/>
-            <Button fx:id="supprimerButton" text="Supprimer la sélection" styleClass="btn-danger"/>
-        </HBox>
-    </VBox>
+        </children>
+    </StackPane>
 </AnchorPane>
