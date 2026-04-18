@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="UserListController"
+            fx:controller="userfx.UserListController"
             prefWidth="980" prefHeight="660"
             style="-fx-background-color: #f0f4f8;">
 

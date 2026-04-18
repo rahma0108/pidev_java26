@@ -172,11 +172,11 @@ public class ReserverRendezVousViewController {
 
     private void retournerAccueil() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/LoginView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/home.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) reserverButton.getScene().getWindow();
-            stage.setTitle("MediLink - Accueil");
-            stage.setScene(new Scene(root, 600, 380));
+            stage.setTitle("MediLink - Espace Patient");
+            stage.setScene(new Scene(root, 1000, 680));
             stage.centerOnScreen();
         } catch (IOException e) {
             ViewAlertUtil.erreur("Navigation", "Impossible de revenir à l'accueil : " + e.getMessage());
@@ -312,17 +312,24 @@ public class ReserverRendezVousViewController {
     }
 
     private Integer resoudreDemoPatientId() {
+        Integer fromSession = SessionContext.getCurrentPatientId();
+        if (fromSession != null) {
+            return fromSession;
+        }
         Integer configuredId = chargerDemoPatientId();
         try {
             if (configuredId != null) {
                 User configuredUser = userService.findById(configuredId).orElse(null);
                 if (configuredUser != null && configuredUser.hasRole(User.ROLE_PATIENT)) {
+                    SessionContext.setCurrentPatientId(configuredId);
                     return configuredId;
                 }
             }
-            return userService.findFirstByRole(User.ROLE_PATIENT)
+            Integer fallback = userService.findFirstByRole(User.ROLE_PATIENT)
                     .map(User::getId)
                     .orElse(null);
+            SessionContext.setCurrentPatientId(fallback);
+            return fallback;
         } catch (ServiceException e) {
             return null;
         }

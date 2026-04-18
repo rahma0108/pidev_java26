@@ -42,6 +42,7 @@ public class ListeDisponibilitesViewController {
 
     private DisponibiliteController disponibiliteController;
     private Disponibilite selectionCourante;
+    private Integer medecinIdContexte;
 
     @FXML
     private void initialize() {
@@ -51,6 +52,7 @@ public class ListeDisponibilitesViewController {
             ViewAlertUtil.erreur("Base de données", e.formatWithCauses());
             return;
         }
+        medecinIdContexte = SessionContext.getCurrentMedecinId();
 
         rafraichirButton.setOnAction(e -> chargerDonnees());
         ajouterButton.setOnAction(e -> ouvrirFenetreAjout());
@@ -65,7 +67,9 @@ public class ListeDisponibilitesViewController {
             return;
         }
         try {
-            List<Disponibilite> list = disponibiliteController.afficherDisponibilites();
+            List<Disponibilite> list = medecinIdContexte == null
+                    ? disponibiliteController.afficherDisponibilites()
+                    : disponibiliteController.afficherDisponibilitesMedecin(medecinIdContexte);
             LocalDate dateMin = filtreDatePicker.getValue();
             if (dateMin != null) {
                 list = list.stream()
@@ -154,6 +158,7 @@ public class ListeDisponibilitesViewController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AjouterDisponibiliteView.fxml"));
             Parent root = loader.load();
             AjouterDisponibiliteViewController ctrl = loader.getController();
+            ctrl.setMedecinIdContexte(medecinIdContexte);
             ctrl.setAfterSaveCallback(this::chargerDonnees);
 
             Stage stage = new Stage();
@@ -186,11 +191,11 @@ public class ListeDisponibilitesViewController {
 
     private void retournerAccueil() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/LoginView.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/dashboard.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) retourButton.getScene().getWindow();
-            stage.setTitle("MediLink - Accueil");
-            stage.setScene(new Scene(root, 600, 380));
+            stage.setTitle("MediLink - Espace Médecin");
+            stage.setScene(new Scene(root, 960, 640));
             stage.centerOnScreen();
         } catch (IOException e) {
             ViewAlertUtil.erreur("Interface", "Impossible de revenir à l'accueil : " + e.getMessage());

@@ -1,3 +1,5 @@
+package userfx;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -130,6 +132,7 @@ public class RegisterController {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
             nameField.getScene().setRoot(root);
+            ThemeManager.apply(nameField.getScene());
         } catch (Exception e) {
             System.err.println("Navigation error: " + e.getMessage());
         }

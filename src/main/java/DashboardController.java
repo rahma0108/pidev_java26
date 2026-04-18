@@ -1,3 +1,5 @@
+package userfx;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -197,7 +199,10 @@ public class DashboardController {
 
     @FXML public void showDashboard()    { pageTitle.setText("Dashboard"); loadStats(); }
     @FXML public void showUsers()        { navigateTo("/userlist.fxml"); }
-    @FXML public void showAppointments() { pageTitle.setText("Appointments — coming soon"); }
+    @FXML
+    public void showAppointments() {
+        navigateTo("/fxml/ListeDisponibilitesView.fxml");
+    }
     @FXML public void showMedications()  { pageTitle.setText("Medications — coming soon"); }
     @FXML public void showEvents()       { pageTitle.setText("Events — coming soon"); }
     @FXML public void handleLogout() {

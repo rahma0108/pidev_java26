@@ -1,3 +1,5 @@
+package userfx;
+
 public class User {
 
     private int id;

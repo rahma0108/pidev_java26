@@ -1,3 +1,7 @@
+package userfx;
+
+import org.mindrot.jbcrypt.BCrypt;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,19 +20,49 @@ public class UserService {
     // For new users you create in Java, store plain or use a simple hash.
     // ─────────────────────────────────────────
     public User login(String email, String password) {
-        String query = "SELECT * FROM user WHERE email = ? AND password = ?";
+        if (connection == null) {
+            System.err.println("Login error: database connection is null.");
+            return null;
+        }
+        String query = "SELECT * FROM user WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))";
         try {
             PreparedStatement ps = connection.prepareStatement(query);
             ps.setString(1, email);
-            ps.setString(2, password);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return mapRow(rs);
+            while (rs.next()) {
+                String storedPassword = rs.getString("password");
+                if (passwordMatches(password, storedPassword)) {
+                    return mapRow(rs);
+                }
             }
         } catch (SQLException e) {
             System.err.println("Login error: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Login error: " + e.getMessage());
         }
         return null;
+    }
+
+    private boolean passwordMatches(String rawPassword, String storedPassword) {
+        if (storedPassword == null || rawPassword == null) {
+            return false;
+        }
+        // Keep compatibility with legacy plain-text test users.
+        if (rawPassword.equals(storedPassword)) {
+            return true;
+        }
+        // Support Symfony/BCrypt users already present in DB.
+        if (storedPassword.startsWith("$2a$") || storedPassword.startsWith("$2b$") || storedPassword.startsWith("$2y$")) {
+            try {
+                String normalized = storedPassword.startsWith("$2y$")
+                        ? "$2a$" + storedPassword.substring(4)
+                        : storedPassword;
+                return BCrypt.checkpw(rawPassword, normalized);
+            } catch (IllegalArgumentException ignored) {
+                return false;
+            }
+        }
+        return false;
     }
 
     // ─────────────────────────────────────────

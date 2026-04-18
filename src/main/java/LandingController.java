@@ -1,3 +1,5 @@
+package userfx;
+
 import javafx.animation.*;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

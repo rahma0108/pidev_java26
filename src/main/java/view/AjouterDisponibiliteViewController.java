@@ -54,9 +54,15 @@ public class AjouterDisponibiliteViewController {
     private DisponibiliteController disponibiliteController;
     private Runnable afterSaveCallback;
     private Disponibilite selectionApercu;
+    private Integer medecinIdContexte;
 
     public void setAfterSaveCallback(Runnable afterSaveCallback) {
         this.afterSaveCallback = afterSaveCallback;
+    }
+
+    public void setMedecinIdContexte(Integer medecinIdContexte) {
+        this.medecinIdContexte = medecinIdContexte;
+        appliquerContexteMedecin();
     }
 
     @FXML
@@ -68,6 +74,7 @@ public class AjouterDisponibiliteViewController {
             return;
         }
         configurerAideSaisie();
+        appliquerContexteMedecin();
 
         medecinIdTextField.focusedProperty().addListener((obs, oldV, focused) -> {
             if (!focused) {
@@ -79,6 +86,18 @@ public class AjouterDisponibiliteViewController {
         reinitialiserButton.setOnAction(e -> viderFormulaire());
         supprimerButton.setOnAction(e -> handleSupprimerApercu());
         reserverButton.setOnAction(e -> ouvrirReservation());
+    }
+
+    private void appliquerContexteMedecin() {
+        if (medecinIdTextField == null) {
+            return;
+        }
+        if (medecinIdContexte != null) {
+            medecinIdTextField.setText(Integer.toString(medecinIdContexte));
+            medecinIdTextField.setDisable(true);
+        } else {
+            medecinIdTextField.setDisable(false);
+        }
     }
 
     private void configurerAideSaisie() {
@@ -207,7 +226,9 @@ public class AjouterDisponibiliteViewController {
     }
 
     private void viderFormulaire() {
-        medecinIdTextField.clear();
+        if (medecinIdContexte == null) {
+            medecinIdTextField.clear();
+        }
         datePicker.setValue(null);
         heureDebutTextField.clear();
         heureFinTextField.clear();

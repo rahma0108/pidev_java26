@@ -1,3 +1,5 @@
+package userfx;
+
 import com.google.gson.*;
 import java.net.URI;
 import java.net.http.*;

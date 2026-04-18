@@ -1,3 +1,5 @@
+package userfx;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -37,29 +39,27 @@ public class LoginController {
     public void handleLogin() {
         String email    = emailField.getText().trim();
         String password = passwordField.getText().trim();
+        System.out.println("[userfx] Sign In clicked for email=" + email);
 
         if (email.isEmpty() || password.isEmpty()) {
             showMessage("Please fill in all fields.", "red");
             return;
         }
 
-        UserService us = new UserService();
-        User user = us.login(email, password);
+        try {
+            UserService us = new UserService();
+            User user = us.login(email, password);
 
-        if (user != null) {
-            String roles = user.getRoles() != null ? user.getRoles() : "";
-
-            if (roles.contains("ROLE_ADMIN") || roles.contains("ROLE_MEDECIN")) {
-                // ── ADMIN / DOCTOR → Dashboard ──
-                DashboardController.setLoggedInUser(user);
-                navigateTo("/dashboard.fxml");
-            } else {
-                // ── SIMPLE USER → Patient Home ──
-                HomeController.setUser(user);
-                navigateTo("/home.fxml");
+            if (user != null) {
+                System.out.println("[userfx] Login success, navigating by role.");
+                navigateByRole(user.getRoles(), user);
+                return;
             }
-        } else {
+            System.out.println("[userfx] Login failed: invalid credentials.");
             showMessage("Invalid email or password.", "red");
+        } catch (Exception e) {
+            System.out.println("[userfx] Login error: " + e.getMessage());
+            showMessage("Login unavailable (DB/config). Check local MySQL settings.", "red");
         }
     }
 
@@ -88,5 +88,16 @@ public class LoginController {
     private void showMessage(String msg, String color) {
         errorLabel.setStyle("-fx-text-fill: " + color + ";");
         errorLabel.setText(msg);
+    }
+
+    private void navigateByRole(String roles, User user) {
+        String safeRoles = roles != null ? roles : "";
+        if (safeRoles.contains("ROLE_ADMIN") || safeRoles.contains("ROLE_MEDECIN")) {
+            DashboardController.setLoggedInUser(user);
+            navigateTo("/dashboard.fxml");
+            return;
+        }
+        HomeController.setUser(user);
+        navigateTo("/home.fxml");
     }
 }

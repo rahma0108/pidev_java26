@@ -254,31 +254,34 @@ public class DisponibiliteService {
         if (!d.getHeureFin().isAfter(d.getHeureDebut())) {
             throw new ServiceException("heureFin doit être strictement après heureDebut.");
         }
-        if (existeChevauchement(d.getDate(), d.getHeureDebut(), d.getHeureFin(), excludeId)) {
-            throw new ServiceException("Chevauchement avec un autre créneau le même jour (tous créneaux confondus).");
+        if (existeChevauchement(d.getDate(), d.getHeureDebut(), d.getHeureFin(), d.getMedecin().getId(), excludeId)) {
+            throw new ServiceException("Chevauchement avec un autre créneau du même médecin le même jour.");
         }
     }
 
-    /** Chevauchement global : pas de filtre par médecin en base. */
-    private boolean existeChevauchement(LocalDate date, LocalTime debut, LocalTime fin, Integer excludeId)
+    /** Chevauchement par médecin et par jour. */
+    private boolean existeChevauchement(LocalDate date, LocalTime debut, LocalTime fin, int medecinId, Integer excludeId)
             throws ServiceException {
         String sql = """
                 SELECT COUNT(*) FROM disponibilites
-                WHERE date = ? AND UPPER(status) NOT IN ('ANNULEE', 'STATUS_ANNULEE')
+                WHERE date = ?
+                AND medecin_id = ?
+                AND UPPER(status) NOT IN ('ANNULEE', 'STATUS_ANNULEE')
                 AND (? IS NULL OR id <> ?)
                 AND heure_debut < ? AND heure_fin > ?
                 """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setDate(1, Date.valueOf(date));
+            ps.setInt(2, medecinId);
             if (excludeId == null) {
-                ps.setNull(2, java.sql.Types.INTEGER);
                 ps.setNull(3, java.sql.Types.INTEGER);
+                ps.setNull(4, java.sql.Types.INTEGER);
             } else {
-                ps.setInt(2, excludeId);
                 ps.setInt(3, excludeId);
+                ps.setInt(4, excludeId);
             }
-            ps.setTime(4, Time.valueOf(fin));
-            ps.setTime(5, Time.valueOf(debut));
+            ps.setTime(5, Time.valueOf(fin));
+            ps.setTime(6, Time.valueOf(debut));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;

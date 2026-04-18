@@ -1,3 +1,5 @@
+package userfx;
+
 import javafx.scene.Scene;
 
 public class ThemeManager {

@@ -1,3 +1,5 @@
+package userfx;
+
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -186,8 +188,17 @@ public class HomeController {
         st.setToX(1.0); st.setToY(1.0); st.play();
     }
 
-    // ── Navigation — Coming Soon for all ──
-    @FXML public void goToRdv()         { PopupHelper.showComingSoon("Appointments"); }
+    // ── Navigation ──
+    @FXML
+    public void goToRdv() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/fxml/ReserverRendezVousView.fxml"));
+            heroLabel.getScene().setRoot(root);
+            ThemeManager.apply(heroLabel.getScene());
+        } catch (Exception e) {
+            PopupHelper.showError("Impossible d'ouvrir la page de réservation.");
+        }
+    }
     @FXML public void goToMedicaments() { PopupHelper.showComingSoon("Medications"); }
     @FXML public void goToOrdonnances() { PopupHelper.showComingSoon("Prescriptions"); }
     @FXML public void goToEvents()      { PopupHelper.showComingSoon("Events"); }
