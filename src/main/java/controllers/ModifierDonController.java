@@ -106,6 +106,31 @@ public class ModifierDonController implements Initializable {
         return s == null ? "" : s;
     }
 
+    /**
+     * Depuis « Mes dons », un don validé repasse en attente après modification pour être revu par l’admin.
+     */
+    private String statutApresEnregistrement() {
+        if (don == null) {
+            return "en_attente";
+        }
+        if (!"/MesDons.fxml".equals(retourFxml)) {
+            return don.getStatut();
+        }
+        String s = don.getStatut() == null ? "" : don.getStatut().trim();
+        if ("valide".equalsIgnoreCase(s)) {
+            return "en_attente";
+        }
+        return don.getStatut() != null ? don.getStatut() : "en_attente";
+    }
+
+    private String messageSuccesEnregistrement() {
+        if (don != null && "/MesDons.fxml".equals(retourFxml)
+                && don.getStatut() != null && "valide".equalsIgnoreCase(don.getStatut().trim())) {
+            return "Don mis à jour. Il repasse en « en attente » pour revalidation par l’administrateur.";
+        }
+        return "Don mis à jour avec succès.";
+    }
+
     private void enregistrer() {
         if (don == null) {
             new Alert(Alert.AlertType.ERROR, "Aucun don chargé.").showAndWait();
@@ -144,12 +169,12 @@ public class ModifierDonController implements Initializable {
             misAJour.setDetailsSupplementaires(details);
             misAJour.setEtat(etat);
             misAJour.setNiveauUrgence(urgence);
-            misAJour.setStatut(don.getStatut());
+            misAJour.setStatut(statutApresEnregistrement());
             misAJour.setDateExpiration(expiration);
             misAJour.setDateSoumission(don.getDateSoumission());
 
             donService.update(misAJour);
-            new Alert(Alert.AlertType.INFORMATION, "Don mis à jour avec succès.").showAndWait();
+            new Alert(Alert.AlertType.INFORMATION, messageSuccesEnregistrement()).showAndWait();
             retourListe();
         } catch (NumberFormatException ex) {
             new Alert(Alert.AlertType.ERROR, "La quantité doit être un nombre entier valide.").showAndWait();

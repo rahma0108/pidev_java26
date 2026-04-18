@@ -96,7 +96,7 @@ public class DonService implements IService<Don> {
         System.out.println("Don supprimé !");
     }
 
-    /** Passe le statut à « valide » uniquement si le don est encore « en_attente ». */
+    /** Passe le statut à « valide » uniquement si le don est encore « en attente ». */
     public boolean validerDon(int id) throws SQLException {
         ensureConn();
         String req = "UPDATE dons SET statut='valide' WHERE id=? AND statut='en_attente'";
@@ -109,7 +109,7 @@ public class DonService implements IService<Don> {
         return n > 0;
     }
 
-    /** Passe le statut à « rejete » uniquement si le don est encore « en_attente ». */
+    /** Passe le statut à « rejete » uniquement si le don est encore « en attente ». */
     public boolean rejeterDon(int id) throws SQLException {
         ensureConn();
         String req = "UPDATE dons SET statut='rejete' WHERE id=? AND statut='en_attente'";

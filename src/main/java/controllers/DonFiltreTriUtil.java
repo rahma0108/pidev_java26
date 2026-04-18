@@ -14,9 +14,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Recherche, filtres combinés et tri multi-niveaux pour la liste publique et l'espace admin.
- */
 public final class DonFiltreTriUtil {
 
     public static final String TRI_AUCUN = "— (aucun) —";
@@ -27,13 +24,11 @@ public final class DonFiltreTriUtil {
 
     public static final List<String> TRI_NIVEAUX = List.of(
             TRI_AUCUN,
-            "ID",
             "Quantité",
             "Statut",
             "Urgence",
             "État",
-            "Date de soumission",
-            "Description"
+            "Date de soumission"
     );
 
     private DonFiltreTriUtil() {
@@ -196,12 +191,6 @@ public final class DonFiltreTriUtil {
             return true;
         }
         String needle = q.trim().toLowerCase();
-        if (needle.matches("\\d+")) {
-            int idNeedle = Integer.parseInt(needle);
-            if (don.getId() == idNeedle) {
-                return true;
-            }
-        }
         return contientIgnoreCase(don.getArticleDescription(), needle)
                 || contientIgnoreCase(don.getDetailsSupplementaires(), needle)
                 || contientIgnoreCase(don.getUnite(), needle)
@@ -245,7 +234,6 @@ public final class DonFiltreTriUtil {
 
     private static Comparator<Don> comparateurPourLibelle(String champ) {
         return switch (champ) {
-            case "ID" -> Comparator.comparingInt(Don::getId);
             case "Quantité" -> Comparator.comparingInt(Don::getQuantite);
             case "Statut" -> Comparator
                     .comparingInt((Don d) -> ordreStatut(d.getStatut()))
@@ -259,9 +247,6 @@ public final class DonFiltreTriUtil {
             case "Date de soumission" -> Comparator.comparing(
                     Don::getDateSoumission,
                     Comparator.nullsLast(Comparator.naturalOrder()));
-            case "Description" -> Comparator.comparing(
-                    d -> Objects.toString(d.getArticleDescription(), ""),
-                    String.CASE_INSENSITIVE_ORDER);
             default -> Comparator.comparingInt(Don::getId);
         };
     }

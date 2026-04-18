@@ -18,7 +18,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -33,7 +32,6 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
@@ -135,9 +133,6 @@ public class AdminDonsController implements Initializable {
         tri3ChampCombo.valueProperty().addListener((obs, o, n) -> appliquerTri());
         tri3OrdreCombo.valueProperty().addListener((obs, o, n) -> appliquerTri());
 
-        tri1ChampCombo.getSelectionModel().select("ID");
-        tri1OrdreCombo.getSelectionModel().select(DonFiltreTriUtil.ORDRE_DECROISSANT);
-
         btnActualiser.setOnAction(e -> {
             chargerDepuisBase();
             appliquerFiltre();
@@ -236,7 +231,6 @@ public class AdminDonsController implements Initializable {
         Label quantite = new Label("Quantité : " + don.getQuantite() + " " + safe(don.getUnite()));
         Label etat = new Label("État : " + safe(don.getEtat()));
         Label urgence = new Label("Urgence : " + safe(don.getNiveauUrgence()));
-        Label cat = new Label("Catégorie (id) : " + don.getCategorieId());
         Label details = new Label("Détails : " + safe(don.getDetailsSupplementaires()));
         details.setWrapText(true);
 
@@ -257,7 +251,7 @@ public class AdminDonsController implements Initializable {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox actions = new HBox(10, spacer, btnModifier, btnSupprimer, btnAccepter, btnRejeter);
 
-        VBox card = new VBox(8, title, statut, quantite, etat, urgence, cat, details, actions);
+        VBox card = new VBox(8, title, statut, quantite, etat, urgence, details, actions);
         card.setPadding(new Insets(10));
         card.setStyle(CARD_STYLE);
         return card;
@@ -282,34 +276,8 @@ public class AdminDonsController implements Initializable {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Suppression");
         confirm.setHeaderText(null);
-        confirm.setContentText("Voulez-vous vraiment supprimer le don n°" + don.getId() + " ?");
+        confirm.setContentText("Voulez-vous vraiment supprimer ce don ?");
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
-            return;
-        }
-
-        TextInputDialog saisie = new TextInputDialog();
-        saisie.setTitle("Confirmation");
-        saisie.setHeaderText("Pour confirmer la suppression, saisissez l'identifiant du don.");
-        saisie.setContentText("ID du don :");
-
-        Optional<String> rep = saisie.showAndWait();
-        if (rep.isEmpty()) {
-            return;
-        }
-        String texte = rep.get().trim();
-        if (texte.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING, "L'ID ne peut pas être vide.").showAndWait();
-            return;
-        }
-        try {
-            int saisi = Integer.parseInt(texte);
-            if (saisi != don.getId()) {
-                new Alert(Alert.AlertType.WARNING,
-                        "L'ID saisi ne correspond pas au don. Suppression annulée.").showAndWait();
-                return;
-            }
-        } catch (NumberFormatException ex) {
-            new Alert(Alert.AlertType.ERROR, "L'ID doit être un nombre entier valide.").showAndWait();
             return;
         }
 
@@ -337,7 +305,7 @@ public class AdminDonsController implements Initializable {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Décision");
         confirm.setHeaderText(null);
-        confirm.setContentText("Confirmer : " + action + " le don n°" + don.getId() + " ?\nStatut → " + prochainStatut + ".");
+        confirm.setContentText("Confirmer : " + action + " ce don ?\nStatut → " + prochainStatut + ".");
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
             return;
         }

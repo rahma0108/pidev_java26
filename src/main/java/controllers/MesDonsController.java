@@ -30,21 +30,30 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public class ListeDonsController implements Initializable {
+public class MesDonsController implements Initializable {
 
     private static final String CARD_STYLE_BASE = "-fx-background-color: #ffffff; -fx-border-color: #d7deea;"
             + " -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 2;";
     private static final String CARD_STYLE_SELECTED = CARD_STYLE_BASE
             + " -fx-border-color: #2563eb; -fx-border-width: 2;";
+    private static final Set<String> STATUTS_MES_DONS = Set.of("en_attente", "valide");
+
+    private Map<Integer, String> libellesCategorieCourants = Map.of();
 
     @FXML
     private BorderPane rootPane;
 
     @FXML
     private TextField searchField;
+
+    @FXML
+    private ComboBox<String> statutCombo;
 
     @FXML
     private ComboBox<String> filtreUrgenceCombo;
@@ -92,7 +101,7 @@ public class ListeDonsController implements Initializable {
     private Button btnSupprimer;
 
     @FXML
-    private Button btnMesDons;
+    private Button btnAccueil;
 
     @FXML
     private Button btnEspaceAdmin;
@@ -119,6 +128,7 @@ public class ListeDonsController implements Initializable {
         sortedData.addListener((ListChangeListener<Don>) change -> renderCards());
 
         searchField.textProperty().addListener((obs, o, n) -> appliquerFiltre());
+        statutCombo.valueProperty().addListener((obs, o, n) -> appliquerFiltre());
         filtreUrgenceCombo.valueProperty().addListener((obs, o, n) -> appliquerFiltre());
         filtreEtatCombo.valueProperty().addListener((obs, o, n) -> appliquerFiltre());
         filtreUniteCombo.valueProperty().addListener((obs, o, n) -> appliquerFiltre());
@@ -134,9 +144,9 @@ public class ListeDonsController implements Initializable {
         tri3OrdreCombo.valueProperty().addListener((obs, o, n) -> appliquerTri());
 
         btnAjouter.setOnAction(e -> ouvrirAjouter());
-        btnModifier.setOnAction(e -> ouvrirModifier());
-        btnSupprimer.setOnAction(e -> supprimerSelection());
-        btnMesDons.setOnAction(e -> ouvrirMesDons());
+        btnModifier.setOnAction(e -> ouvrirModifierDon(selectedDon));
+        btnSupprimer.setOnAction(e -> supprimerDon(selectedDon));
+        btnAccueil.setOnAction(e -> ouvrirAccueil());
         btnEspaceAdmin.setOnAction(e -> ouvrirEspaceAdmin());
 
         appliquerTri();
@@ -145,10 +155,19 @@ public class ListeDonsController implements Initializable {
         majEtatBoutons();
     }
 
+    /** Modification / suppression réservées aux dons en attente ou validés sur cet écran. */
+    private static boolean peutModifierOuSupprimer(Don d) {
+        if (d == null || d.getStatut() == null) {
+            return false;
+        }
+        String s = d.getStatut().trim().toLowerCase();
+        return "en_attente".equals(s) || "valide".equals(s);
+    }
+
     private void majEtatBoutons() {
-        boolean hasSelection = selectedDon != null;
-        btnModifier.setDisable(!hasSelection);
-        btnSupprimer.setDisable(!hasSelection);
+        boolean ok = peutModifierOuSupprimer(selectedDon);
+        btnModifier.setDisable(!ok);
+        btnSupprimer.setDisable(!ok);
     }
 
     private void chargerDepuisBase() {
@@ -157,20 +176,27 @@ public class ListeDonsController implements Initializable {
         } catch (SQLException ex) {
             afficherErreur("Impossible de charger les dons", ex.getMessage());
         }
+        DonFiltreTriUtil.remplirComboStatuts(masterData, statutCombo);
+        statutCombo.getItems().removeIf(s -> !"Tous".equals(s) && !"en_attente".equals(s) && !"valide".equals(s));
+        if (statutCombo.getSelectionModel().getSelectedItem() == null) {
+            statutCombo.getSelectionModel().selectFirst();
+        }
         DonFiltreTriUtil.remplirFiltresSecondaires(masterData,
                 filtreUrgenceCombo, filtreEtatCombo, filtreUniteCombo, filtreCategorieCombo);
     }
 
     private void appliquerFiltre() {
-        filteredData.setPredicate(DonFiltreTriUtil.creerPredicate(
+        var basePredicate = DonFiltreTriUtil.creerPredicate(
                 searchField.getText(),
-                "valide",
+                statutCombo.getSelectionModel().getSelectedItem(),
                 filtreUrgenceCombo.getSelectionModel().getSelectedItem(),
                 filtreEtatCombo.getSelectionModel().getSelectedItem(),
                 filtreUniteCombo.getSelectionModel().getSelectedItem(),
                 filtreCategorieCombo.getValue(),
                 DonFiltreTriUtil.parseIntOptional(tfQuantiteMin.getText()),
-                DonFiltreTriUtil.parseIntOptional(tfQuantiteMax.getText())));
+                DonFiltreTriUtil.parseIntOptional(tfQuantiteMax.getText()));
+
+        filteredData.setPredicate(don -> STATUTS_MES_DONS.contains(safe(don.getStatut())) && basePredicate.test(don));
         renderCards();
     }
 
@@ -198,6 +224,17 @@ public class ListeDonsController implements Initializable {
         }
     }
 
+    private void ouvrirAccueil() {
+        try {
+            Stage stage = stageCourant();
+            Parent root = FXMLLoader.load(Objects.requireNonNull(
+                    getClass().getResource("/ListeDons.fxml")));
+            stage.setScene(new Scene(root, 960, 680));
+        } catch (IOException ex) {
+            afficherErreur("Ouverture accueil", ex.getMessage());
+        }
+    }
+
     private void ouvrirEspaceAdmin() {
         try {
             Stage stage = stageCourant();
@@ -209,21 +246,10 @@ public class ListeDonsController implements Initializable {
         }
     }
 
-    private void ouvrirMesDons() {
-        try {
-            Stage stage = stageCourant();
-            Parent root = FXMLLoader.load(Objects.requireNonNull(
-                    getClass().getResource("/MesDons.fxml")));
-            stage.setScene(new Scene(root, 960, 680));
-        } catch (IOException ex) {
-            afficherErreur("Ouverture de la page Mes dons", ex.getMessage());
-        }
-    }
-
-    private void ouvrirModifier() {
-        Don sel = selectedDon;
-        if (sel == null) {
-            new Alert(Alert.AlertType.WARNING, "Sélectionnez un don dans la liste pour le modifier.").showAndWait();
+    private void ouvrirModifierDon(Don sel) {
+        if (!peutModifierOuSupprimer(sel)) {
+            new Alert(Alert.AlertType.WARNING,
+                    "Sélectionnez un don « en attente » ou « valide » pour le modifier.").showAndWait();
             return;
         }
         try {
@@ -232,7 +258,7 @@ public class ListeDonsController implements Initializable {
                     getClass().getResource("/ModifierDon.fxml")));
             Parent root = loader.load();
             ModifierDonController ctrl = loader.getController();
-            ctrl.setRetourFxml("/ListeDons.fxml");
+            ctrl.setRetourFxml("/MesDons.fxml");
             ctrl.setDon(sel);
             stage.setScene(new Scene(root, 560, 520));
         } catch (IOException ex) {
@@ -240,10 +266,10 @@ public class ListeDonsController implements Initializable {
         }
     }
 
-    private void supprimerSelection() {
-        Don sel = selectedDon;
-        if (sel == null) {
-            new Alert(Alert.AlertType.WARNING, "Sélectionnez un don à supprimer.").showAndWait();
+    private void supprimerDon(Don sel) {
+        if (!peutModifierOuSupprimer(sel)) {
+            new Alert(Alert.AlertType.WARNING,
+                    "Sélectionnez un don « en attente » ou « valide » pour le supprimer.").showAndWait();
             return;
         }
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
@@ -272,6 +298,8 @@ public class ListeDonsController implements Initializable {
 
     private void renderCards() {
         cardsContainer.getChildren().clear();
+        libellesCategorieCourants = DonFormChoices.categoriesSansPlaceholder().stream()
+                .collect(Collectors.toMap(DonFormChoices.CategorieOption::id, DonFormChoices.CategorieOption::libelle, (a, b) -> a));
         boolean selectedStillVisible = false;
         for (Don don : sortedData) {
             VBox card = buildCard(don);
@@ -287,7 +315,7 @@ public class ListeDonsController implements Initializable {
             majEtatBoutons();
         }
         if (sortedData.isEmpty()) {
-            Label empty = new Label("Aucun don à afficher (ajustez filtres / recherche).");
+            Label empty = new Label("Aucun don à afficher (mes dons : en attente + valides).");
             empty.setStyle("-fx-text-fill: #6c757d; -fx-font-size: 14;");
             VBox wrap = new VBox(empty);
             wrap.setPadding(new Insets(20, 10, 20, 10));
@@ -303,13 +331,27 @@ public class ListeDonsController implements Initializable {
         statut.setStyle(styleStatut(don.getStatut()));
         Label etat = new Label("État : " + safe(don.getEtat()));
         Label urgence = new Label("Urgence : " + safe(don.getNiveauUrgence()));
+        Label cat = new Label("Catégorie : " + libellesCategorieCourants.getOrDefault(don.getCategorieId(), "—"));
         Label details = new Label("Détails : " + safe(don.getDetailsSupplementaires()));
         details.setWrapText(true);
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox row1 = new HBox(20, quantite, statut, spacer);
-        HBox row2 = new HBox(20, etat, urgence);
-        VBox card = new VBox(8, title, row1, row2, details);
+        HBox row2 = new HBox(20, etat, urgence, cat);
+
+        Button btnMod = new Button("Modifier");
+        Button btnSup = new Button("Supprimer");
+        boolean actionsOk = peutModifierOuSupprimer(don);
+        btnMod.setDisable(!actionsOk);
+        btnSup.setDisable(!actionsOk);
+        btnMod.setOnAction(e -> ouvrirModifierDon(don));
+        btnSup.setOnAction(e -> supprimerDon(don));
+
+        Region spacerActions = new Region();
+        HBox.setHgrow(spacerActions, Priority.ALWAYS);
+        HBox actions = new HBox(10, spacerActions, btnMod, btnSup);
+
+        VBox card = new VBox(8, title, row1, row2, details, actions);
         card.setPadding(new Insets(10));
         card.setStyle(CARD_STYLE_BASE);
         card.setOnMouseClicked(e -> appliquerSelectionCard(card, don));
