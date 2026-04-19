@@ -8,7 +8,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Time;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 public class UserService {
@@ -66,7 +67,6 @@ public class UserService {
     }
 
     static User mapUser(ResultSet rs) throws SQLException {
-        Time pref = rs.getTime("preferred_time");
         int maxDays = rs.getInt("max_days_ahead");
         boolean maxNull = rs.wasNull();
         return new User(
@@ -74,8 +74,20 @@ public class UserService {
                 rs.getString("full_name"),
                 rs.getString("email"),
                 User.parseRoles(rs.getString("roles")),
-                pref != null ? pref.toLocalTime() : null,
+                parsePreferredTime(rs, "preferred_time"),
                 maxNull ? null : maxDays
         );
+    }
+
+    private static LocalTime parsePreferredTime(ResultSet rs, String column) throws SQLException {
+        String raw = rs.getString(column);
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalTime.parse(raw.trim());
+        } catch (DateTimeParseException ignored) {
+            return null;
+        }
     }
 }

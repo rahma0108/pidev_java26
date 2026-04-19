@@ -16,6 +16,8 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,46 +36,43 @@ public class RendezVousService {
 
     public RendezVousService(Connection connection) throws ServiceException {
         if (connection == null) {
-            throw new ServiceException("Connexion JDBC indisponible (vérifiez MySQL et application.properties).");
+            throw new ServiceException("Connexion JDBC indisponible (verifiez MySQL et application.properties).");
         }
         this.connection = connection;
         this.disponibiliteService = new DisponibiliteService(connection);
         this.userService = new UserService(connection);
     }
 
-    /**
-     * Réservation : vérifie LIBRE, crée le RDV, copie dateHeure depuis le début du créneau, passe la dispo en RESERVEE.
-     */
     public RendezVous reserver(int disponibiliteId, int patientId, String motif) throws ServiceException {
         User patient = userService.findById(patientId)
                 .orElseThrow(() -> new ServiceException("Patient introuvable."));
         if (!patient.hasRole(User.ROLE_PATIENT)) {
-            throw new ServiceException("Seul un utilisateur avec le rôle PATIENT peut réserver.");
+            throw new ServiceException("Seul un utilisateur avec le role PATIENT peut reserver.");
         }
 
         try {
             connection.setAutoCommit(false);
             Optional<Disponibilite> optDispo = disponibiliteService.findByIdForUpdate(connection, disponibiliteId);
-            Disponibilite dispo = optDispo.orElseThrow(() -> new ServiceException("Disponibilité introuvable."));
+            Disponibilite dispo = optDispo.orElseThrow(() -> new ServiceException("Disponibilite introuvable."));
 
             if (!isStatutLibre(dispo.getStatus())) {
-                throw new ServiceException("Cette disponibilité n'est plus libre.");
+                throw new ServiceException("Cette disponibilite n'est plus libre.");
             }
 
             if (patient.getMaxDaysAhead() != null) {
                 long days = ChronoUnit.DAYS.between(LocalDate.now(), dispo.getDate());
                 if (days > patient.getMaxDaysAhead()) {
-                    throw new ServiceException("La date dépasse la fenêtre maxDaysAhead autorisée pour ce patient.");
+                    throw new ServiceException("La date depasse la fenetre maxDaysAhead autorisee pour ce patient.");
                 }
             }
 
             LocalDateTime dateHeure = dispo.toDateHeureDebut();
             LocalDateTime now = LocalDateTime.now();
             if (!dateHeure.isAfter(now)) {
-                throw new ServiceException("Cette disponibilité est déjà passée.");
+                throw new ServiceException("Cette disponibilite est deja passee.");
             }
             if (rendezVousExistePourDisponibilite(connection, disponibiliteId)) {
-                throw new ServiceException("Cette disponibilité est déjà réservée.");
+                throw new ServiceException("Cette disponibilite est deja reservee.");
             }
 
             String insertRdv = """
@@ -108,15 +107,16 @@ public class RendezVousService {
             rdv.setMotif(motif);
             rdv.setCreatedAt(now);
             rdv.setPatient(patient);
+            dispo.setRendezVous(rdv);
 
             connection.commit();
             return rdv;
         } catch (SQLIntegrityConstraintViolationException e) {
             rollbackQuietly();
-            throw new ServiceException("Cette disponibilité est déjà réservée.", e);
+            throw new ServiceException("Cette disponibilite est deja reservee.", e);
         } catch (SQLException e) {
             rollbackQuietly();
-            throw new ServiceException("Erreur lors de la réservation.", e);
+            throw new ServiceException("Erreur lors de la reservation.", e);
         } catch (ServiceException e) {
             rollbackQuietly();
             throw e;
@@ -128,19 +128,16 @@ public class RendezVousService {
         }
     }
 
-    /**
-     * Annulation : supprime le rendez-vous et remet la disponibilité en LIBRE.
-     */
     public void annuler(int rendezVousId) throws ServiceException {
         try {
             connection.setAutoCommit(false);
             Optional<RendezVous> opt = findByIdForUpdate(connection, rendezVousId);
             RendezVous rdv = opt.orElseThrow(() -> new ServiceException("Rendez-vous introuvable."));
             if (RendezVous.ANNULE.equals(rdv.getStatut())) {
-                throw new ServiceException("Ce rendez-vous est déjà annulé.");
+                throw new ServiceException("Ce rendez-vous est deja annule.");
             }
             if (RendezVous.TERMINE.equals(rdv.getStatut())) {
-                throw new ServiceException("Impossible d'annuler un rendez-vous terminé.");
+                throw new ServiceException("Impossible d'annuler un rendez-vous termine.");
             }
 
             int dispoId = rdv.getDisponibilite().getId();
@@ -171,9 +168,9 @@ public class RendezVousService {
 
     public void confirmer(int rendezVousId, int medecinId) throws ServiceException {
         User medecin = userService.findById(medecinId)
-                .orElseThrow(() -> new ServiceException("Médecin introuvable."));
+                .orElseThrow(() -> new ServiceException("Medecin introuvable."));
         if (!medecin.hasRole(User.ROLE_MEDECIN)) {
-            throw new ServiceException("Seul un médecin peut confirmer.");
+            throw new ServiceException("Seul un medecin peut confirmer.");
         }
         try {
             connection.setAutoCommit(false);
@@ -181,10 +178,10 @@ public class RendezVousService {
                     .orElseThrow(() -> new ServiceException("Rendez-vous introuvable."));
             User dispMed = rdv.getDisponibilite().getMedecin();
             if (dispMed != null && dispMed.getId() > 0 && dispMed.getId() != medecinId) {
-                throw new ServiceException("Ce rendez-vous ne concerne pas ce médecin.");
+                throw new ServiceException("Ce rendez-vous ne concerne pas ce medecin.");
             }
             if (!RendezVous.EN_ATTENTE.equals(rdv.getStatut())) {
-                throw new ServiceException("Seuls les rendez-vous EN_ATTENTE peuvent être confirmés.");
+                throw new ServiceException("Seuls les rendez-vous EN_ATTENTE peuvent etre confirmes.");
             }
             updateStatut(connection, rendezVousId, RendezVous.CONFIRME);
             connection.commit();
@@ -204,9 +201,9 @@ public class RendezVousService {
 
     public void terminer(int rendezVousId, int medecinId) throws ServiceException {
         User medecin = userService.findById(medecinId)
-                .orElseThrow(() -> new ServiceException("Médecin introuvable."));
+                .orElseThrow(() -> new ServiceException("Medecin introuvable."));
         if (!medecin.hasRole(User.ROLE_MEDECIN)) {
-            throw new ServiceException("Seul un médecin peut terminer un rendez-vous.");
+            throw new ServiceException("Seul un medecin peut terminer un rendez-vous.");
         }
         try {
             connection.setAutoCommit(false);
@@ -214,16 +211,16 @@ public class RendezVousService {
                     .orElseThrow(() -> new ServiceException("Rendez-vous introuvable."));
             User dispMed = rdv.getDisponibilite().getMedecin();
             if (dispMed != null && dispMed.getId() > 0 && dispMed.getId() != medecinId) {
-                throw new ServiceException("Ce rendez-vous ne concerne pas ce médecin.");
+                throw new ServiceException("Ce rendez-vous ne concerne pas ce medecin.");
             }
-            if (!RendezVous.CONFIRME.equals(rdv.getStatut())) {
-                throw new ServiceException("Seuls les rendez-vous CONFIRME peuvent être marqués TERMINE.");
+            if (!RendezVous.EN_ATTENTE.equals(rdv.getStatut()) && !RendezVous.CONFIRME.equals(rdv.getStatut())) {
+                throw new ServiceException("Seuls les rendez-vous EN_ATTENTE ou CONFIRME peuvent etre marques TERMINE.");
             }
             updateStatut(connection, rendezVousId, RendezVous.TERMINE);
             connection.commit();
         } catch (SQLException e) {
             rollbackQuietly();
-            throw new ServiceException("Erreur lors de la clôture du rendez-vous.", e);
+            throw new ServiceException("Erreur lors de la cloture du rendez-vous.", e);
         } catch (ServiceException e) {
             rollbackQuietly();
             throw e;
@@ -235,26 +232,23 @@ public class RendezVousService {
         }
     }
 
-    /**
-     * Avis : RDV CONFIRME ou TERMINE, après la date/heure du RDV, une seule fois par RDV, par le patient concerné.
-     */
     public Avis laisserAvis(int rendezVousId, int patientId, int note, String commentaire) throws ServiceException {
         if (note < 1 || note > 5) {
-            throw new ServiceException("La note doit être entre 1 et 5.");
+            throw new ServiceException("La note doit etre entre 1 et 5.");
         }
         RendezVous rdv = findById(rendezVousId)
                 .orElseThrow(() -> new ServiceException("Rendez-vous introuvable."));
-        if (rdv.getPatient().getId() != patientId) {
+        if (rdv.getPatient() == null || rdv.getPatient().getId() != patientId) {
             throw new ServiceException("Seul le patient du rendez-vous peut laisser un avis.");
         }
         if (!RendezVous.CONFIRME.equals(rdv.getStatut()) && !RendezVous.TERMINE.equals(rdv.getStatut())) {
-            throw new ServiceException("Avis autorisé uniquement pour un rendez-vous CONFIRME ou TERMINE.");
+            throw new ServiceException("Avis autorise uniquement pour un rendez-vous CONFIRME ou TERMINE.");
         }
         if (!LocalDateTime.now().isAfter(rdv.getDateHeure())) {
-            throw new ServiceException("L'avis n'est possible qu'après la date/heure du rendez-vous.");
+            throw new ServiceException("L'avis n'est possible qu'apres la date/heure du rendez-vous.");
         }
         if (avisExistePourRdv(rendezVousId)) {
-            throw new ServiceException("Un avis existe déjà pour ce rendez-vous.");
+            throw new ServiceException("Un avis existe deja pour ce rendez-vous.");
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -307,9 +301,9 @@ public class RendezVousService {
     }
 
     public List<RendezVous> listerPourMedecin(int medecinId) throws ServiceException {
-        /* Sans medecin_id sur disponibilite, impossible de filtrer par médecin en SQL */
-        String sql = baseSelectRdv() + " ORDER BY r.date_heure DESC ";
+        String sql = baseSelectRdv() + " WHERE d.medecin_id = ? ORDER BY r.date_heure DESC ";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, medecinId);
             try (ResultSet rs = ps.executeQuery()) {
                 List<RendezVous> list = new ArrayList<>();
                 while (rs.next()) {
@@ -318,7 +312,7 @@ public class RendezVousService {
                 return list;
             }
         } catch (SQLException e) {
-            throw new ServiceException("Erreur chargement rendez-vous médecin.", e);
+            throw new ServiceException("Erreur chargement rendez-vous medecin.", e);
         }
     }
 
@@ -370,7 +364,7 @@ public class RendezVousService {
                 }
             }
         } catch (SQLException e) {
-            throw new ServiceException("Erreur vérification avis existant.", e);
+            throw new ServiceException("Erreur verification avis existant.", e);
         }
         return false;
     }
@@ -385,7 +379,7 @@ public class RendezVousService {
                 }
             }
         } catch (SQLException e) {
-            throw new ServiceException("Erreur vérification réservation existante.", e);
+            throw new ServiceException("Erreur verification reservation existante.", e);
         }
         return false;
     }
@@ -395,8 +389,11 @@ public class RendezVousService {
                 SELECT r.id r_id, r.date_heure, r.statut, r.motif, r.created_at r_created,
                        r.patient_id, r.disponibilite_id,
                        d.id d_id, d.date d_date, d.heure_debut, d.heure_fin, d.status d_status, d.created_at d_created,
-                       CAST(NULL AS SIGNED) AS um_id,
-                       CAST(NULL AS CHAR) AS um_name,
+                       d.medecin_id AS um_id,
+                       CASE
+                           WHEN d.medecin_id IS NULL THEN '(medecin non assigne)'
+                           ELSE CONCAT('Medecin #', d.medecin_id)
+                       END AS um_name,
                        CAST(NULL AS CHAR) AS um_email,
                        CAST(NULL AS CHAR) AS um_roles,
                        CAST(NULL AS TIME) AS um_pref,
@@ -405,7 +402,7 @@ public class RendezVousService {
                        up.preferred_time up_pref, up.max_days_ahead up_max
                 FROM rendez_vous r
                 JOIN disponibilites d ON d.id = r.disponibilite_id
-                JOIN `user` up ON up.id = r.patient_id
+                LEFT JOIN `user` up ON up.id = r.patient_id
                 """;
     }
 
@@ -416,7 +413,7 @@ public class RendezVousService {
         if (rs.getObject("um_id") == null) {
             medecin = new User();
             medecin.setId(0);
-            medecin.setFullName("(médecin non stocké en BDD)");
+            medecin.setFullName("(medecin non stocke en BDD)");
             medecin.setEmail("");
             medecin.setRoles(Collections.emptyList());
         } else {
@@ -425,18 +422,23 @@ public class RendezVousService {
                     rs.getString("um_name"),
                     rs.getString("um_email"),
                     User.parseRoles(rs.getString("um_roles")),
-                    rs.getTime("um_pref") != null ? rs.getTime("um_pref").toLocalTime() : null,
+                    parsePreferredTime(rs, "um_pref"),
                     umMax
             );
         }
-        User patient = new User(
-                rs.getInt("up_id"),
-                rs.getString("up_name"),
-                rs.getString("up_email"),
-                User.parseRoles(rs.getString("up_roles")),
-                rs.getTime("up_pref") != null ? rs.getTime("up_pref").toLocalTime() : null,
-                upMax
-        );
+
+        User patient = null;
+        if (rs.getObject("up_id") != null) {
+            patient = new User(
+                    rs.getInt("up_id"),
+                    rs.getString("up_name"),
+                    rs.getString("up_email"),
+                    User.parseRoles(rs.getString("up_roles")),
+                    parsePreferredTime(rs, "up_pref"),
+                    upMax
+            );
+        }
+
         Disponibilite d = new Disponibilite();
         d.setId(rs.getInt("d_id"));
         d.setDate(rs.getDate("d_date").toLocalDate());
@@ -456,6 +458,7 @@ public class RendezVousService {
         Timestamp rca = rs.getTimestamp("r_created");
         r.setCreatedAt(rca != null ? rca.toLocalDateTime() : null);
         r.setPatient(patient);
+        d.setRendezVous(r);
         return r;
     }
 
@@ -463,6 +466,18 @@ public class RendezVousService {
         try {
             connection.rollback();
         } catch (SQLException ignored) {
+        }
+    }
+
+    private static LocalTime parsePreferredTime(ResultSet rs, String column) throws SQLException {
+        String raw = rs.getString(column);
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalTime.parse(raw.trim());
+        } catch (DateTimeParseException ignored) {
+            return null;
         }
     }
 

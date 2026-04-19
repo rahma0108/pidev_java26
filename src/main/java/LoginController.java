@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import view.SessionContext;
 
 public class LoginController {
 
@@ -11,6 +12,11 @@ public class LoginController {
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
     @FXML private Button themeToggleBtn;
+    private static User loggedInUser;
+
+    public static User getLoggedInUser() {
+        return loggedInUser;
+    }
 
     @FXML
     public void goToLanding() {
@@ -51,6 +57,7 @@ public class LoginController {
             User user = us.login(email, password);
 
             if (user != null) {
+                loggedInUser = user;
                 System.out.println("[userfx] Login success, navigating by role.");
                 navigateByRole(user.getRoles(), user);
                 return;
@@ -95,16 +102,21 @@ public class LoginController {
         String normalizedRoles = safeRoles.toUpperCase();
 
         if (hasRole(normalizedRoles, "ADMIN")) {
+            SessionContext.clear();
             DashboardController.setLoggedInUser(user);
             navigateTo("/dashboard.fxml");
             return;
         }
 
         if (hasRole(normalizedRoles, "MEDECIN")) {
+            SessionContext.setCurrentMedecinId(user.getId());
+            SessionContext.setCurrentPatientId(null);
             navigateTo("/fxml/ListeDisponibilitesView.fxml");
             return;
         }
 
+        SessionContext.setCurrentPatientId(user.getId());
+        SessionContext.setCurrentMedecinId(null);
         HomeController.setUser(user);
         navigateTo("/home.fxml");
     }
