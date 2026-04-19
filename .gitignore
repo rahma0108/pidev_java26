@@ -1,4 +1,7 @@
 target/
+# Avis IA hors base (fichiers locaux par don)
+gdons_avis_ia/
+
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -37,3 +40,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+# Fichier de config sensible
+application.properties

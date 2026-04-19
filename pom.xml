@@ -11,6 +11,7 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>17.0.12</javafx.version>
     </properties>
@@ -56,8 +57,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <source>17</source>
-                    <target>17</target>
+                    <release>17</release>
                 </configuration>
             </plugin>
             <plugin>
@@ -65,8 +65,18 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <!-- Projet modulaire : nom_module/package.MainClass -->
-                    <mainClass>gdons/test.MainFX</mainClass>
+                    <!-- Application sur classpath (sans module-info) -->
+                    <mainClass>test.MainFX</mainClass>
+                </configuration>
+            </plugin>
+            <!-- Utiliser exec:java (ou javafx:run), pas exec:exec, pour lancer l’appli -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.6.3</version>
+                <configuration>
+                    <mainClass>test.MainFX</mainClass>
+                    <cleanupDaemonThreads>false</cleanupDaemonThreads>
                 </configuration>
             </plugin>
             <plugin>

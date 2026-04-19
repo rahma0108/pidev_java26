@@ -16,6 +16,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.BorderPane;
@@ -281,6 +282,8 @@ public class GestionDonsAdminController implements Initializable {
         Label details = new Label("Détails : " + safe(don.getDetailsSupplementaires()));
         details.setWrapText(true);
 
+        VBox iaBloc = creerBlocAvisIa(don);
+
         Button btnModifier = new Button("Modifier");
         Button btnSupprimer = new Button("Supprimer");
         btnModifier.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 8;");
@@ -302,7 +305,7 @@ public class GestionDonsAdminController implements Initializable {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox actions = new HBox(8, spacer, btnModifier, btnSupprimer, btnAccepter, btnRejeter);
 
-        VBox card = new VBox(10, title, statut, quantite, etat, urgence, details, actions);
+        VBox card = new VBox(10, title, statut, quantite, etat, urgence, details, iaBloc, actions);
         card.setPadding(new Insets(12));
         card.setStyle(CARD_STYLE);
         card.setMaxWidth(Double.MAX_VALUE);
@@ -357,7 +360,31 @@ public class GestionDonsAdminController implements Initializable {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Décision");
         confirm.setHeaderText(null);
-        confirm.setContentText("Confirmer : " + action + " ce don ?\nStatut → " + prochainStatut + ".");
+        StringBuilder msg = new StringBuilder();
+        msg.append("Confirmer : ").append(action).append(" ce don ?\nStatut → ").append(prochainStatut).append(".");
+        if (avisIaPresent(don)) {
+            msg.append("\n\n— Avis IA —");
+            if (texteUtile(don.getDecisionIA())) {
+                msg.append("\nDécision : ").append(don.getDecisionIA().trim());
+            }
+            if (texteUtile(don.getRaisonIA())) {
+                msg.append("\n").append(don.getRaisonIA().trim());
+            }
+            if (texteUtile(don.getTraductionIA())) {
+                msg.append("\nTraduction : ").append(don.getTraductionIA().trim());
+            }
+        }
+        if (msg.length() > 550) {
+            TextArea ta = new TextArea(msg.toString());
+            ta.setEditable(false);
+            ta.setWrapText(true);
+            ta.setPrefRowCount(14);
+            ta.setPrefColumnCount(56);
+            confirm.getDialogPane().setContent(ta);
+            confirm.getDialogPane().setMinWidth(520);
+        } else {
+            confirm.setContentText(msg.toString());
+        }
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
             return;
         }
@@ -385,6 +412,70 @@ public class GestionDonsAdminController implements Initializable {
 
     private static String safe(String value) {
         return value == null || value.isBlank() ? "-" : value;
+    }
+
+    private static boolean texteUtile(String s) {
+        return s != null && !s.isBlank();
+    }
+
+    private static boolean avisIaPresent(Don don) {
+        return texteUtile(don.getDecisionIA()) || texteUtile(don.getRaisonIA()) || texteUtile(don.getTraductionIA());
+    }
+
+    /**
+     * Les {@link Label} tronquent souvent avec « … » dans une tuile de largeur fixe ; une {@link TextArea}
+     * en lecture seule permet tout le texte avec défilement.
+     */
+    private static TextArea zoneTexteIaLectureSeule(String texte, boolean italique) {
+        TextArea ta = new TextArea(texte != null ? texte : "");
+        ta.setEditable(false);
+        ta.setWrapText(true);
+        ta.setFocusTraversable(false);
+        int lignes = Math.max(2, Math.min(20, (texte != null ? texte.length() : 0) / 65 + 2));
+        ta.setPrefRowCount(lignes);
+        ta.setMinHeight(Region.USE_PREF_SIZE);
+        ta.setMaxHeight(280);
+        ta.setMaxWidth(Double.MAX_VALUE);
+        String style = italique
+                ? "-fx-font-style: italic; -fx-text-fill: #475569; -fx-control-inner-background: rgba(255,255,255,0.92);"
+                : "-fx-text-fill: #334155; -fx-control-inner-background: rgba(255,255,255,0.92);";
+        ta.setStyle(style + " -fx-background-insets: 0; -fx-padding: 6;");
+        return ta;
+    }
+
+    /** Bloc affiché sur chaque carte : aide admin pour les dons en attente (nécessite persistance IA en base). */
+    private static VBox creerBlocAvisIa(Don don) {
+        VBox box = new VBox(6);
+        box.setPadding(new Insets(8, 0, 0, 0));
+        if (!avisIaPresent(don)) {
+            if ("en_attente".equals(don.getStatut())) {
+                Label vide = new Label("Avis IA : absent pour ce don (ancien dépôt sans fichier, ou dossier différent). "
+                        + "Les avis sont dans le dossier gdons_avis_ia du projet, ou dans don.ia.storage.dir. "
+                        + "Créez un nouveau don après recompilation pour tester.");
+                vide.setWrapText(true);
+                vide.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11;");
+                box.getChildren().add(vide);
+            }
+            return box;
+        }
+        Label titreIa = new Label("Avis IA (aide à la décision)");
+        titreIa.setStyle("-fx-font-weight: bold; -fx-text-fill: #1d4ed8;");
+        box.getChildren().add(titreIa);
+        if (texteUtile(don.getDecisionIA())) {
+            Label dec = new Label("Décision : " + don.getDecisionIA().trim());
+            dec.setWrapText(true);
+            dec.setMaxWidth(Double.MAX_VALUE);
+            dec.setStyle("-fx-text-fill: #0f172a;");
+            box.getChildren().add(dec);
+        }
+        if (texteUtile(don.getRaisonIA())) {
+            box.getChildren().add(zoneTexteIaLectureSeule(don.getRaisonIA().trim(), false));
+        }
+        if (texteUtile(don.getTraductionIA())) {
+            box.getChildren().add(zoneTexteIaLectureSeule("Traduction : " + don.getTraductionIA().trim(), true));
+        }
+        box.setStyle("-fx-background-color: #eff6ff; -fx-background-radius: 10; -fx-padding: 10; -fx-border-color: #bfdbfe; -fx-border-radius: 10;");
+        return box;
     }
 
     private static void afficherErreur(String titre, String detail) {

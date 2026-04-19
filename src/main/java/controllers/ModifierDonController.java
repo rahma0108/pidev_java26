@@ -172,6 +172,12 @@ public class ModifierDonController implements Initializable {
             misAJour.setStatut(statutApresEnregistrement());
             misAJour.setDateExpiration(expiration);
             misAJour.setDateSoumission(don.getDateSoumission());
+            misAJour.setTitre(desc);
+            misAJour.setCategorie(cat.libelle());
+            misAJour.setDescription(details);
+            misAJour.setDecisionIA(don.getDecisionIA());
+            misAJour.setRaisonIA(don.getRaisonIA());
+            misAJour.setTraductionIA(don.getTraductionIA());
 
             donService.update(misAJour);
             new Alert(Alert.AlertType.INFORMATION, messageSuccesEnregistrement()).showAndWait();
