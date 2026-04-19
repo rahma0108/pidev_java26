@@ -1,0 +1,147 @@
+/* MediLink Care — thème sombre (inspiré landing dark / glass) */
+
+/* Fond animé (canvas #050a14) — racine transparente pour éviter le double fond */
+.root-care {
+    -fx-background-color: transparent;
+}
+
+.border-content-care {
+    -fx-background-color: transparent;
+}
+
+.panel-header {
+    -fx-background-color: rgba(15, 23, 42, 0.72);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(148, 163, 184, 0.22);
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 24, 0, 0, 4);
+}
+
+.brand-title {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f8fafc;
+}
+
+.brand-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #93c5fd;
+    -fx-opacity: 0.95;
+}
+
+.label-muted {
+    -fx-text-fill: #cbd5e1;
+}
+
+.label-dim {
+    -fx-text-fill: #94a3b8;
+}
+
+.badge-filtres {
+    -fx-text-fill: #38bdf8;
+    -fx-font-weight: bold;
+}
+
+.field-care {
+    -fx-background-color: rgba(30, 41, 59, 0.85);
+    -fx-border-color: rgba(148, 163, 184, 0.35);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-text-fill: #f1f5f9;
+    -fx-prompt-text-fill: #64748b;
+    -fx-padding: 8 12;
+}
+
+.field-care:focused {
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 1.5;
+}
+
+/* Boutons */
+.btn-care-primary {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+    -fx-background-radius: 999;
+    -fx-padding: 10 20;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-care-primary:hover {
+    -fx-background-color: #1d4ed8;
+}
+
+.btn-care-secondary {
+    -fx-background-color: rgba(51, 65, 85, 0.9);
+    -fx-text-fill: #e2e8f0;
+    -fx-background-radius: 999;
+    -fx-padding: 10 18;
+    -fx-font-weight: bold;
+    -fx-border-color: rgba(148, 163, 184, 0.35);
+    -fx-border-radius: 999;
+    -fx-cursor: hand;
+}
+
+.btn-care-secondary:hover {
+    -fx-background-color: rgba(71, 85, 105, 0.95);
+}
+
+.btn-care-secondary:disabled {
+    -fx-opacity: 0.45;
+    -fx-text-fill: #94a3b8;
+}
+
+.scroll-care {
+    -fx-background-color: transparent;
+}
+
+.scroll-care > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* TitledPane */
+.titled-pane-care {
+    -fx-text-fill: #e2e8f0;
+}
+
+.titled-pane-care > .title {
+    -fx-background-color: rgba(37, 99, 235, 0.22);
+    -fx-border-color: rgba(96, 165, 250, 0.28);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.titled-pane-care > .title .text {
+    -fx-fill: #e2e8f0;
+}
+
+.titled-pane-care .content {
+    -fx-background-color: rgba(15, 23, 42, 0.55);
+    -fx-border-color: rgba(148, 163, 184, 0.12);
+}
+
+/* ComboBox (liste déroulante) */
+.combo-box-base {
+    -fx-background-color: rgba(30, 41, 59, 0.92);
+    -fx-border-color: rgba(148, 163, 184, 0.35);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.combo-box-base > .list-cell {
+    -fx-text-fill: #f1f5f9;
+}
+
+.combo-box-popup > .list-view {
+    -fx-background-color: #1e293b;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #334155;
+}
+
+.combo-box-popup .list-cell {
+    -fx-text-fill: #f1f5f9;
+}

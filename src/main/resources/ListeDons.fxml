@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
@@ -11,66 +12,72 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane fx:id="rootPane" style="-fx-background-color: #eef2f7;" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ListeDonsController">
+<StackPane fx:id="rootStack" styleClass="root-care" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ListeDonsController">
+   <Canvas fx:id="particleCanvas" />
+   <BorderPane fx:id="rootPane" styleClass="border-content-care">
    <padding>
-      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+      <Insets bottom="14.0" left="14.0" right="14.0" top="14.0" />
    </padding>
    <top>
-      <VBox spacing="8.0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #d7deea; -fx-padding: 10;">
-         <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <ImageView fitHeight="96.0" fitWidth="180.0" pickOnBounds="true" preserveRatio="true">
+      <VBox spacing="12.0" styleClass="panel-header">
+         <HBox alignment="CENTER_LEFT" spacing="14.0">
+            <ImageView fitHeight="88.0" fitWidth="168.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@/medilink-icon.png" />
                </image>
             </ImageView>
-            <Label style="-fx-font-size: 34; -fx-font-weight: bold; -fx-text-fill: #2563eb;" text="MediLink" />
+            <VBox spacing="4.0">
+               <Label styleClass="brand-title" text="MediLink Care" />
+               <Label styleClass="brand-subtitle" text="Votre santé, notre priorité" />
+            </VBox>
          </HBox>
-         <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label text="Recherche :" />
-            <TextField fx:id="searchField" prefWidth="220.0" promptText="Texte, catégorie…" />
-            <Label style="-fx-text-fill: #16a34a; -fx-font-weight: bold;" text="▼ Filtres" />
+         <HBox alignment="CENTER_LEFT" spacing="12.0">
+            <Label styleClass="label-muted" text="Recherche :" />
+            <TextField fx:id="searchField" prefWidth="240.0" promptText="Texte, catégorie…" styleClass="field-care" />
+            <Label styleClass="badge-filtres" text="▼ Filtres" />
          </HBox>
-         <TitledPane fx:id="paneFiltres" animated="true" expanded="false" maxWidth="1.7976931348623157E308" style="-fx-border-color: #d7deea; -fx-border-radius: 8; -fx-background-radius: 8;" text="Filtres supplémentaires">
+         <TitledPane fx:id="paneFiltres" animated="true" expanded="false" maxWidth="1.7976931348623157E308" styleClass="titled-pane-care" text="Filtres supplémentaires">
             <content>
-               <VBox spacing="8.0">
+               <VBox spacing="10.0">
                   <padding>
-                     <Insets bottom="6.0" left="6.0" right="6.0" top="6.0" />
+                     <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                   </padding>
-                  <HBox alignment="CENTER_LEFT" spacing="10.0">
-                     <Label text="Urgence :" />
-                     <ComboBox fx:id="filtreUrgenceCombo" prefWidth="120.0" />
-                     <Label text="État :" />
-                     <ComboBox fx:id="filtreEtatCombo" prefWidth="170.0" />
+                  <HBox alignment="CENTER_LEFT" spacing="12.0">
+                     <Label styleClass="label-muted" text="Urgence :" />
+                     <ComboBox fx:id="filtreUrgenceCombo" prefWidth="130.0" />
+                     <Label styleClass="label-muted" text="État :" />
+                     <ComboBox fx:id="filtreEtatCombo" prefWidth="180.0" />
                   </HBox>
-                  <HBox alignment="CENTER_LEFT" spacing="10.0">
-                     <Label text="Unité :" />
-                     <ComboBox fx:id="filtreUniteCombo" prefWidth="120.0" />
-                     <Label text="Catégorie :" />
-                     <ComboBox fx:id="filtreCategorieCombo" prefWidth="220.0" />
-                     <Label text="Qté min :" />
-                     <TextField fx:id="tfQuantiteMin" prefWidth="72.0" promptText="vide" />
-                     <Label text="Qté max :" />
-                     <TextField fx:id="tfQuantiteMax" prefWidth="72.0" promptText="vide" />
+                  <HBox alignment="CENTER_LEFT" spacing="12.0">
+                     <Label styleClass="label-muted" text="Unité :" />
+                     <ComboBox fx:id="filtreUniteCombo" prefWidth="130.0" />
+                     <Label styleClass="label-muted" text="Catégorie :" />
+                     <ComboBox fx:id="filtreCategorieCombo" prefWidth="230.0" />
+                     <Label styleClass="label-muted" text="Qté min :" />
+                     <TextField fx:id="tfQuantiteMin" prefWidth="76.0" promptText="vide" styleClass="field-care" />
+                     <Label styleClass="label-muted" text="Qté max :" />
+                     <TextField fx:id="tfQuantiteMax" prefWidth="76.0" promptText="vide" styleClass="field-care" />
                   </HBox>
                </VBox>
             </content>
          </TitledPane>
-         <TitledPane fx:id="paneTri" animated="true" expanded="false" maxWidth="1.7976931348623157E308" style="-fx-border-color: #d7deea; -fx-border-radius: 8; -fx-background-radius: 8;" text="Tri multi-critères">
+         <TitledPane fx:id="paneTri" animated="true" expanded="false" maxWidth="1.7976931348623157E308" styleClass="titled-pane-care" text="Tri multi-critères">
             <content>
-               <VBox spacing="6.0">
+               <VBox spacing="8.0">
                   <padding>
-                     <Insets bottom="6.0" left="6.0" right="6.0" top="6.0" />
+                     <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                   </padding>
-                  <HBox alignment="CENTER_LEFT" spacing="8.0">
-                     <Label style="-fx-font-weight: bold;" text="1" />
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <Label style="-fx-font-weight: bold; -fx-text-fill: #93c5fd;" text="1" />
                      <ComboBox fx:id="tri1ChampCombo" prefWidth="150.0" />
                      <ComboBox fx:id="tri1OrdreCombo" prefWidth="110.0" />
-                     <Label style="-fx-font-weight: bold;" text="2" />
+                     <Label style="-fx-font-weight: bold; -fx-text-fill: #93c5fd;" text="2" />
                      <ComboBox fx:id="tri2ChampCombo" prefWidth="150.0" />
                      <ComboBox fx:id="tri2OrdreCombo" prefWidth="110.0" />
-                     <Label style="-fx-font-weight: bold;" text="3" />
+                     <Label style="-fx-font-weight: bold; -fx-text-fill: #93c5fd;" text="3" />
                      <ComboBox fx:id="tri3ChampCombo" prefWidth="150.0" />
                      <ComboBox fx:id="tri3OrdreCombo" prefWidth="110.0" />
                   </HBox>
@@ -78,23 +85,24 @@
             </content>
          </TitledPane>
          <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Button fx:id="btnAjouter" mnemonicParsing="false" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 9; -fx-font-weight: bold;" text="Ajouter" />
-            <Button fx:id="btnModifier" disable="true" mnemonicParsing="false" style="-fx-background-radius: 9; -fx-font-weight: bold;" text="Modifier" />
-            <Button fx:id="btnSupprimer" disable="true" mnemonicParsing="false" style="-fx-background-radius: 9; -fx-font-weight: bold;" text="Supprimer" />
-            <Button fx:id="btnMesDons" mnemonicParsing="false" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 9; -fx-font-weight: bold;" text="Mes dons" />
-            <Button fx:id="btnEspaceAdmin" mnemonicParsing="false" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 9; -fx-font-weight: bold;" text="Espace admin" />
+            <Button fx:id="btnAjouter" mnemonicParsing="false" styleClass="btn-care-primary" text="Ajouter" />
+            <Button fx:id="btnModifier" disable="true" mnemonicParsing="false" styleClass="btn-care-secondary" text="Modifier" />
+            <Button fx:id="btnSupprimer" disable="true" mnemonicParsing="false" styleClass="btn-care-secondary" text="Supprimer" />
+            <Button fx:id="btnMesDons" mnemonicParsing="false" styleClass="btn-care-primary" text="Mes dons" />
+            <Button fx:id="btnEspaceAdmin" mnemonicParsing="false" styleClass="btn-care-primary" text="Espace admin" />
          </HBox>
       </VBox>
    </top>
    <center>
-      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent;" BorderPane.alignment="CENTER">
+      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="scroll-care" BorderPane.alignment="CENTER">
          <content>
-            <VBox fx:id="cardsContainer" spacing="10.0">
+            <VBox fx:id="cardsContainer" spacing="12.0">
                <padding>
-                  <Insets bottom="4.0" left="2.0" right="2.0" top="4.0" />
+                  <Insets bottom="8.0" left="4.0" right="4.0" top="8.0" />
                </padding>
             </VBox>
          </content>
       </ScrollPane>
    </center>
-</BorderPane>
+   </BorderPane>
+</StackPane>
