@@ -8,7 +8,6 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -159,39 +158,69 @@
                                     </children>
                                 </VBox>
 
-                                <VBox spacing="14.0" VBox.vgrow="ALWAYS" styleClass="panel-card, availability-panel, content-card">
+                                <VBox spacing="16.0" VBox.vgrow="ALWAYS" styleClass="panel-card, availability-panel, content-card">
                                     <children>
                                         <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="content-header">
                                             <children>
                                                 <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                                                     <children>
-                                                        <Label text="Disponibilites" styleClass="section-title"/>
-                                                        <Label text="Selectionnez un creneau depuis la grille pour agir dessus." styleClass="section-subtitle"/>
+                                                        <Label text="Mes disponibilites" styleClass="section-title"/>
+                                                        <Label text="Gerez vos disponibilites. Une disponibilite reservee devient non modifiable tant qu'un rendez-vous lui est lie." styleClass="section-subtitle"/>
                                                     </children>
                                                 </VBox>
-                                                <Label fx:id="selectionInfoLabel"
-                                                       text="Aucune disponibilite selectionnee."
+                                                <Label fx:id="disponibiliteCountLabel"
+                                                       text="0 disponibilites"
                                                        styleClass="selection-pill, doctor-selection-pill"/>
                                             </children>
                                         </HBox>
 
-                                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="availability-scroll">
-                                            <content>
-                                                <FlowPane fx:id="cardsFlowPane"
-                                                          hgap="18.0"
-                                                          vgap="18.0"
-                                                          prefWrapLength="1080.0"
-                                                          styleClass="availability-grid"/>
-                                            </content>
-                                        </ScrollPane>
+                                        <VBox spacing="14.0" styleClass="availability-toolbar-shell">
+                                            <children>
+                                                <HBox spacing="14.0" alignment="CENTER_LEFT" styleClass="availability-toolbar-row">
+                                                    <children>
+                                                        <ComboBox fx:id="disponibiliteStatutComboBox"
+                                                                  prefWidth="220.0"
+                                                                  promptText="Tous les statuts"/>
+                                                        <Region HBox.hgrow="ALWAYS"/>
+                                                        <Button fx:id="ajouterButton"
+                                                                text="Nouvelle disponibilite"
+                                                                styleClass="primary-button, rdv-toolbar-button, availability-create-button"/>
+                                                    </children>
+                                                </HBox>
+                                                <HBox spacing="12.0" alignment="CENTER_LEFT" styleClass="availability-sort-row">
+                                                    <children>
+                                                        <Button fx:id="triDisponibiliteCroissantButton" text="Date croissante" styleClass="secondary-button, rdv-toolbar-button"/>
+                                                        <Button fx:id="triDisponibiliteDecroissantButton" text="Date decroissante" styleClass="secondary-button, rdv-toolbar-button"/>
+                                                        <Button fx:id="resetDisponibiliteButton" text="Reset dispo" styleClass="secondary-button, rdv-toolbar-button"/>
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </VBox>
+
+                                        <VBox spacing="0.0" styleClass="rdv-list-shell, availability-list-shell">
+                                            <children>
+                                                <HBox spacing="14.0" styleClass="rdv-list-header, availability-list-header">
+                                                    <children>
+                                                        <Label text="Date" styleClass="rdv-header-cell, dispo-col-date"/>
+                                                        <Label text="Heure debut" styleClass="rdv-header-cell, dispo-col-start"/>
+                                                        <Label text="Heure fin" styleClass="rdv-header-cell, dispo-col-end"/>
+                                                        <Label text="Statut" styleClass="rdv-header-cell, dispo-col-status"/>
+                                                        <Label text="Actions" styleClass="rdv-header-cell, dispo-col-actions"/>
+                                                    </children>
+                                                </HBox>
+                                                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefViewportHeight="320.0" styleClass="rdv-list-scroll, availability-list-scroll">
+                                                    <content>
+                                                        <VBox fx:id="disponibiliteListContainer" styleClass="rdv-list-body, availability-list-body"/>
+                                                    </content>
+                                                </ScrollPane>
+                                            </children>
+                                        </VBox>
                                     </children>
                                 </VBox>
 
                                 <HBox spacing="12.0" alignment="CENTER_RIGHT" styleClass="actions-bar, doctor-actions-bar, action-card">
                                     <children>
                                         <Button fx:id="retourButton" text="Retour" styleClass="secondary-button"/>
-                                        <Button fx:id="ajouterButton" text="Ajouter" styleClass="primary-button"/>
-                                        <Button fx:id="supprimerButton" text="Supprimer la selection" styleClass="danger-button"/>
                                     </children>
                                 </HBox>
                             </VBox>

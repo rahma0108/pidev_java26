@@ -868,12 +868,27 @@
     -fx-fill-width: true;
 }
 
+.medecin-page .availability-panel {
+    -fx-spacing: 16;
+    -fx-fill-width: true;
+}
+
 .medecin-page .rdv-toolbar-shell {
     -fx-padding: 2 0 0 0;
 }
 
 .medecin-page .rdv-toolbar-row,
 .medecin-page .rdv-sort-row {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 14;
+}
+
+.medecin-page .availability-toolbar-shell {
+    -fx-padding: 2 0 0 0;
+}
+
+.medecin-page .availability-toolbar-row,
+.medecin-page .availability-sort-row {
     -fx-alignment: CENTER_LEFT;
     -fx-spacing: 14;
 }
@@ -898,6 +913,14 @@
     -fx-min-width: 140;
 }
 
+.medecin-page .availability-create-button {
+    -fx-background-color: #19936e;
+}
+
+.medecin-page .availability-create-button:hover {
+    -fx-background-color: #147b5c;
+}
+
 .medecin-page .rdv-list-shell {
     -fx-background-color: #f8fbff;
     -fx-background-radius: 22;
@@ -905,6 +928,10 @@
     -fx-border-radius: 22;
     -fx-border-width: 1;
     -fx-fill-width: true;
+}
+
+.medecin-page .availability-list-shell {
+    -fx-background-color: #f8fbff;
 }
 
 .medecin-page .rdv-list-header {
@@ -923,6 +950,11 @@
 }
 
 .medecin-page .rdv-list-body {
+    -fx-background-color: white;
+    -fx-background-radius: 0 0 22 22;
+}
+
+.medecin-page .availability-list-body {
     -fx-background-color: white;
     -fx-background-radius: 0 0 22 22;
 }
@@ -977,8 +1009,39 @@
     -fx-min-width: 180;
 }
 
+.medecin-page .dispo-col-date {
+    -fx-pref-width: 240;
+    -fx-min-width: 220;
+}
+
+.medecin-page .dispo-col-start {
+    -fx-pref-width: 180;
+    -fx-min-width: 160;
+}
+
+.medecin-page .dispo-col-end {
+    -fx-pref-width: 180;
+    -fx-min-width: 160;
+}
+
+.medecin-page .dispo-col-status {
+    -fx-pref-width: 170;
+    -fx-min-width: 150;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.medecin-page .dispo-col-actions {
+    -fx-pref-width: 210;
+    -fx-min-width: 190;
+}
+
 .medecin-page .rdv-actions-box {
     -fx-alignment: CENTER_RIGHT;
+}
+
+.medecin-page .dispo-reserved-text {
+    -fx-text-fill: #5f6f86;
+    -fx-font-weight: 700;
 }
 
 .medecin-page .rdv-action-button {
@@ -1031,6 +1094,16 @@
 .medecin-page .status-done {
     -fx-background-color: #e6eefc;
     -fx-text-fill: #325ea8;
+}
+
+.medecin-page .status-reserved {
+    -fx-background-color: #e7f4ea;
+    -fx-text-fill: #228a4b;
+}
+
+.medecin-page .status-available {
+    -fx-background-color: #eef4ff;
+    -fx-text-fill: #1f67c1;
 }
 
 .medecin-page .status-cancelled {

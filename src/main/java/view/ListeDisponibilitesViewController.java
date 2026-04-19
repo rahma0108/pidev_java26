@@ -5,7 +5,6 @@ import controllers.RendezVousController;
 import exceptions.ServiceException;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -14,9 +13,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -42,20 +39,19 @@ public class ListeDisponibilitesViewController {
     private static final String STATUT_TOUS = "Tous les statuts";
     private static final String LABEL_STATUT_TOUS = "Tous";
     private static final Map<String, String> STATUT_FILTERS = createStatutFilters();
+    private static final String STATUT_DISPO_TOUS = "Tous les statuts";
+    private static final String LABEL_STATUT_DISPO_TOUS = "Tous";
+    private static final Map<String, String> DISPONIBILITE_FILTERS = createDisponibiliteFilters();
     private static final DateTimeFormatter RDV_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     @FXML
     private DatePicker filtreDatePicker;
     @FXML
     private Button rafraichirButton;
     @FXML
-    private Label selectionInfoLabel;
-    @FXML
-    private FlowPane cardsFlowPane;
-    @FXML
     private Button ajouterButton;
-    @FXML
-    private Button supprimerButton;
     @FXML
     private Button retourButton;
     @FXML
@@ -72,13 +68,26 @@ public class ListeDisponibilitesViewController {
     private VBox rendezVousListContainer;
     @FXML
     private Label rendezVousCountLabel;
+    @FXML
+    private ComboBox<String> disponibiliteStatutComboBox;
+    @FXML
+    private Button triDisponibiliteCroissantButton;
+    @FXML
+    private Button triDisponibiliteDecroissantButton;
+    @FXML
+    private Button resetDisponibiliteButton;
+    @FXML
+    private VBox disponibiliteListContainer;
+    @FXML
+    private Label disponibiliteCountLabel;
 
     private DisponibiliteController disponibiliteController;
     private RendezVousController rendezVousController;
-    private Disponibilite selectionCourante;
     private Integer medecinIdContexte;
     private final List<RendezVous> rendezVousSource = new ArrayList<>();
+    private final List<Disponibilite> disponibiliteSource = new ArrayList<>();
     private SortDirection rendezVousSortDirection = SortDirection.DESC;
+    private SortDirection disponibiliteSortDirection = SortDirection.ASC;
 
     private enum SortDirection {
         ASC,
@@ -97,11 +106,17 @@ public class ListeDisponibilitesViewController {
         medecinIdContexte = resolveCurrentMedecinId();
 
         configureRendezVousToolbar();
+        configureDisponibiliteToolbar();
 
-        rafraichirButton.setOnAction(e -> chargerDonnees());
-        ajouterButton.setOnAction(e -> ouvrirFenetreAjout());
-        supprimerButton.setOnAction(e -> supprimerSelection());
-        retourButton.setOnAction(e -> retournerAccueil());
+        if (rafraichirButton != null) {
+            rafraichirButton.setOnAction(e -> chargerRendezVous());
+        }
+        if (ajouterButton != null) {
+            ajouterButton.setOnAction(e -> ouvrirFenetreDisponibilite(null));
+        }
+        if (retourButton != null) {
+            retourButton.setOnAction(e -> retournerAccueil());
+        }
 
         chargerDonnees();
     }
@@ -132,26 +147,44 @@ public class ListeDisponibilitesViewController {
         }
     }
 
+    private void configureDisponibiliteToolbar() {
+        if (disponibiliteStatutComboBox != null) {
+            disponibiliteStatutComboBox.getItems().setAll(DISPONIBILITE_FILTERS.keySet());
+            disponibiliteStatutComboBox.setValue(LABEL_STATUT_DISPO_TOUS);
+            disponibiliteStatutComboBox.setOnAction(e -> appliquerFiltresDisponibilites());
+        }
+        if (triDisponibiliteCroissantButton != null) {
+            triDisponibiliteCroissantButton.setOnAction(e -> {
+                disponibiliteSortDirection = SortDirection.ASC;
+                appliquerFiltresDisponibilites();
+            });
+        }
+        if (triDisponibiliteDecroissantButton != null) {
+            triDisponibiliteDecroissantButton.setOnAction(e -> {
+                disponibiliteSortDirection = SortDirection.DESC;
+                appliquerFiltresDisponibilites();
+            });
+        }
+        if (resetDisponibiliteButton != null) {
+            resetDisponibiliteButton.setOnAction(e -> resetDisponibiliteToolbar());
+        }
+    }
+
     private void chargerDonnees() {
         chargerDisponibilites();
         chargerRendezVous();
     }
 
     private void chargerDisponibilites() {
-        if (disponibiliteController == null) {
+        if (disponibiliteController == null || disponibiliteListContainer == null) {
             return;
         }
         try {
-            List<Disponibilite> list = medecinIdContexte == null
-                    ? disponibiliteController.afficherDisponibilites()
-                    : disponibiliteController.afficherDisponibilitesMedecin(medecinIdContexte);
-            LocalDate dateMin = filtreDatePicker.getValue();
-            if (dateMin != null) {
-                list = list.stream()
-                        .filter(d -> d.getDate() != null && !d.getDate().isBefore(dateMin))
-                        .collect(Collectors.toList());
+            disponibiliteSource.clear();
+            if (medecinIdContexte != null) {
+                disponibiliteSource.addAll(disponibiliteController.afficherDisponibilitesMedecin(medecinIdContexte));
             }
-            renderCards(list);
+            appliquerFiltresDisponibilites();
         } catch (ServiceException e) {
             ViewAlertUtil.erreur("Chargement", e.formatWithCauses());
         }
@@ -200,6 +233,29 @@ public class ListeDisponibilitesViewController {
         renderRendezVous(filtered);
     }
 
+    private void appliquerFiltresDisponibilites() {
+        if (disponibiliteListContainer == null) {
+            return;
+        }
+
+        String statutLabel = disponibiliteStatutComboBox != null ? disponibiliteStatutComboBox.getValue() : LABEL_STATUT_DISPO_TOUS;
+        String statutChoisi = resolveDisponibiliteFilterValue(statutLabel);
+
+        Comparator<Disponibilite> comparator = Comparator
+                .comparing(Disponibilite::getDate, Comparator.nullsLast(LocalDate::compareTo))
+                .thenComparing(Disponibilite::getHeureDebut, Comparator.nullsLast(java.time.LocalTime::compareTo));
+        if (disponibiliteSortDirection == SortDirection.DESC) {
+            comparator = comparator.reversed();
+        }
+
+        List<Disponibilite> filtered = disponibiliteSource.stream()
+                .filter(dispo -> matchesDisponibiliteStatut(dispo, statutChoisi))
+                .sorted(comparator)
+                .collect(Collectors.toList());
+
+        renderDisponibilites(filtered);
+    }
+
     private boolean matchesRecherche(RendezVous rdv, String recherche) {
         if (recherche == null || recherche.isBlank()) {
             return true;
@@ -218,6 +274,13 @@ public class ListeDisponibilitesViewController {
             return true;
         }
         return rdv != null && statutChoisi.equalsIgnoreCase(rdv.getStatut());
+    }
+
+    private boolean matchesDisponibiliteStatut(Disponibilite disponibilite, String statutChoisi) {
+        if (statutChoisi == null || STATUT_DISPO_TOUS.equals(statutChoisi)) {
+            return true;
+        }
+        return disponibilite != null && statutChoisi.equalsIgnoreCase(resolveDisponibiliteEffectiveStatus(disponibilite));
     }
 
     private void renderRendezVous(List<RendezVous> rendezVousList) {
@@ -343,89 +406,85 @@ public class ListeDisponibilitesViewController {
         appliquerFiltresRendezVous();
     }
 
-    private void renderCards(List<Disponibilite> disponibilites) {
-        cardsFlowPane.getChildren().clear();
-        selectionCourante = null;
-        selectionInfoLabel.setText("Aucune disponibilite selectionnee.");
+    private void resetDisponibiliteToolbar() {
+        if (disponibiliteStatutComboBox != null) {
+            disponibiliteStatutComboBox.setValue(LABEL_STATUT_DISPO_TOUS);
+        }
+        disponibiliteSortDirection = SortDirection.ASC;
+        appliquerFiltresDisponibilites();
+    }
+
+    private void renderDisponibilites(List<Disponibilite> disponibilites) {
+        disponibiliteListContainer.getChildren().clear();
+
+        int count = disponibilites != null ? disponibilites.size() : 0;
+        if (disponibiliteCountLabel != null) {
+            disponibiliteCountLabel.setText(count + (count > 1 ? " disponibilites" : " disponibilite"));
+        }
 
         if (disponibilites == null || disponibilites.isEmpty()) {
-            Label vide = new Label("Aucune disponibilite trouvee.");
-            vide.getStyleClass().add("subtitle");
-            cardsFlowPane.getChildren().add(vide);
+            Label empty = new Label(resolveDisponibiliteEmptyMessage());
+            empty.getStyleClass().add("rdv-empty-state");
+            disponibiliteListContainer.getChildren().add(empty);
             return;
         }
 
-        for (Disponibilite d : disponibilites) {
-            VBox card = createCard(d);
-            cardsFlowPane.getChildren().add(card);
+        for (Disponibilite disponibilite : disponibilites) {
+            disponibiliteListContainer.getChildren().add(createDisponibiliteRow(disponibilite));
         }
     }
 
-    private VBox createCard(Disponibilite d) {
-        Label titre = new Label("Disponibilite #" + d.getId());
-        titre.getStyleClass().add("card-title");
+    private HBox createDisponibiliteRow(Disponibilite disponibilite) {
+        HBox row = new HBox(14);
+        row.getStyleClass().add("rdv-row");
 
-        Label date = new Label("Date: " + (d.getDate() != null ? d.getDate() : "-"));
-        Label heure = new Label("Heure: "
-                + (d.getHeureDebut() != null ? d.getHeureDebut() : "-")
-                + " - "
-                + (d.getHeureFin() != null ? d.getHeureFin() : "-"));
-        Label statut = new Label("Statut: " + (d.getStatus() != null ? d.getStatus() : "-"));
-        Label medecin = new Label("Medecin: "
-                + (d.getMedecin() != null && d.getMedecin().getFullName() != null ? d.getMedecin().getFullName() : "-"));
-        date.getStyleClass().add("card-text");
-        heure.getStyleClass().add("card-text");
-        statut.getStyleClass().add("card-text");
-        medecin.getStyleClass().add("card-text");
+        Label dateLabel = createRowCell(formatDate(disponibilite.getDate()), "rdv-cell-label", "dispo-col-date");
+        Label debutLabel = createRowCell(formatTime(disponibilite.getHeureDebut()), "rdv-cell-label", "dispo-col-start");
+        Label finLabel = createRowCell(formatTime(disponibilite.getHeureFin()), "rdv-cell-label", "dispo-col-end");
 
-        HBox row = new HBox(statut);
-        HBox.setHgrow(statut, Priority.ALWAYS);
+        Label statutBadge = new Label(formatDisponibiliteStatut(disponibilite));
+        statutBadge.getStyleClass().addAll("status-badge", disponibiliteStatusClassFor(disponibilite));
+        HBox statutBox = new HBox(statutBadge);
+        statutBox.getStyleClass().add("dispo-col-status");
 
-        VBox card = new VBox(8, titre, date, heure, medecin, row);
-        card.setPadding(new Insets(14));
-        card.setPrefWidth(280);
-        applyCardState(card, false);
+        HBox actionsBox = new HBox(8);
+        actionsBox.getStyleClass().addAll("rdv-actions-box", "dispo-col-actions");
 
-        card.setOnMouseClicked(e -> {
-            selectionCourante = d;
-            refreshSelectionStyles();
-            selectionInfoLabel.setText("Selection: disponibilite #" + d.getId());
-        });
-        return card;
-    }
+        if (isDisponibiliteEditable(disponibilite)) {
+            Button modifierButton = createActionButton("\u270E", "Modifier",
+                    "secondary-button", "rdv-action-button", "icon-action-button", "edit-action");
+            modifierButton.setOnAction(e -> ouvrirFenetreDisponibilite(disponibilite));
 
-    private void refreshSelectionStyles() {
-        for (javafx.scene.Node node : cardsFlowPane.getChildren()) {
-            if (!(node instanceof VBox box) || box.getChildren().isEmpty()) {
-                continue;
-            }
-            boolean selected = false;
-            if (selectionCourante != null && box.getChildren().get(0) instanceof Label l) {
-                selected = l.getText().equals("Disponibilite #" + selectionCourante.getId());
-            }
-            applyCardState(box, selected);
+            Button supprimerButton = createActionButton("\uD83D\uDDD1", "Supprimer",
+                    "danger-button", "rdv-action-button", "icon-action-button", "cancel-action");
+            supprimerButton.setOnAction(e -> supprimerDisponibilite(disponibilite));
+
+            actionsBox.getChildren().addAll(modifierButton, supprimerButton);
+        } else {
+            Label reserveeLabel = new Label("Reserve");
+            reserveeLabel.getStyleClass().addAll("rdv-cell-label", "dispo-reserved-text");
+            actionsBox.getChildren().add(reserveeLabel);
         }
+
+        row.getChildren().addAll(dateLabel, debutLabel, finLabel, statutBox, actionsBox);
+        return row;
     }
 
-    private static void applyCardState(VBox card, boolean selected) {
-        card.getStyleClass().setAll("availability-card");
-        if (selected) {
-            card.getStyleClass().add("selected");
-        }
-    }
-
-    private void ouvrirFenetreAjout() {
+    private void ouvrirFenetreDisponibilite(Disponibilite disponibilite) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AjouterDisponibiliteView.fxml"));
             Parent root = loader.load();
             AjouterDisponibiliteViewController ctrl = loader.getController();
             ctrl.setMedecinIdContexte(medecinIdContexte);
+            if (disponibilite != null) {
+                ctrl.setDisponibiliteAEditer(disponibilite);
+            }
             ctrl.setAfterSaveCallback(this::chargerDonnees);
 
             Stage stage = new Stage();
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(ajouterButton.getScene().getWindow());
-            stage.setTitle("Ajouter une disponibilite");
+            stage.setTitle(disponibilite == null ? "Ajouter une disponibilite" : "Modifier une disponibilite");
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {
@@ -433,16 +492,19 @@ public class ListeDisponibilitesViewController {
         }
     }
 
-    private void supprimerSelection() {
-        if (selectionCourante == null) {
-            ViewAlertUtil.erreur("Suppression", "Selectionnez une carte.");
+    private void supprimerDisponibilite(Disponibilite disponibilite) {
+        if (disponibilite == null) {
             return;
         }
-        if (!ViewAlertUtil.confirmer("Suppression", "Supprimer la disponibilite n " + selectionCourante.getId() + " ?")) {
+        if (!isDisponibiliteEditable(disponibilite)) {
+            ViewAlertUtil.erreur("Suppression", "Cette disponibilite est reservee et ne peut pas etre supprimee.");
+            return;
+        }
+        if (!ViewAlertUtil.confirmer("Suppression", "Supprimer la disponibilite n " + disponibilite.getId() + " ?")) {
             return;
         }
         try {
-            disponibiliteController.supprimerDisponibilite(selectionCourante.getId());
+            disponibiliteController.supprimerDisponibilite(disponibilite.getId());
             chargerDonnees();
             ViewAlertUtil.info("Suppression", "Disponibilite supprimee.");
         } catch (ServiceException e) {
@@ -481,6 +543,14 @@ public class ListeDisponibilitesViewController {
         return dateHeure != null ? dateHeure.format(RDV_FORMATTER) : "-";
     }
 
+    private String formatDate(LocalDate date) {
+        return date != null ? date.format(DATE_FORMATTER) : "-";
+    }
+
+    private String formatTime(java.time.LocalTime time) {
+        return time != null ? time.format(TIME_FORMATTER) : "-";
+    }
+
     private String formatStatut(String statut) {
         if (statut == null || statut.isBlank()) {
             return "Inconnu";
@@ -507,11 +577,55 @@ public class ListeDisponibilitesViewController {
         };
     }
 
+    private String formatDisponibiliteStatut(Disponibilite disponibilite) {
+        String statut = resolveDisponibiliteEffectiveStatus(disponibilite);
+        if (Disponibilite.STATUS_RESERVEE.equals(statut)) {
+            return "Reservee";
+        }
+        return "Libre";
+    }
+
+    private String disponibiliteStatusClassFor(Disponibilite disponibilite) {
+        return isDisponibiliteEditable(disponibilite) ? "status-available" : "status-reserved";
+    }
+
+    private boolean isDisponibiliteEditable(Disponibilite disponibilite) {
+        return disponibilite != null && disponibilite.getRendezVous() == null;
+    }
+
+    private String resolveDisponibiliteEffectiveStatus(Disponibilite disponibilite) {
+        if (disponibilite == null) {
+            return "";
+        }
+        if (disponibilite.getRendezVous() != null) {
+            return Disponibilite.STATUS_RESERVEE;
+        }
+        String statut = disponibilite.getStatus();
+        if (statut == null || statut.isBlank()) {
+            return Disponibilite.STATUS_LIBRE;
+        }
+        String normalized = statut.toUpperCase(Locale.ROOT);
+        if ("RESERVEE".equals(normalized)) {
+            return Disponibilite.STATUS_RESERVEE;
+        }
+        if ("LIBRE".equals(normalized)) {
+            return Disponibilite.STATUS_LIBRE;
+        }
+        return normalized;
+    }
+
     private String resolveStatutFilterValue(String statutLabel) {
         if (statutLabel == null || statutLabel.isBlank()) {
             return STATUT_TOUS;
         }
         return STATUT_FILTERS.getOrDefault(statutLabel, STATUT_TOUS);
+    }
+
+    private String resolveDisponibiliteFilterValue(String statutLabel) {
+        if (statutLabel == null || statutLabel.isBlank()) {
+            return STATUT_DISPO_TOUS;
+        }
+        return DISPONIBILITE_FILTERS.getOrDefault(statutLabel, STATUT_DISPO_TOUS);
     }
 
     private String resolveRendezVousEmptyMessage() {
@@ -521,12 +635,27 @@ public class ListeDisponibilitesViewController {
         return "Aucun rendez-vous trouve pour les filtres actuels.";
     }
 
+    private String resolveDisponibiliteEmptyMessage() {
+        if (medecinIdContexte == null) {
+            return "Aucun medecin connecte: impossible de charger les disponibilites.";
+        }
+        return "Aucune disponibilite trouvee pour les filtres actuels.";
+    }
+
     private static Map<String, String> createStatutFilters() {
         Map<String, String> filters = new LinkedHashMap<>();
         filters.put(LABEL_STATUT_TOUS, STATUT_TOUS);
         filters.put("En attente", RendezVous.EN_ATTENTE);
         filters.put("Confirme", RendezVous.CONFIRME);
         filters.put("Termine", RendezVous.TERMINE);
+        return filters;
+    }
+
+    private static Map<String, String> createDisponibiliteFilters() {
+        Map<String, String> filters = new LinkedHashMap<>();
+        filters.put(LABEL_STATUT_DISPO_TOUS, STATUT_DISPO_TOUS);
+        filters.put("Libre", Disponibilite.STATUS_LIBRE);
+        filters.put("Reservee", Disponibilite.STATUS_RESERVEE);
         return filters;
     }
 

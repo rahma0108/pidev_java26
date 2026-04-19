@@ -44,7 +44,7 @@
 
         <VBox spacing="6.0" styleClass="doctor-hero-card">
             <children>
-                <Label text="Nouvelle disponibilite" styleClass="page-title doctor-page-title"/>
+                <Label fx:id="pageTitleLabel" text="Nouvelle disponibilite" styleClass="page-title doctor-page-title"/>
                 <Label text="Ajoutez des creneaux precis dans un formulaire coherent avec l'espace medecin." styleClass="subtitle-text doctor-page-subtitle"/>
             </children>
         </VBox>

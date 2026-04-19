@@ -33,6 +33,8 @@ public class AjouterDisponibiliteViewController {
     private static final DateTimeFormatter DATE_UI_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @FXML
+    private Label pageTitleLabel;
+    @FXML
     private TextField medecinIdTextField;
     @FXML
     private DatePicker datePicker;
@@ -55,6 +57,8 @@ public class AjouterDisponibiliteViewController {
     private Runnable afterSaveCallback;
     private Disponibilite selectionApercu;
     private Integer medecinIdContexte;
+    private Disponibilite disponibiliteEnEdition;
+    private boolean initialized;
 
     public void setAfterSaveCallback(Runnable afterSaveCallback) {
         this.afterSaveCallback = afterSaveCallback;
@@ -63,6 +67,13 @@ public class AjouterDisponibiliteViewController {
     public void setMedecinIdContexte(Integer medecinIdContexte) {
         this.medecinIdContexte = medecinIdContexte;
         appliquerContexteMedecin();
+    }
+
+    public void setDisponibiliteAEditer(Disponibilite disponibilite) {
+        this.disponibiliteEnEdition = disponibilite;
+        if (initialized) {
+            appliquerModeEdition();
+        }
     }
 
     @FXML
@@ -75,6 +86,8 @@ public class AjouterDisponibiliteViewController {
         }
         configurerAideSaisie();
         appliquerContexteMedecin();
+        initialized = true;
+        appliquerModeEdition();
 
         medecinIdTextField.focusedProperty().addListener((obs, oldV, focused) -> {
             if (!focused) {
@@ -97,6 +110,41 @@ public class AjouterDisponibiliteViewController {
             medecinIdTextField.setDisable(true);
         } else {
             medecinIdTextField.setDisable(false);
+        }
+    }
+
+    private void appliquerModeEdition() {
+        if (disponibiliteEnEdition == null) {
+            if (pageTitleLabel != null) {
+                pageTitleLabel.setText("Nouvelle disponibilite");
+            }
+            if (ajouterButton != null) {
+                ajouterButton.setText("Ajouter");
+            }
+            return;
+        }
+
+        if (pageTitleLabel != null) {
+            pageTitleLabel.setText("Modifier une disponibilite");
+        }
+        if (ajouterButton != null) {
+            ajouterButton.setText("Enregistrer");
+        }
+        if (reserverButton != null) {
+            reserverButton.setDisable(true);
+        }
+        if (medecinIdTextField != null && disponibiliteEnEdition.getMedecin() != null) {
+            medecinIdTextField.setText(Integer.toString(disponibiliteEnEdition.getMedecin().getId()));
+            medecinIdTextField.setDisable(true);
+        }
+        if (datePicker != null) {
+            datePicker.setValue(disponibiliteEnEdition.getDate());
+        }
+        if (heureDebutTextField != null && disponibiliteEnEdition.getHeureDebut() != null) {
+            heureDebutTextField.setText(disponibiliteEnEdition.getHeureDebut().format(HEURE_FMT));
+        }
+        if (heureFinTextField != null && disponibiliteEnEdition.getHeureFin() != null) {
+            heureFinTextField.setText(disponibiliteEnEdition.getHeureFin().format(HEURE_FMT));
         }
     }
 
@@ -189,13 +237,21 @@ public class AjouterDisponibiliteViewController {
             medecin.setId(medId);
 
             Disponibilite d = new Disponibilite();
+            if (disponibiliteEnEdition != null) {
+                d.setId(disponibiliteEnEdition.getId());
+            }
             d.setMedecin(medecin);
             d.setDate(date);
             d.setHeureDebut(debut);
             d.setHeureFin(fin);
 
-            disponibiliteController.ajouterDisponibilite(d);
-            ViewAlertUtil.info("Succès", "Disponibilité ajoutée.");
+            if (disponibiliteEnEdition == null) {
+                disponibiliteController.ajouterDisponibilite(d);
+                ViewAlertUtil.info("Succès", "Disponibilité ajoutée.");
+            } else {
+                disponibiliteController.modifierDisponibilite(d);
+                ViewAlertUtil.info("Succès", "Disponibilité modifiée.");
+            }
             if (afterSaveCallback != null) {
                 afterSaveCallback.run();
             }

@@ -119,8 +119,10 @@ public class DisponibiliteService {
      */
     public List<Disponibilite> listerReservables() throws ServiceException {
         String sql = """
-                SELECT id, date, heure_debut, heure_fin, status, created_at, medecin_id
-                FROM disponibilites
+                SELECT d.id, d.date, d.heure_debut, d.heure_fin, d.status, d.created_at, d.medecin_id,
+                       r.id AS rdv_id, r.statut AS rdv_statut
+                FROM disponibilites d
+                LEFT JOIN rendez_vous r ON r.disponibilite_id = d.id
                 WHERE UPPER(status) IN ('LIBRE', 'STATUS_LIBRE')
                   AND (date > ? OR (date = ? AND heure_debut > ?))
                 ORDER BY date, heure_debut
@@ -149,15 +151,19 @@ public class DisponibiliteService {
     public List<Disponibilite> listerParMedecin(Integer medecinId) throws ServiceException {
         String sql = medecinId == null
                 ? """
-                SELECT id, date, heure_debut, heure_fin, status, created_at, medecin_id
-                FROM disponibilites
-                ORDER BY date, heure_debut
+                SELECT d.id, d.date, d.heure_debut, d.heure_fin, d.status, d.created_at, d.medecin_id,
+                       r.id AS rdv_id, r.statut AS rdv_statut
+                FROM disponibilites d
+                LEFT JOIN rendez_vous r ON r.disponibilite_id = d.id
+                ORDER BY d.date, d.heure_debut
                 """
                 : """
-                SELECT id, date, heure_debut, heure_fin, status, created_at, medecin_id
-                FROM disponibilites
-                WHERE medecin_id = ?
-                ORDER BY date, heure_debut
+                SELECT d.id, d.date, d.heure_debut, d.heure_fin, d.status, d.created_at, d.medecin_id,
+                       r.id AS rdv_id, r.statut AS rdv_statut
+                FROM disponibilites d
+                LEFT JOIN rendez_vous r ON r.disponibilite_id = d.id
+                WHERE d.medecin_id = ?
+                ORDER BY d.date, d.heure_debut
                 """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             if (medecinId != null) {
@@ -177,9 +183,11 @@ public class DisponibiliteService {
 
     public Optional<Disponibilite> findById(int id) throws ServiceException {
         String sql = """
-                SELECT id, date, heure_debut, heure_fin, status, created_at, medecin_id
-                FROM disponibilites
-                WHERE id = ?
+                SELECT d.id, d.date, d.heure_debut, d.heure_fin, d.status, d.created_at, d.medecin_id,
+                       r.id AS rdv_id, r.statut AS rdv_statut
+                FROM disponibilites d
+                LEFT JOIN rendez_vous r ON r.disponibilite_id = d.id
+                WHERE d.id = ?
                 """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -196,9 +204,11 @@ public class DisponibiliteService {
 
     Optional<Disponibilite> findByIdForUpdate(Connection conn, int id) throws ServiceException {
         String sql = """
-                SELECT id, date, heure_debut, heure_fin, status, created_at, medecin_id
-                FROM disponibilites
-                WHERE id = ?
+                SELECT d.id, d.date, d.heure_debut, d.heure_fin, d.status, d.created_at, d.medecin_id,
+                       r.id AS rdv_id, r.statut AS rdv_statut
+                FROM disponibilites d
+                LEFT JOIN rendez_vous r ON r.disponibilite_id = d.id
+                WHERE d.id = ?
                 FOR UPDATE
                 """;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -304,6 +314,14 @@ public class DisponibiliteService {
         d.setCreatedAt(ca != null ? ca.toLocalDateTime() : null);
         Integer medecinId = (Integer) rs.getObject("medecin_id");
         d.setMedecin(stubMedecin(medecinId));
+        Integer rendezVousId = (Integer) rs.getObject("rdv_id");
+        if (rendezVousId != null) {
+            models.RendezVous rendezVous = new models.RendezVous();
+            rendezVous.setId(rendezVousId);
+            rendezVous.setStatut(rs.getString("rdv_statut"));
+            rendezVous.setDisponibilite(d);
+            d.setRendezVous(rendezVous);
+        }
         return d;
     }
 
