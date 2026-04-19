@@ -20,13 +20,29 @@ import javafx.scene.control.ComboBox;
 
 import javafx.scene.control.DatePicker;
 
+import javafx.scene.control.Label;
+
+import javafx.scene.control.ListCell;
+
 import javafx.scene.control.TextArea;
 
 import javafx.scene.control.TextField;
 
+import javafx.application.Platform;
+
+import javafx.scene.layout.VBox;
+
+import javafx.scene.paint.Color;
+
+import javafx.scene.canvas.Canvas;
+
+import javafx.scene.layout.StackPane;
+
 import javafx.stage.Stage;
 
 import models.Don;
+
+import ui.ParticleBackground;
 
 import services.DonIAService;
 import services.DonService;
@@ -111,6 +127,82 @@ public class AjouterDonController implements Initializable {
 
 
 
+    @FXML
+
+    private StackPane rootStack;
+
+
+
+    @FXML
+
+    private Canvas particleCanvas;
+
+
+
+    @FXML
+
+    private VBox formRoot;
+
+
+
+    @FXML
+
+    private Label lblTitre;
+
+
+
+    @FXML
+
+    private Label lblCat;
+
+
+
+    @FXML
+
+    private Label lblDesc;
+
+
+
+    @FXML
+
+    private Label lblQty;
+
+
+
+    @FXML
+
+    private Label lblUnite;
+
+
+
+    @FXML
+
+    private Label lblDetails;
+
+
+
+    @FXML
+
+    private Label lblEtat;
+
+
+
+    @FXML
+
+    private Label lblUrg;
+
+
+
+    @FXML
+
+    private Label lblExp;
+
+
+
+    private ParticleBackground particules;
+
+
+
     private final DonService donService = new DonService();
 
     /** Initialisé à la demande (nécessite anthropic.api.key ou ANTHROPIC_API_KEY). */
@@ -122,6 +214,10 @@ public class AjouterDonController implements Initializable {
 
     public void initialize(URL location, ResourceBundle resources) {
 
+        particules = new ParticleBackground(particleCanvas, rootStack, 96);
+
+        particules.play();
+
         DonFormChoices.preparerComboCategorieAjout(cbCategorie);
 
         DonFormChoices.preparerComboString(cbUnite, DonFormChoices.UNITES, "Unités");
@@ -130,12 +226,137 @@ public class AjouterDonController implements Initializable {
 
         DonFormChoices.preparerComboString(cbNiveauUrgence, DonFormChoices.NIVEAUX_URGENCE, "Moyen");
 
-
+        appliquerStylesFormulaire();
 
         btnEnregistrer.setOnAction(e -> enregistrer());
 
         btnAnnuler.setOnAction(e -> retourListe());
 
+    }
+
+
+
+    private static final Color TEXTE_COMBO = Color.web("#e2e8f0");
+
+    private static final Color TEXTE_INVITE_COMBO = Color.web("#94a3b8");
+
+    /** Apparence sombre lisible sur le fond particules — sans feuille CSS externe. */
+    private void appliquerStylesFormulaire() {
+        rootStack.setStyle("-fx-background-color: transparent;");
+        formRoot.setStyle(
+                "-fx-background-color: rgba(15,23,42,0.72);"
+                        + "-fx-background-radius: 16;"
+                        + "-fx-border-color: rgba(148,163,184,0.22);"
+                        + "-fx-border-radius: 16;"
+                        + "-fx-border-width: 1;"
+                        + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 24, 0, 0, 4);");
+        lblTitre.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #f8fafc;");
+        String lblMuted = "-fx-text-fill: #cbd5e1;";
+        lblCat.setStyle(lblMuted);
+        lblDesc.setStyle(lblMuted);
+        lblQty.setStyle(lblMuted);
+        lblUnite.setStyle(lblMuted);
+        lblDetails.setStyle(lblMuted);
+        lblEtat.setStyle(lblMuted);
+        lblUrg.setStyle(lblMuted);
+        lblExp.setStyle(lblMuted);
+        String champ = "-fx-background-color: rgba(30,41,59,0.85);"
+                + "-fx-control-inner-background: rgba(30,41,59,0.92);"
+                + "-fx-border-color: rgba(148,163,184,0.35);"
+                + "-fx-border-radius: 10; -fx-background-radius: 10;"
+                + "-fx-text-fill: #f1f5f9; -fx-prompt-text-fill: #94a3b8; -fx-padding: 8 12;";
+        tfDescription.setStyle(champ);
+        tfQuantite.setStyle(champ);
+        taDetails.setStyle(champ);
+        String combo = "-fx-background-color: rgba(30,41,59,0.92);"
+                + "-fx-border-color: rgba(148,163,184,0.35);"
+                + "-fx-border-radius: 10; -fx-background-radius: 10;"
+                + "-fx-text-fill: #e2e8f0;";
+        cbCategorie.setStyle(combo);
+        cbUnite.setStyle(combo);
+        cbEtat.setStyle(combo);
+        cbNiveauUrgence.setStyle(combo);
+        stylerComboCategorie(cbCategorie);
+        stylerComboString(cbUnite);
+        stylerComboString(cbEtat);
+        stylerComboString(cbNiveauUrgence);
+        btnEnregistrer.setStyle(
+                "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 999;"
+                        + "-fx-padding: 10 20; -fx-font-weight: bold; -fx-cursor: hand;");
+        btnAnnuler.setStyle(
+                "-fx-background-color: rgba(51,65,85,0.9); -fx-text-fill: #e2e8f0; -fx-background-radius: 999;"
+                        + "-fx-padding: 10 18; -fx-font-weight: bold;"
+                        + "-fx-border-color: rgba(148,163,184,0.35); -fx-border-radius: 999; -fx-cursor: hand;");
+        Platform.runLater(() -> {
+            javafx.scene.Node content = taDetails.lookup(".content");
+            if (content != null) {
+                content.setStyle("-fx-background-color: rgba(30,41,59,0.92);");
+            }
+            dpExpiration.setStyle("-fx-background-color: transparent;");
+            dpExpiration.getEditor().setStyle(champ);
+        });
+    }
+
+    private static void stylerComboString(ComboBox<String> cb) {
+        cb.setCellFactory(list -> new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                }
+                setTextFill(TEXTE_COMBO);
+            }
+        });
+        cb.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item);
+                }
+                setTextFill(TEXTE_COMBO);
+            }
+        });
+    }
+
+    private static void stylerComboCategorie(ComboBox<DonFormChoices.CategorieOption> cb) {
+        cb.setCellFactory(list -> new ListCell<>() {
+            @Override
+            protected void updateItem(DonFormChoices.CategorieOption item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.libelle());
+                }
+                if (item != null && item.id() <= 0) {
+                    setTextFill(TEXTE_INVITE_COMBO);
+                } else {
+                    setTextFill(TEXTE_COMBO);
+                }
+            }
+        });
+        cb.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(DonFormChoices.CategorieOption item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.libelle());
+                }
+                if (item != null && item.id() <= 0) {
+                    setTextFill(TEXTE_INVITE_COMBO);
+                } else {
+                    setTextFill(TEXTE_COMBO);
+                }
+            }
+        });
     }
 
 
