@@ -1,5 +1,7 @@
 package userfx;
 
+import controllers.RendezVousController;
+import exceptions.ServiceException;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -11,6 +13,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import models.RendezVous;
 
 import java.util.List;
 
@@ -21,8 +24,7 @@ public class DashboardController {
     @FXML private Label pageTitle;
     @FXML private Label totalUsersLabel;
     @FXML private Label totalAppointmentsLabel;
-    @FXML private Label totalMedsLabel;
-    @FXML private Label totalEventsLabel;
+    @FXML private Label terminatedRendezVousLabel;
     @FXML private Label aiWelcomeLabel;
     @FXML private Button themeToggleBtn;
     @FXML private Button dashboardNavButton;
@@ -181,26 +183,18 @@ public class DashboardController {
         long patients = users.stream().filter(u -> u.getRoles() != null
                 && !u.getRoles().contains("ROLE_ADMIN")
                 && !u.getRoles().contains("ROLE_MEDECIN")).count();
-        long active   = users.stream().filter(u -> "ACTIVE".equalsIgnoreCase(u.getStatus())).count();
-        long inactive = users.stream().filter(u -> !"ACTIVE".equalsIgnoreCase(u.getStatus())).count();
 
         totalUsersLabel.setText(String.valueOf(users.size()));
-        totalAppointmentsLabel.setText("—");
-        totalMedsLabel.setText("—");
-        totalEventsLabel.setText("3");
+        loadRendezVousStats();
 
         rolesPieChart.getData().clear();
         if (admins > 0)   rolesPieChart.getData().add(new PieChart.Data("Admins ("   + admins   + ")", admins));
         if (medecins > 0) rolesPieChart.getData().add(new PieChart.Data("Doctors ("  + medecins + ")", medecins));
         if (patients > 0) rolesPieChart.getData().add(new PieChart.Data("Patients (" + patients + ")", patients));
 
-        statusPieChart.getData().clear();
-        if (active > 0)   statusPieChart.getData().add(new PieChart.Data("Active ("   + active   + ")", active));
-        if (inactive > 0) statusPieChart.getData().add(new PieChart.Data("Inactive (" + inactive + ")", inactive));
-
         Platform.runLater(() -> {
             String[] roleColors   = {"#185FA5", "#0F6E56", "#534AB7"};
-            String[] statusColors = {"#1D9E75", "#E24B4A"};
+            String[] statusColors = {"#F0B429", "#1D9E75", "#4E73DF", "#E24B4A"};
 
             for (int i = 0; i < rolesPieChart.getData().size(); i++) {
                 PieChart.Data s = rolesPieChart.getData().get(i);
@@ -213,6 +207,50 @@ public class DashboardController {
                     s.getNode().setStyle("-fx-pie-color: " + statusColors[i % statusColors.length] + ";");
             }
         });
+    }
+
+    private void loadRendezVousStats() {
+        try {
+            RendezVousController rendezVousController = new RendezVousController();
+            List<RendezVous> rendezVousList = rendezVousController.listerTousRendezVous();
+
+            long total = rendezVousList.size();
+            long enAttente = countByStatus(rendezVousList, RendezVous.EN_ATTENTE);
+            long confirmes = countByStatus(rendezVousList, RendezVous.CONFIRME);
+            long termines = countByStatus(rendezVousList, RendezVous.TERMINE);
+            long annules = countByStatus(rendezVousList, RendezVous.ANNULE);
+
+            totalAppointmentsLabel.setText(Long.toString(total));
+            if (terminatedRendezVousLabel != null) {
+                terminatedRendezVousLabel.setText("Terminés: " + termines);
+            }
+
+            statusPieChart.getData().clear();
+            if (enAttente > 0) {
+                statusPieChart.getData().add(new PieChart.Data("En attente (" + enAttente + ")", enAttente));
+            }
+            if (confirmes > 0) {
+                statusPieChart.getData().add(new PieChart.Data("Confirmés (" + confirmes + ")", confirmes));
+            }
+            if (termines > 0) {
+                statusPieChart.getData().add(new PieChart.Data("Terminés (" + termines + ")", termines));
+            }
+            if (annules > 0) {
+                statusPieChart.getData().add(new PieChart.Data("Annulés (" + annules + ")", annules));
+            }
+        } catch (ServiceException e) {
+            totalAppointmentsLabel.setText("—");
+            if (terminatedRendezVousLabel != null) {
+                terminatedRendezVousLabel.setText("Terminés: —");
+            }
+            statusPieChart.getData().clear();
+        }
+    }
+
+    private long countByStatus(List<RendezVous> rendezVousList, String status) {
+        return rendezVousList.stream()
+                .filter(rdv -> rdv.getStatut() != null && rdv.getStatut().equalsIgnoreCase(status))
+                .count();
     }
 
     @FXML
