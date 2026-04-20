@@ -35,6 +35,10 @@ public class RendezVousController {
         rendezVousService.terminer(rendezVousId, medecinId);
     }
 
+    public void modifierMotifRendezVous(int rendezVousId, String motif) throws ServiceException {
+        rendezVousService.modifierMotif(rendezVousId, motif);
+    }
+
     /**
      * Règles patient : RDV CONFIRME ou TERMINE, après la date, pas déjà noté.
      */

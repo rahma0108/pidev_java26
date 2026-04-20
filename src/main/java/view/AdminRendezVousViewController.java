@@ -5,6 +5,7 @@ import exceptions.ServiceException;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 public class AdminRendezVousViewController {
 
@@ -87,13 +89,16 @@ public class AdminRendezVousViewController {
         actions.getStyleClass().addAll("admin-rdv-actions", "col-actions");
 
         Button calBtn = createActionButton("📅", "Calendrier");
-        calBtn.setOnAction(e -> ViewAlertUtil.info("Calendrier", "Action calendrier à brancher."));
+        calBtn.setOnAction(e -> ViewAlertUtil.info(
+                "Calendrier",
+                "Rendez-vous le " + formatDateTime(rdv != null ? rdv.getDateHeure() : null)
+        ));
 
         Button viewBtn = createActionButton("👁", "Voir détail");
         viewBtn.setOnAction(e -> ViewAlertUtil.info("Détail", buildDetails(rdv)));
 
         Button editBtn = createActionButton("✎", "Modifier");
-        editBtn.setOnAction(e -> ViewAlertUtil.info("Modifier", "Edition admin du rendez-vous à brancher."));
+        editBtn.setOnAction(e -> editRendezVous(rdv));
 
         Button deleteBtn = createActionButton("🗑", "Supprimer");
         deleteBtn.setDisable(rdv == null || RendezVous.TERMINE.equals(rdv.getStatut()));
@@ -130,6 +135,30 @@ public class AdminRendezVousViewController {
             ViewAlertUtil.info("Suppression", "Rendez-vous supprimé.");
         } catch (ServiceException e) {
             ViewAlertUtil.erreur("Suppression", e.formatWithCauses());
+        }
+    }
+
+    private void editRendezVous(RendezVous rdv) {
+        if (rdv == null) {
+            return;
+        }
+
+        TextInputDialog dialog = new TextInputDialog(rdv.getMotif() == null ? "" : rdv.getMotif());
+        dialog.setTitle("Modifier rendez-vous");
+        dialog.setHeaderText("Modifier le motif du rendez-vous");
+        dialog.setContentText("Motif :");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) {
+            return;
+        }
+
+        try {
+            rendezVousController.modifierMotifRendezVous(rdv.getId(), result.get());
+            refreshList();
+            ViewAlertUtil.info("Modification", "Motif du rendez-vous mis à jour.");
+        } catch (ServiceException e) {
+            ViewAlertUtil.erreur("Modification", e.formatWithCauses());
         }
     }
 

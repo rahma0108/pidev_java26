@@ -345,6 +345,24 @@ public class RendezVousService {
         return Optional.empty();
     }
 
+    public void modifierMotif(int rendezVousId, String motif) throws ServiceException {
+        String sql = "UPDATE rendez_vous SET motif = ? WHERE id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            if (motif == null || motif.isBlank()) {
+                ps.setNull(1, Types.VARCHAR);
+            } else {
+                ps.setString(1, motif.trim());
+            }
+            ps.setInt(2, rendezVousId);
+            int updated = ps.executeUpdate();
+            if (updated == 0) {
+                throw new ServiceException("Rendez-vous introuvable.");
+            }
+        } catch (SQLException e) {
+            throw new ServiceException("Erreur lors de la modification du motif du rendez-vous.", e);
+        }
+    }
+
     private Optional<RendezVous> findByIdForUpdate(Connection conn, int id) throws ServiceException {
         String sql = baseSelectRdv() + " WHERE r.id = ? FOR UPDATE ";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
