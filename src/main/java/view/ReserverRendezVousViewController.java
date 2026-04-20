@@ -3,21 +3,16 @@ package view;
 import controllers.DisponibiliteController;
 import controllers.RendezVousController;
 import exceptions.ServiceException;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import models.Disponibilite;
@@ -27,21 +22,22 @@ import services.UserService;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class ReserverRendezVousViewController {
+
     private static final DateTimeFormatter DATE_HEURE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
     @FXML
     private TextField motifTextField;
-    @FXML
-    private DatePicker dateFiltrePicker;
     @FXML
     private FlowPane creneauxCardsContainer;
     @FXML
@@ -53,26 +49,22 @@ public class ReserverRendezVousViewController {
     @FXML
     private Button reserverButton;
     @FXML
-    private TableView<RendezVous> mesRendezVousTable;
+    private VBox mesRendezVousListContainer;
     @FXML
-    private TableColumn<RendezVous, String> medecinColumn;
+    private Label disponibilitesCountLabel;
     @FXML
-    private TableColumn<RendezVous, String> dateHeureColumn;
+    private Label mesRendezVousCountLabel;
     @FXML
-    private TableColumn<RendezVous, String> statutColumn;
-    @FXML
-    private TableColumn<RendezVous, Void> calendrierColumn;
+    private Label recommandationLabel;
 
     private DisponibiliteController disponibiliteController;
     private RendezVousController rendezVousController;
     private UserService userService;
     private Runnable afterReserveCallback;
     private List<Disponibilite> creneauxReservables = new ArrayList<>();
-    private List<Disponibilite> creneauxVisibles = new ArrayList<>();
     private Integer demoPatientId;
     private Integer preselectedDisponibiliteId;
     private Disponibilite selectedDisponibilite;
-    private final ObservableList<RendezVous> mesRendezVousItems = FXCollections.observableArrayList();
 
     public void prefillDisponibiliteId(int id) {
         this.preselectedDisponibiliteId = id;
@@ -90,113 +82,70 @@ public class ReserverRendezVousViewController {
             rendezVousController = new RendezVousController();
             userService = new UserService();
         } catch (ServiceException e) {
-            ViewAlertUtil.erreur("Base de données", e.formatWithCauses());
+            ViewAlertUtil.erreur("Base de donnees", e.formatWithCauses());
             return;
         }
-        demoPatientId = resoudreDemoPatientId();
-        configurerTableMesRendezVous();
 
-        retourButton.setOnAction(e -> retournerAccueil());
-        mesRendezVousButton.setOnAction(e -> ouvrirPreferences());
-        reserverButton.setOnAction(e -> handleReserver());
-        dateFiltrePicker.valueProperty().addListener((obs, oldV, newV) -> appliquerFiltreVisuel());
+        demoPatientId = resoudrePatientId();
+
+        if (retourButton != null) {
+            retourButton.setOnAction(e -> retournerAccueil());
+        }
+        if (mesRendezVousButton != null) {
+            mesRendezVousButton.setOnAction(e -> ouvrirPreferences());
+        }
+        if (reserverButton != null) {
+            reserverButton.setOnAction(e -> handleReserver());
+        }
 
         chargerCreneauxLibres();
         chargerMesRendezVous();
+        mettreAJourRecommandation();
     }
 
     private void chargerCreneauxLibres() {
         try {
-            List<Disponibilite> libres = disponibiliteController.afficherCreneauxReservables().stream()
-                    .filter(d -> d.getMedecin() != null)
+            creneauxReservables = disponibiliteController.afficherCreneauxReservables().stream()
+                    .filter(d -> d.getMedecin() != null && d.getMedecin().getId() > 0)
                     .collect(Collectors.toList());
-            creneauxReservables = libres;
-            appliquerFiltreVisuel();
+            renderCreneauxCards(creneauxReservables);
+            if (preselectedDisponibiliteId != null) {
+                selectionnerDisponibiliteSiVisible(preselectedDisponibiliteId);
+            }
+            if (disponibilitesCountLabel != null) {
+                int count = creneauxReservables.size();
+                disponibilitesCountLabel.setText(count + (count > 1 ? " disponibilites" : " disponibilite"));
+            }
         } catch (ServiceException e) {
             ViewAlertUtil.erreur("Chargement", e.formatWithCauses());
         }
     }
 
-    private void appliquerFiltreVisuel() {
-        LocalDate filtre = dateFiltrePicker.getValue();
-        List<Disponibilite> visibles = creneauxReservables;
-        if (filtre != null) {
-            visibles = creneauxReservables.stream()
-                    .filter(d -> d.getDate() != null && d.getDate().equals(filtre))
-                    .collect(Collectors.toList());
-        }
-        creneauxVisibles = visibles;
-        if (selectedDisponibilite != null && visibles.stream().noneMatch(d -> d.getId() == selectedDisponibilite.getId())) {
-            selectedDisponibilite = null;
-        }
-        renderCreneauxCards(visibles);
-        if (preselectedDisponibiliteId != null) {
-            selectionnerDisponibiliteSiVisible(preselectedDisponibiliteId);
-        }
-    }
-
     private void handleReserver() {
         if (demoPatientId == null) {
-            ViewAlertUtil.erreur("Configuration", "Aucun patient de démo valide trouvé (config ou base). Vérifiez app.demo.patientId ou les rôles utilisateurs.");
+            ViewAlertUtil.erreur("Configuration", "Aucun patient connecte valide n'a ete trouve.");
+            return;
+        }
+        if (selectedDisponibilite == null) {
+            ViewAlertUtil.erreur("Reservation", "Selectionnez une disponibilite a reserver.");
             return;
         }
         try {
-            Disponibilite selected = selectedDisponibilite;
-            if (selected == null) {
-                ViewAlertUtil.erreur("Saisie", "Sélectionnez une disponibilité dans les cartes.");
-                return;
+            String motif = motifTextField != null ? motifTextField.getText() : null;
+            RendezVous rdv = rendezVousController.reserverRendezVous(selectedDisponibilite.getId(), demoPatientId, motif);
+            ViewAlertUtil.info("Reservation", "Rendez-vous cree (n " + rdv.getId() + ").");
+            if (motifTextField != null) {
+                motifTextField.clear();
             }
-            int dispoId = selected.getId();
-            String motif = motifTextField.getText();
-            RendezVous rdv = rendezVousController.reserverRendezVous(dispoId, demoPatientId, motif);
-            ViewAlertUtil.info("Réservation", "Rendez-vous créé (n° " + rdv.getId() + ").");
+            selectedDisponibilite = null;
             if (afterReserveCallback != null) {
                 afterReserveCallback.run();
             }
             chargerCreneauxLibres();
             chargerMesRendezVous();
+            mettreAJourRecommandation();
         } catch (ServiceException e) {
-            ViewAlertUtil.erreur("Réservation", e.formatWithCauses());
-        }
-    }
-
-    private void selectionnerDisponibiliteSiVisible(int disponibiliteId) {
-        for (Disponibilite d : creneauxVisibles) {
-            if (d.getId() == disponibiliteId) {
-                selectedDisponibilite = d;
-                renderCreneauxCards(creneauxVisibles);
-                break;
-            }
-        }
-    }
-
-    private void retournerAccueil() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/home.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) reserverButton.getScene().getWindow();
-            stage.setTitle("MediLink - Espace Patient");
-            stage.setScene(new Scene(root, 1000, 680));
-            stage.centerOnScreen();
-        } catch (IOException e) {
-            ViewAlertUtil.erreur("Navigation", "Impossible de revenir à l'accueil : " + e.getMessage());
-        }
-    }
-
-    private void ouvrirPreferences() {
-        ViewAlertUtil.info("Mes préférences", "Personnalisation des préférences patient disponible bientôt.");
-    }
-
-    private void chargerMesRendezVous() {
-        if (demoPatientId == null) {
-            mesRendezVousItems.clear();
-            return;
-        }
-        try {
-            List<RendezVous> rdvs = rendezVousController.listerPourPatient(demoPatientId);
-            mesRendezVousItems.setAll(rdvs);
-        } catch (ServiceException e) {
-            ViewAlertUtil.erreur("Rendez-vous", e.formatWithCauses());
+            ViewAlertUtil.erreur("Reservation", e.formatWithCauses());
         }
     }
 
@@ -213,88 +162,226 @@ public class ReserverRendezVousViewController {
         }
     }
 
-    private VBox createCreneauCard(Disponibilite d) {
-        Label title = new Label("Dispo #" + d.getId());
-        title.getStyleClass().add("card-title");
-        Label date = new Label("Date: " + (d.getDate() != null ? d.getDate() : "-"));
-        Label debut = new Label("Début: " + (d.getHeureDebut() != null ? d.getHeureDebut() : "-"));
-        Label fin = new Label("Fin: " + (d.getHeureFin() != null ? d.getHeureFin() : "-"));
-        Label statut = new Label("Statut: " + (d.getStatus() != null ? d.getStatus() : "-"));
-        Label medecin = new Label("Médecin: "
-                + (d.getMedecin() != null && d.getMedecin().getFullName() != null ? d.getMedecin().getFullName() : "-"));
-        date.getStyleClass().add("card-text");
-        debut.getStyleClass().add("card-text");
-        fin.getStyleClass().add("card-text");
-        statut.getStyleClass().add("card-text");
-        medecin.getStyleClass().add("card-text");
-        VBox card = new VBox(6, title, date, debut, fin, statut, medecin);
-        card.setPrefWidth(220);
-        applyCardState(card, d.equals(selectedDisponibilite));
+    private VBox createCreneauCard(Disponibilite disponibilite) {
+        VBox card = new VBox(10);
+        card.getStyleClass().addAll("availability-card", "patient-dispo-card-item");
+        if (selectedDisponibilite != null && selectedDisponibilite.equals(disponibilite)) {
+            card.getStyleClass().add("selected");
+        }
+
+        Label medecinLabel = new Label(resolveMedecinName(disponibilite));
+        medecinLabel.getStyleClass().addAll("card-title", "patient-dispo-doctor");
+
+        Label dateLabel = new Label(formatDate(disponibilite));
+        dateLabel.getStyleClass().addAll("card-text", "patient-dispo-date");
+
+        Label heureLabel = new Label(formatTimeRange(disponibilite));
+        heureLabel.getStyleClass().addAll("card-text", "patient-dispo-time");
+
+        HBox footer = new HBox(10);
+        footer.getStyleClass().add("patient-dispo-footer");
+
+        Label badge = new Label(isTresDemande(disponibilite) ? "Tres demande" : "Disponible");
+        badge.getStyleClass().addAll("status-badge", isTresDemande(disponibilite) ? "status-waiting" : "status-available");
+
+        Button reserveButton = new Button("Reserver cette disponibilite");
+        reserveButton.getStyleClass().addAll("primary-button", "patient-dispo-book-button");
+        reserveButton.setOnAction(e -> {
+            selectedDisponibilite = disponibilite;
+            renderCreneauxCards(creneauxReservables);
+            handleReserver();
+        });
+
+        footer.getChildren().addAll(badge, reserveButton);
+        card.getChildren().addAll(medecinLabel, dateLabel, heureLabel, footer);
+
         card.setOnMouseClicked(e -> {
-            selectedDisponibilite = d;
-            renderCreneauxCards(creneauxVisibles);
+            selectedDisponibilite = disponibilite;
+            renderCreneauxCards(creneauxReservables);
         });
         return card;
     }
 
-    private static void applyCardState(VBox card, boolean selected) {
-        card.getStyleClass().setAll("availability-card");
-        if (selected) {
-            card.getStyleClass().add("selected");
+    private void chargerMesRendezVous() {
+        if (mesRendezVousListContainer == null) {
+            return;
+        }
+        mesRendezVousListContainer.getChildren().clear();
+        if (demoPatientId == null) {
+            renderMesRendezVousEmpty("Aucun patient connecte: impossible de charger les rendez-vous.");
+            return;
+        }
+        try {
+            List<RendezVous> rdvs = rendezVousController.listerPourPatient(demoPatientId);
+            if (mesRendezVousCountLabel != null) {
+                int count = rdvs.size();
+                mesRendezVousCountLabel.setText(count + (count > 1 ? " rendez-vous" : " rendez-vous"));
+            }
+            if (rdvs.isEmpty()) {
+                renderMesRendezVousEmpty("Aucun rendez-vous trouve.");
+                return;
+            }
+            for (RendezVous rdv : rdvs) {
+                mesRendezVousListContainer.getChildren().add(createRendezVousRow(rdv));
+            }
+        } catch (ServiceException e) {
+            ViewAlertUtil.erreur("Rendez-vous", e.formatWithCauses());
         }
     }
 
-    private void configurerTableMesRendezVous() {
-        mesRendezVousTable.setItems(mesRendezVousItems);
-        mesRendezVousTable.setPlaceholder(new Label("Aucun rendez-vous trouvé."));
-        mesRendezVousTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_SUBSEQUENT_COLUMNS);
-
-        medecinColumn.setCellValueFactory(data -> {
-            RendezVous rdv = data.getValue();
-            String medecinNom = "-";
-            if (rdv != null && rdv.getDisponibilite() != null && rdv.getDisponibilite().getMedecin() != null
-                    && rdv.getDisponibilite().getMedecin().getFullName() != null
-                    && !rdv.getDisponibilite().getMedecin().getFullName().isBlank()) {
-                medecinNom = rdv.getDisponibilite().getMedecin().getFullName();
-            }
-            return new SimpleStringProperty(medecinNom);
-        });
-
-        dateHeureColumn.setCellValueFactory(data ->
-                new SimpleStringProperty(formatDateHeure(data.getValue() != null ? data.getValue().getDateHeure() : null)));
-
-        statutColumn.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue() != null && data.getValue().getStatut() != null
-                        ? data.getValue().getStatut()
-                        : "-"));
-
-        calendrierColumn.setCellFactory(col -> new TableCell<>() {
-            private final Button calendrierBtn = new Button("📅 Calendrier");
-
-            {
-                calendrierBtn.getStyleClass().add("btn-outline");
-                calendrierBtn.setOnAction(e -> {
-                    RendezVous rdv = getTableRow().getItem();
-                    if (rdv == null) {
-                        return;
-                    }
-                    ViewAlertUtil.info("Calendrier", "RDV du " + formatDateHeure(rdv.getDateHeure()));
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : calendrierBtn);
-            }
-        });
+    private void renderMesRendezVousEmpty(String message) {
+        Label empty = new Label(message);
+        empty.getStyleClass().add("rdv-empty-state");
+        mesRendezVousListContainer.getChildren().add(empty);
     }
 
-    private static String formatDateHeure(LocalDateTime dt) {
+    private HBox createRendezVousRow(RendezVous rdv) {
+        HBox row = new HBox(14);
+        row.getStyleClass().add("rdv-row");
+
+        Label medecinLabel = createRowCell(resolveMedecinName(rdv.getDisponibilite()), "rdv-cell-label", "patient-col-medecin");
+        Label dateHeureLabel = createRowCell(formatDateHeure(rdv.getDateHeure()), "rdv-cell-label", "patient-col-date");
+
+        Label statutBadge = new Label(formatStatut(rdv.getStatut()));
+        statutBadge.getStyleClass().addAll("status-badge", statusClassFor(rdv.getStatut()));
+        HBox statutBox = new HBox(statutBadge);
+        statutBox.getStyleClass().add("patient-col-status");
+
+        HBox calendarBox = new HBox(8);
+        calendarBox.getStyleClass().addAll("rdv-actions-box", "patient-col-calendar");
+
+        if (!RendezVous.ANNULE.equalsIgnoreCase(rdv.getStatut())) {
+            Button calendrierButton = createActionButton("📅", "Ajouter au calendrier",
+                    "secondary-button", "rdv-action-button", "icon-action-button", "calendar-action");
+            calendrierButton.setOnAction(e ->
+                    ViewAlertUtil.info("Calendrier", "Placeholder calendrier pour le rendez-vous du " + formatDateHeure(rdv.getDateHeure()) + "."));
+            calendarBox.getChildren().add(calendrierButton);
+        } else {
+            Label nonDisponible = new Label("-");
+            nonDisponible.getStyleClass().add("rdv-cell-label");
+            calendarBox.getChildren().add(nonDisponible);
+        }
+
+        row.getChildren().addAll(medecinLabel, dateHeureLabel, statutBox, calendarBox);
+        return row;
+    }
+
+    private Label createRowCell(String text, String... styleClasses) {
+        Label label = new Label(text);
+        label.getStyleClass().addAll(styleClasses);
+        label.setWrapText(true);
+        return label;
+    }
+
+    private Button createActionButton(String text, String tooltipText, String... styleClasses) {
+        Button button = new Button(text);
+        button.getStyleClass().addAll(styleClasses);
+        if (tooltipText != null && !tooltipText.isBlank()) {
+            button.setTooltip(new Tooltip(tooltipText));
+        }
+        return button;
+    }
+
+    private void selectionnerDisponibiliteSiVisible(int disponibiliteId) {
+        for (Disponibilite disponibilite : creneauxReservables) {
+            if (disponibilite.getId() == disponibiliteId) {
+                selectedDisponibilite = disponibilite;
+                renderCreneauxCards(creneauxReservables);
+                break;
+            }
+        }
+    }
+
+    private void ouvrirPreferences() {
+        ViewAlertUtil.info("Mes preferences", "La gestion des preferences patient sera integree ici.");
+    }
+
+    private void retournerAccueil() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/home.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) retourButton.getScene().getWindow();
+            stage.setTitle("MediLink - Espace Patient");
+            stage.setScene(new Scene(root, 1000, 680));
+            stage.centerOnScreen();
+        } catch (IOException e) {
+            ViewAlertUtil.erreur("Navigation", "Impossible de revenir a l'accueil : " + e.getMessage());
+        }
+    }
+
+    private void mettreAJourRecommandation() {
+        if (recommandationLabel == null) {
+            return;
+        }
+        if (creneauxReservables.isEmpty()) {
+            recommandationLabel.setText("Aucune recommandation disponible pour le moment.");
+            return;
+        }
+        Disponibilite first = creneauxReservables.get(0);
+        recommandationLabel.setText("Creneau recommande: " + resolveMedecinName(first) + " le " + formatDate(first) + " a " + formatTime(first.getHeureDebut()) + ".");
+    }
+
+    private boolean isTresDemande(Disponibilite disponibilite) {
+        if (disponibilite == null || disponibilite.getDate() == null) {
+            return false;
+        }
+        return disponibilite.getDate().isEqual(java.time.LocalDate.now().plusDays(1));
+    }
+
+    private String resolveMedecinName(Disponibilite disponibilite) {
+        if (disponibilite == null || disponibilite.getMedecin() == null || disponibilite.getMedecin().getFullName() == null
+                || disponibilite.getMedecin().getFullName().isBlank()) {
+            return "Medecin indisponible";
+        }
+        return disponibilite.getMedecin().getFullName();
+    }
+
+    private String formatDate(Disponibilite disponibilite) {
+        return disponibilite != null && disponibilite.getDate() != null ? disponibilite.getDate().format(DATE_FMT) : "-";
+    }
+
+    private String formatTimeRange(Disponibilite disponibilite) {
+        if (disponibilite == null) {
+            return "-";
+        }
+        return formatTime(disponibilite.getHeureDebut()) + " - " + formatTime(disponibilite.getHeureFin());
+    }
+
+    private String formatTime(java.time.LocalTime time) {
+        return time != null ? time.format(TIME_FMT) : "-";
+    }
+
+    private String formatDateHeure(LocalDateTime dt) {
         return dt == null ? "-" : DATE_HEURE_FMT.format(dt);
     }
 
-    private Integer chargerDemoPatientId() {
+    private String formatStatut(String statut) {
+        if (statut == null || statut.isBlank()) {
+            return "Inconnu";
+        }
+        return switch (statut.toUpperCase(Locale.ROOT)) {
+            case RendezVous.EN_ATTENTE -> "En attente";
+            case RendezVous.CONFIRME -> "Confirme";
+            case RendezVous.TERMINE -> "Termine";
+            case RendezVous.ANNULE -> "Annule";
+            default -> statut;
+        };
+    }
+
+    private String statusClassFor(String statut) {
+        if (statut == null) {
+            return "status-default";
+        }
+        return switch (statut.toUpperCase(Locale.ROOT)) {
+            case RendezVous.EN_ATTENTE -> "status-waiting";
+            case RendezVous.CONFIRME -> "status-confirmed";
+            case RendezVous.TERMINE -> "status-done";
+            case RendezVous.ANNULE -> "status-cancelled";
+            default -> "status-default";
+        };
+    }
+
+    private Integer chargerConfiguredPatientId() {
         try (InputStream in = getClass().getClassLoader().getResourceAsStream("application.properties")) {
             if (in == null) {
                 return null;
@@ -311,27 +398,33 @@ public class ReserverRendezVousViewController {
         }
     }
 
-    private Integer resoudreDemoPatientId() {
+    private Integer resoudrePatientId() {
         Integer fromSession = SessionContext.getCurrentPatientId();
         if (fromSession != null) {
             return fromSession;
         }
-        Integer configuredId = chargerDemoPatientId();
+        Integer configuredId = chargerConfiguredPatientId();
         try {
             if (configuredId != null) {
                 User configuredUser = userService.findById(configuredId).orElse(null);
-                if (configuredUser != null && configuredUser.hasRole(User.ROLE_PATIENT)) {
+                if (configuredUser != null && isPatientUser(configuredUser)) {
                     SessionContext.setCurrentPatientId(configuredId);
                     return configuredId;
                 }
             }
-            Integer fallback = userService.findFirstByRole(User.ROLE_PATIENT)
-                    .map(User::getId)
-                    .orElse(null);
+            User fallbackUser = userService.findFirstByRole(User.ROLE_PATIENT).orElse(null);
+            if (fallbackUser == null) {
+                fallbackUser = userService.findFirstByRole("ROLE_USER").orElse(null);
+            }
+            Integer fallback = fallbackUser != null ? fallbackUser.getId() : null;
             SessionContext.setCurrentPatientId(fallback);
             return fallback;
         } catch (ServiceException e) {
             return null;
         }
+    }
+
+    private boolean isPatientUser(User user) {
+        return user != null && (user.hasRole(User.ROLE_PATIENT) || user.hasRole("USER"));
     }
 }

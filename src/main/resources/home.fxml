@@ -83,11 +83,11 @@
                          -fx-border-radius: 20; -fx-border-width: 1;
                          -fx-cursor: hand; -fx-padding: 24;">
                 <Label text="📅" style="-fx-font-size: 36px;"/>
-                <Label text="Appointments"
+                <Label text="Rendez-vous"
                        style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white;"/>
                 <Label text="Book &amp; manage your\nschedule"
                        style="-fx-font-size: 11px; -fx-text-fill: #667788; -fx-text-alignment: center;"/>
-                <Label fx:id="rdvCount" text="— upcoming"
+                <Label fx:id="rdvCount" text="— rendez-vous"
                        style="-fx-font-size: 11px; -fx-text-fill: #7fc4fd;
                               -fx-background-color: rgba(24,95,165,0.2);
                               -fx-background-radius: 8; -fx-padding: 3 8;"/>

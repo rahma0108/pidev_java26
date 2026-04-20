@@ -143,7 +143,7 @@ public class HomeController {
                 int ords   = getCount(conn, "SELECT COUNT(*) FROM ordonnances");
                 int events = getCount(conn, "SELECT COUNT(*) FROM evenements");
                 Platform.runLater(() -> {
-                    rdvCount.setText(rdv + " upcoming");
+                    rdvCount.setText(rdv + " rendez-vous");
                     medCount.setText(meds + " items");
                     ordCount.setText(ords + " prescriptions");
                     eventCount.setText(events + " upcoming");

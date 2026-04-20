@@ -2,11 +2,8 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.FlowPane?>
@@ -17,110 +14,171 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="view.ReserverRendezVousViewController"
-            prefWidth="1120.0" prefHeight="740.0"
-            stylesheets="@style.css" styleClass="app-root medecin-page">
+            prefWidth="1180.0" prefHeight="780.0"
+            stylesheets="@style.css" styleClass="app-root, patient-page">
 
-    <VBox AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
-          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-          spacing="18.0" styleClass="main-content page-container medecin-layout">
-        <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-        </padding>
+    <StackPane AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
+               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+               styleClass="page-shell">
+        <children>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll">
+                <content>
+                    <StackPane styleClass="page-content-shell">
+                        <children>
+                            <VBox maxWidth="1240.0"
+                                  prefWidth="1180.0"
+                                  spacing="28.0"
+                                  styleClass="main-content, patient-layout, page-frame">
+                                <padding>
+                                    <Insets top="28.0" right="34.0" bottom="34.0" left="34.0"/>
+                                </padding>
 
-        <HBox alignment="CENTER_LEFT" styleClass="topbar-card" spacing="12.0">
-            <children>
-                <StackPane styleClass="brand-badge">
-                    <children>
-                        <Label text="ML" styleClass="brand-icon"/>
-                    </children>
-                </StackPane>
-                <Label text="MediLink" styleClass="brand-title"/>
-                <Label text="Accueil" styleClass="nav-link"/>
-                <Label text="Événements" styleClass="nav-link"/>
-                <Label text="Rendez-vous" styleClass="nav-link nav-link-active"/>
-                <Label text="Médicaments" styleClass="nav-link"/>
-                <Label text="Dons" styleClass="nav-link"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Label text="👤 Espace Patient" styleClass="badge"/>
-            </children>
-        </HBox>
+                                <HBox alignment="CENTER_LEFT" spacing="24.0" styleClass="topbar-card, patient-topbar">
+                                    <children>
+                                        <VBox spacing="3.0" prefWidth="250.0" minWidth="220.0" styleClass="header-brand-block">
+                                            <children>
+                                                <Label text="MediLink" styleClass="brand-title"/>
+                                                <Label text="Patient workspace" styleClass="section-subtitle, header-brand-subtitle"/>
+                                            </children>
+                                        </VBox>
+                                        <HBox spacing="10.0" alignment="CENTER" HBox.hgrow="ALWAYS" styleClass="header-nav-shell">
+                                            <children>
+                                                <Label text="Accueil" styleClass="nav-link"/>
+                                                <Label text="Evenements" styleClass="nav-link"/>
+                                                <Label text="Rendez-vous" styleClass="nav-link, nav-link-active"/>
+                                                <Label text="Medicaments" styleClass="nav-link"/>
+                                            </children>
+                                        </HBox>
+                                        <VBox spacing="6.0" alignment="CENTER_RIGHT" prefWidth="220.0" minWidth="200.0" styleClass="header-status-shell">
+                                            <children>
+                                                <Label text="Espace patient" styleClass="nav-status-chip"/>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </HBox>
 
-        <HBox alignment="CENTER_LEFT" spacing="8.0">
-            <children>
-                <Label text="🗓" styleClass="section-title"/>
-                <Label text="Prendre rendez-vous" styleClass="page-title"/>
-            </children>
-        </HBox>
-        <Label text="Choisissez une disponibilité chez un médecin et réservez votre rendez-vous." styleClass="page-subtitle"/>
+                                <VBox spacing="18.0" styleClass="content-card, patient-hero-card">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="14.0">
+                                            <children>
+                                                <Label text="🗓" styleClass="page-title"/>
+                                                <VBox spacing="4.0">
+                                                    <children>
+                                                        <Label text="Prendre rendez-vous" styleClass="page-title"/>
+                                                        <Label text="Choisissez une disponibilite chez un medecin et reservez votre rendez-vous." styleClass="page-subtitle"/>
+                                                    </children>
+                                                </VBox>
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                            <children>
+                                                <Button fx:id="mesRendezVousButton" text="Mes preferences" styleClass="secondary-button, patient-pref-button"/>
+                                                <Label fx:id="recommandationLabel"
+                                                       text="Consultez vos disponibilites et vos rendez-vous en un seul endroit."
+                                                       wrapText="true"
+                                                       styleClass="selection-pill, patient-info-pill"/>
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
 
-        <HBox alignment="CENTER_LEFT">
-            <children>
-                <Button fx:id="mesRendezVousButton" text="⚙ Mes préférences" styleClass="secondary-button"/>
-            </children>
-        </HBox>
+                                <VBox spacing="16.0" styleClass="content-card, patient-dispo-card">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="content-header">
+                                            <children>
+                                                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                                    <children>
+                                                        <Label text="Toutes les disponibilites" styleClass="section-title"/>
+                                                        <Label text="Les creneaux affiches sont libres, futurs et relies a un medecin." styleClass="section-subtitle"/>
+                                                    </children>
+                                                </VBox>
+                                                <Label fx:id="disponibilitesCountLabel"
+                                                       text="0 disponibilites"
+                                                       styleClass="selection-pill, patient-info-pill"/>
+                                            </children>
+                                        </HBox>
 
-        <HBox alignment="CENTER_LEFT" spacing="8.0">
-            <children>
-                <Label text="🕒" styleClass="section-title"/>
-                <Label text="Toutes les disponibilités" styleClass="section-title"/>
-            </children>
-        </HBox>
+                                        <HBox spacing="14.0" alignment="CENTER_LEFT" styleClass="patient-booking-toolbar">
+                                            <children>
+                                                <TextField fx:id="motifTextField"
+                                                           promptText="Motif du rendez-vous (optionnel)"
+                                                           HBox.hgrow="ALWAYS"
+                                                           styleClass="search-field"/>
+                                                <Button fx:id="reserverButton"
+                                                        text="Reserver cette disponibilite"
+                                                        defaultButton="true"
+                                                        styleClass="primary-button, patient-book-button"/>
+                                            </children>
+                                        </HBox>
 
-        <VBox styleClass="panel-card">
-            <children>
-                <HBox styleClass="filter-card" alignment="CENTER_LEFT">
-                    <children>
-                        <VBox spacing="6.0">
-                            <Label text="Date souhaitée (filtre visuel)" labelFor="$dateFiltrePicker" styleClass="field-label"/>
-                            <DatePicker fx:id="dateFiltrePicker" maxWidth="220.0" promptText="Filtrer les cartes"/>
-                        </VBox>
-                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
-                            <Label text="Motif (optionnel)" labelFor="$motifTextField" styleClass="field-label"/>
-                            <TextField fx:id="motifTextField" promptText="Consultation, suivi…"/>
-                        </VBox>
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <Button fx:id="reserverButton" text="Réserver" defaultButton="true" styleClass="primary-button"/>
-                    </children>
-                </HBox>
+                                        <StackPane styleClass="patient-dispo-shell">
+                                            <children>
+                                                <ScrollPane fitToWidth="true" prefViewportHeight="280.0" styleClass="availability-scroll, patient-dispo-scroll">
+                                                    <content>
+                                                        <FlowPane fx:id="creneauxCardsContainer"
+                                                                  hgap="18.0"
+                                                                  vgap="18.0"
+                                                                  prefWrapLength="1080.0"
+                                                                  styleClass="availability-grid, patient-dispo-grid"/>
+                                                    </content>
+                                                </ScrollPane>
+                                                <VBox fx:id="disponibilitesEmptyBox"
+                                                      visible="false"
+                                                      managed="false"
+                                                      alignment="CENTER"
+                                                      spacing="6.0"
+                                                      styleClass="empty-state">
+                                                    <children>
+                                                        <Label text="Aucune disponibilite pour le moment." styleClass="empty-title"/>
+                                                        <Label text="Revenez plus tard ou contactez un medecin." styleClass="empty-text"/>
+                                                    </children>
+                                                </VBox>
+                                            </children>
+                                        </StackPane>
+                                    </children>
+                                </VBox>
 
-                <StackPane styleClass="section-card">
-                    <children>
-                        <ScrollPane fitToWidth="true" minHeight="150.0" maxHeight="210.0">
-                            <content>
-                                <FlowPane fx:id="creneauxCardsContainer" hgap="16.0" vgap="16.0" styleClass="availability-grid" prefWrapLength="980.0"/>
-                            </content>
-                        </ScrollPane>
-                        <VBox fx:id="disponibilitesEmptyBox" visible="false" managed="false" alignment="CENTER" spacing="6.0" styleClass="empty-state">
-                            <children>
-                                <Label text="Aucune disponibilité pour le moment." styleClass="empty-title"/>
-                                <Label text="Revenez plus tard ou contactez un médecin." styleClass="empty-text"/>
-                            </children>
-                        </VBox>
-                    </children>
-                </StackPane>
-            </children>
-        </VBox>
+                                <VBox spacing="16.0" styleClass="content-card, patient-rdv-card">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="content-header">
+                                            <children>
+                                                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                                    <children>
+                                                        <Label text="Mes rendez-vous" styleClass="section-title"/>
+                                                        <Label text="Retrouvez ici uniquement les rendez-vous du patient connecte." styleClass="section-subtitle"/>
+                                                    </children>
+                                                </VBox>
+                                                <Label fx:id="mesRendezVousCountLabel"
+                                                       text="0 rendez-vous"
+                                                       styleClass="selection-pill, patient-info-pill"/>
+                                                <Button fx:id="retourButton" text="Retour" styleClass="secondary-button"/>
+                                            </children>
+                                        </HBox>
 
-        <HBox alignment="CENTER_LEFT" spacing="8.0">
-            <children>
-                <Label text="☰" styleClass="section-title"/>
-                <Label text="Mes rendez-vous" styleClass="section-title"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="retourButton" text="Retour" styleClass="secondary-button"/>
-            </children>
-        </HBox>
-
-        <VBox styleClass="panel-card" VBox.vgrow="ALWAYS">
-            <children>
-                <TableView fx:id="mesRendezVousTable" VBox.vgrow="ALWAYS">
-                    <columns>
-                        <TableColumn fx:id="medecinColumn" text="Médecin" prefWidth="250.0"/>
-                        <TableColumn fx:id="dateHeureColumn" text="Date et heure" prefWidth="260.0"/>
-                        <TableColumn fx:id="statutColumn" text="Statut" prefWidth="180.0"/>
-                        <TableColumn fx:id="calendrierColumn" text="Calendrier" prefWidth="180.0"/>
-                    </columns>
-                </TableView>
-            </children>
-        </VBox>
-    </VBox>
+                                        <VBox spacing="0.0" styleClass="rdv-list-shell, patient-rdv-list-shell">
+                                            <children>
+                                                <HBox spacing="14.0" styleClass="rdv-list-header, patient-rdv-list-header">
+                                                    <children>
+                                                        <Label text="Medecin" styleClass="rdv-header-cell, patient-col-medecin"/>
+                                                        <Label text="Date et heure" styleClass="rdv-header-cell, patient-col-date"/>
+                                                        <Label text="Statut" styleClass="rdv-header-cell, patient-col-status"/>
+                                                        <Label text="Calendrier" styleClass="rdv-header-cell, patient-col-calendar"/>
+                                                    </children>
+                                                </HBox>
+                                                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefViewportHeight="280.0" styleClass="rdv-list-scroll">
+                                                    <content>
+                                                        <VBox fx:id="mesRendezVousListContainer" styleClass="rdv-list-body"/>
+                                                    </content>
+                                                </ScrollPane>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </VBox>
+                            </VBox>
+                        </children>
+                    </StackPane>
+                </content>
+            </ScrollPane>
+        </children>
+    </StackPane>
 </AnchorPane>

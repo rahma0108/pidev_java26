@@ -46,8 +46,8 @@ public class RendezVousService {
     public RendezVous reserver(int disponibiliteId, int patientId, String motif) throws ServiceException {
         User patient = userService.findById(patientId)
                 .orElseThrow(() -> new ServiceException("Patient introuvable."));
-        if (!patient.hasRole(User.ROLE_PATIENT)) {
-            throw new ServiceException("Seul un utilisateur avec le role PATIENT peut reserver.");
+        if (!patient.hasRole(User.ROLE_PATIENT) && !patient.hasRole("USER")) {
+            throw new ServiceException("Seul un patient peut reserver.");
         }
 
         try {
