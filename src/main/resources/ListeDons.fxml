@@ -100,7 +100,6 @@
                   <Insets bottom="16.0" left="4.0" right="4.0" top="8.0" />
                </padding>
                <children>
-                  <VBox fx:id="campagnesBox" spacing="10.0" />
                   <Label fx:id="lblDonsTitre" styleClass="label-muted" text="Dons disponibles" />
                   <VBox fx:id="cardsContainer" spacing="12.0" />
                </children>
@@ -109,4 +108,9 @@
       </ScrollPane>
    </center>
    </BorderPane>
+   <VBox fx:id="campagnesBox" maxWidth="380.0" prefWidth="350.0" spacing="8.0" StackPane.alignment="TOP_RIGHT">
+      <StackPane.margin>
+         <Insets right="22.0" top="22.0" />
+      </StackPane.margin>
+   </VBox>
 </StackPane>

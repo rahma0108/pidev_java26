@@ -5,6 +5,8 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -37,8 +39,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import javafx.util.Duration;
 
 public class ListeDonsController implements Initializable {
 
@@ -121,6 +125,14 @@ public class ListeDonsController implements Initializable {
     private final ObservableList<Don> masterData = FXCollections.observableArrayList();
     private FilteredList<Don> filteredData;
     private SortedList<Don> sortedData;
+    private List<CampagneAide> campagnesActives = List.of();
+    private int campagneIndex = 0;
+    private Timeline rotationCampagnes;
+    private Label campagneTitreLabel;
+    private Label campagneCorpsLabel;
+    private Button btnPauseCampagnes;
+    private boolean campagneEnPause = false;
+    private boolean pauseManuelleCampagnes = false;
 
     private ParticleBackground particules;
 
@@ -163,6 +175,7 @@ public class ListeDonsController implements Initializable {
         btnEspaceAdmin.setOnAction(e -> ouvrirEspaceAdmin());
         btnDemandeUrgence.setOnAction(e -> ouvrirDemandeUrgence());
 
+        initialiserCampagnesAccueil();
         appliquerTri();
         appliquerFiltre();
         renderCards();
@@ -267,7 +280,6 @@ public class ListeDonsController implements Initializable {
     }
 
     private void renderCards() {
-        rendreCampagnesAccueil();
         cardsContainer.getChildren().clear();
         for (Don don : sortedData) {
             cardsContainer.getChildren().add(buildCard(don));
@@ -281,45 +293,127 @@ public class ListeDonsController implements Initializable {
         }
     }
 
-    private static final String CAMPAGNE_CARD_STYLE = "-fx-background-color: rgba(30,41,59,0.88);"
-            + " -fx-border-color: rgba(251,191,36,0.55); -fx-border-radius: 14; -fx-background-radius: 14;"
+    private static final String CAMPAGNE_CARD_STYLE = "-fx-background-color: rgba(15,23,42,0.96);"
+            + " -fx-border-color: rgba(251,191,36,0.6); -fx-border-radius: 16; -fx-background-radius: 16;"
             + " -fx-padding: 14;"
-            + " -fx-effect: dropshadow(gaussian, rgba(251,191,36,0.15), 16, 0, 0, 2);";
+            + " -fx-effect: dropshadow(gaussian, rgba(2,6,23,0.9), 34, 0.28, 0, 10);";
 
-    private void rendreCampagnesAccueil() {
+    private void initialiserCampagnesAccueil() {
+        if (rotationCampagnes != null) {
+            rotationCampagnes.stop();
+        }
         campagnesBox.getChildren().clear();
         try {
-            var campagnes = campagneAideService.listerPourAccueil(12);
-            if (campagnes.isEmpty()) {
-                lblDonsTitre.setVisible(false);
-                lblDonsTitre.setManaged(false);
+            campagnesActives = campagneAideService.listerPourAccueil(12);
+            if (campagnesActives.isEmpty()) {
+                campagnesBox.setVisible(false);
+                campagnesBox.setManaged(false);
                 return;
             }
-            lblDonsTitre.setVisible(true);
-            lblDonsTitre.setManaged(true);
-            Label titreSection = new Label("Campagnes d'aide");
-            titreSection.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #fbbf24;");
-            campagnesBox.getChildren().add(titreSection);
-            for (CampagneAide c : campagnes) {
-                campagnesBox.getChildren().add(buildCampagneCard(c));
-            }
+            campagnesBox.setVisible(true);
+            campagnesBox.setManaged(true);
+            VBox alerte = buildCampagneCard();
+            campagnesBox.getChildren().add(alerte);
+            campagneIndex = 0;
+            campagneEnPause = false;
+            pauseManuelleCampagnes = false;
+            afficherCampagne(campagneIndex);
+            demarrerRotationCampagnes();
         } catch (IOException ex) {
-            lblDonsTitre.setVisible(false);
-            lblDonsTitre.setManaged(false);
+            campagnesBox.setVisible(false);
+            campagnesBox.setManaged(false);
         }
     }
 
-    private VBox buildCampagneCard(CampagneAide c) {
-        Label titre = new Label(c.getTitre());
-        titre.setStyle("-fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: #f8fafc;");
-        titre.setWrapText(true);
-        Label corps = new Label(c.getCorps());
-        corps.setWrapText(true);
-        corps.setStyle("-fx-text-fill: #e2e8f0;");
-        VBox card = new VBox(8, titre, corps);
+    private VBox buildCampagneCard() {
+        campagneTitreLabel = new Label();
+        campagneTitreLabel.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #f8fafc;");
+        campagneTitreLabel.setWrapText(true);
+        campagneCorpsLabel = new Label();
+        campagneCorpsLabel.setWrapText(true);
+        campagneCorpsLabel.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 14;");
+
+        btnPauseCampagnes = new Button("Pause");
+        btnPauseCampagnes.setStyle(
+                "-fx-background-color: rgba(15,23,42,0.9); -fx-text-fill: #f8fafc; -fx-font-weight: bold;"
+                        + " -fx-background-radius: 999; -fx-border-radius: 999;"
+                        + " -fx-border-color: rgba(251,191,36,0.5); -fx-cursor: hand;");
+        btnPauseCampagnes.setOnAction(e -> basculerPauseCampagnes());
+
+        HBox actions = new HBox(btnPauseCampagnes);
+        actions.setPadding(new Insets(2, 0, 0, 0));
+
+        VBox card = new VBox(8, campagneTitreLabel, campagneCorpsLabel, actions);
         card.setPadding(new Insets(10));
         card.setStyle(CAMPAGNE_CARD_STYLE);
+        card.setTranslateY(6);
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setOnMouseEntered(e -> mettreCampagnesEnPause());
+        card.setOnMouseExited(e -> reprendreCampagnes());
         return card;
+    }
+
+    private void demarrerRotationCampagnes() {
+        if (campagnesActives.size() <= 1) {
+            if (btnPauseCampagnes != null) {
+                btnPauseCampagnes.setDisable(true);
+                btnPauseCampagnes.setText("Unique");
+            }
+            return;
+        }
+        rotationCampagnes = new Timeline(new KeyFrame(Duration.seconds(2), e -> afficherCampagneSuivante()));
+        rotationCampagnes.setCycleCount(Timeline.INDEFINITE);
+        rotationCampagnes.play();
+    }
+
+    private void afficherCampagneSuivante() {
+        if (campagnesActives.isEmpty()) {
+            return;
+        }
+        campagneIndex = (campagneIndex + 1) % campagnesActives.size();
+        afficherCampagne(campagneIndex);
+    }
+
+    private void afficherCampagne(int index) {
+        if (campagnesActives.isEmpty() || campagneTitreLabel == null || campagneCorpsLabel == null) {
+            return;
+        }
+        CampagneAide campagne = campagnesActives.get(index);
+        campagneTitreLabel.setText(safe(campagne.getTitre()));
+        campagneCorpsLabel.setText(safe(campagne.getCorps()));
+    }
+
+    private void basculerPauseCampagnes() {
+        if (campagneEnPause) {
+            pauseManuelleCampagnes = false;
+            reprendreCampagnes();
+        } else {
+            pauseManuelleCampagnes = true;
+            mettreCampagnesEnPause();
+        }
+    }
+
+    private void mettreCampagnesEnPause() {
+        campagneEnPause = true;
+        if (btnPauseCampagnes != null) {
+            btnPauseCampagnes.setText("Reprendre");
+        }
+        if (rotationCampagnes != null) {
+            rotationCampagnes.pause();
+        }
+    }
+
+    private void reprendreCampagnes() {
+        if (pauseManuelleCampagnes) {
+            return;
+        }
+        campagneEnPause = false;
+        if (btnPauseCampagnes != null) {
+            btnPauseCampagnes.setText("Pause");
+        }
+        if (rotationCampagnes != null && campagnesActives.size() > 1) {
+            rotationCampagnes.play();
+        }
     }
 
     private VBox buildCard(Don don) {
