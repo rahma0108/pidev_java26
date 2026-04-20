@@ -7,16 +7,22 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import services.UrgenceDemandeService;
 import utils.MediLinkDialogs;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ResourceBundle;
 
 /**
@@ -40,14 +46,26 @@ public class DemandeUrgenceController implements Initializable {
     private Button btnEnvoyer;
 
     @FXML
+    private Button btnAjouterImage;
+
+    @FXML
+    private Hyperlink linkRetirerImage;
+
+    @FXML
+    private Label lblImageSelectionnee;
+
+    @FXML
     private TextArea txtMessage;
 
     private final UrgenceDemandeService urgenceDemandeService = new UrgenceDemandeService();
+    private Path imageJustificativeSelectionnee;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         btnRetour.setOnAction(e -> fermer());
         btnEnvoyer.setOnAction(e -> envoyer());
+        btnAjouterImage.setOnAction(e -> choisirImageJustificative());
+        linkRetirerImage.setOnAction(e -> retirerImageJustificative());
         rootPane.sceneProperty().addListener((obs, oldSc, newSc) -> {
             if (newSc != null) {
                 newSc.setFill(Color.web(BG_PAGE));
@@ -103,6 +121,59 @@ public class DemandeUrgenceController implements Initializable {
         s.close();
     }
 
+    private void choisirImageJustificative() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Choisir une image justificative");
+        chooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.webp"),
+                new FileChooser.ExtensionFilter("Tous les fichiers", "*.*"));
+        Stage owner = (Stage) rootPane.getScene().getWindow();
+        var file = chooser.showOpenDialog(owner);
+        if (file == null) {
+            return;
+        }
+        imageJustificativeSelectionnee = file.toPath();
+        lblImageSelectionnee.setText("Image : " + file.getName());
+        linkRetirerImage.setVisible(true);
+        linkRetirerImage.setManaged(true);
+    }
+
+    private void retirerImageJustificative() {
+        imageJustificativeSelectionnee = null;
+        lblImageSelectionnee.setText("Aucune image sélectionnée");
+        linkRetirerImage.setVisible(false);
+        linkRetirerImage.setManaged(false);
+    }
+
+    private String copierPieceJointeSiPresente() throws IOException {
+        if (imageJustificativeSelectionnee == null) {
+            return null;
+        }
+        if (!Files.isRegularFile(imageJustificativeSelectionnee)) {
+            throw new IOException("Image justificative introuvable.");
+        }
+        long taille = Files.size(imageJustificativeSelectionnee);
+        long limite = 5L * 1024L * 1024L;
+        if (taille > limite) {
+            throw new IOException("Image trop volumineuse (max 5 Mo).");
+        }
+        String nom = imageJustificativeSelectionnee.getFileName().toString();
+        String ext = "";
+        int idx = nom.lastIndexOf('.');
+        if (idx >= 0) {
+            ext = nom.substring(idx).toLowerCase();
+        }
+        if (!ext.equals(".png") && !ext.equals(".jpg") && !ext.equals(".jpeg") && !ext.equals(".webp")) {
+            throw new IOException("Format d'image non supporté. Utilisez PNG, JPG, JPEG ou WEBP.");
+        }
+        Path dossier = Path.of(System.getProperty("user.home"), ".medilink", "urgence-justificatifs");
+        Files.createDirectories(dossier);
+        String fichier = "demande_" + System.currentTimeMillis() + ext;
+        Path destination = dossier.resolve(fichier);
+        Files.copy(imageJustificativeSelectionnee, destination, StandardCopyOption.REPLACE_EXISTING);
+        return destination.toAbsolutePath().toString();
+    }
+
     private void envoyer() {
         String msg = txtMessage.getText() != null ? txtMessage.getText().trim() : "";
         if (msg.length() < 8) {
@@ -119,8 +190,10 @@ public class DemandeUrgenceController implements Initializable {
             return;
         }
         try {
-            urgenceDemandeService.enregistrer(msg);
+            String pieceImagePath = copierPieceJointeSiPresente();
+            urgenceDemandeService.enregistrer(msg, pieceImagePath);
             txtMessage.clear();
+            retirerImageJustificative();
             Alert ok = new Alert(Alert.AlertType.INFORMATION,
                     "Votre message a été transmis aux équipes. Il n'apparaît pas sur l'accueil ; un administrateur pourra "
                             + "lancer une campagne d'aide publique si nécessaire.");

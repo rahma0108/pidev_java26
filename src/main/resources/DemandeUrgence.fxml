@@ -6,6 +6,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -52,6 +53,11 @@
                   <Label styleClass="dem-urg-form-title" text="Votre message" />
                   <Label styleClass="label-muted" text="Minimum 8 caractères, maximum 4000. Incluez les montants ou besoins précis si nécessaire." wrapText="true" />
                   <TextArea fx:id="txtMessage" prefRowCount="14" promptText="Exemple : besoin de 3000 dinars pour une opération, groupe sanguin, contact…" styleClass="dem-urg-textarea" wrapText="true" VBox.vgrow="ALWAYS" />
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <Button fx:id="btnAjouterImage" mnemonicParsing="false" styleClass="btn-dem-urg-back" text="Ajouter image justificative" />
+                     <Hyperlink fx:id="linkRetirerImage" text="Retirer" visible="false" managed="false" />
+                     <Label fx:id="lblImageSelectionnee" styleClass="label-muted" text="Aucune image sélectionnée" />
+                  </HBox>
                   <HBox alignment="CENTER_RIGHT" spacing="12.0">
                      <Button fx:id="btnEnvoyer" mnemonicParsing="false" styleClass="btn-care-primary" text="Envoyer aux équipes" />
                   </HBox>

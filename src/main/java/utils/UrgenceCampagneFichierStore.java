@@ -43,6 +43,7 @@ public final class UrgenceCampagneFichierStore {
         private static final long serialVersionUID = 1L;
         int id;
         String message;
+        String pieceImagePath;
         String statut;
         long createdAtEpochMilli;
     }
@@ -109,12 +110,17 @@ public final class UrgenceCampagneFichierStore {
     }
 
     public static int enregistrerDemande(String message) throws IOException {
+        return enregistrerDemande(message, null);
+    }
+
+    public static int enregistrerDemande(String message, String pieceImagePath) throws IOException {
         LOCK.lock();
         try {
             Snapshot s = loadOrCreate();
             DemandeSer d = new DemandeSer();
             d.id = s.nextDemandeId++;
             d.message = message;
+            d.pieceImagePath = pieceImagePath;
             d.statut = "en_attente";
             d.createdAtEpochMilli = System.currentTimeMillis();
             s.demandes.add(d);
@@ -234,6 +240,7 @@ public final class UrgenceCampagneFichierStore {
         UrgenceDemande u = new UrgenceDemande();
         u.setId(d.id);
         u.setMessage(d.message);
+        u.setPieceImagePath(d.pieceImagePath);
         u.setStatut(d.statut);
         u.setCreatedAt(new Timestamp(d.createdAtEpochMilli));
         return u;

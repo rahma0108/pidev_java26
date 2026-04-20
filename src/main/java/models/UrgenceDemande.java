@@ -8,6 +8,7 @@ public class UrgenceDemande {
 
     private int id;
     private String message;
+    private String pieceImagePath;
     private String statut;
     private Timestamp createdAt;
 
@@ -38,6 +39,14 @@ public class UrgenceDemande {
 
     public String getStatut() {
         return statut;
+    }
+
+    public String getPieceImagePath() {
+        return pieceImagePath;
+    }
+
+    public void setPieceImagePath(String pieceImagePath) {
+        this.pieceImagePath = pieceImagePath;
     }
 
     public void setStatut(String statut) {

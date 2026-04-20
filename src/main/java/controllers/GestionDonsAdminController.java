@@ -38,8 +38,11 @@ import utils.MediLinkDialogs;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.function.UnaryOperator;
@@ -242,6 +245,10 @@ public class GestionDonsAdminController implements Initializable {
         Label note = new Label("Demande déjà traitée — consultation seule.");
         note.setWrapText(true);
         note.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11;");
+        Button btnVoirPiece = creerBoutonPieceJointe(d);
+        if (btnVoirPiece != null) {
+            content.getChildren().add(btnVoirPiece);
+        }
         content.getChildren().addAll(full, note);
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().setAll(ButtonType.OK);
@@ -282,6 +289,10 @@ public class GestionDonsAdminController implements Initializable {
                         + "« Lancer une campagne (IA) » : l'IA rédige titre + texte ; la campagne apparaît sur l'accueil.");
         help.setWrapText(true);
         help.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11;");
+        Button btnVoirPiece = creerBoutonPieceJointe(d);
+        if (btnVoirPiece != null) {
+            content.getChildren().add(btnVoirPiece);
+        }
         content.getChildren().addAll(full, help);
         dialog.getDialogPane().setContent(content);
         ButtonType pas = new ButtonType("Pas besoin de campagne", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -329,6 +340,41 @@ public class GestionDonsAdminController implements Initializable {
         }
         String t = s.trim();
         return t.length() <= max ? t : t.substring(0, max) + "…";
+    }
+
+    private Button creerBoutonPieceJointe(UrgenceDemande d) {
+        if (d.getPieceImagePath() == null || d.getPieceImagePath().isBlank()) {
+            return null;
+        }
+        Path piece = Path.of(d.getPieceImagePath());
+        if (!Files.isRegularFile(piece)) {
+            Button faux = new Button("Pièce jointe introuvable");
+            faux.setDisable(true);
+            faux.setStyle("-fx-background-color: #fee2e2; -fx-text-fill: #b91c1c; -fx-background-radius: 8;");
+            return faux;
+        }
+        Button voir = new Button("Ouvrir justificatif");
+        voir.setStyle("-fx-background-color: #0ea5e9; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 6 12;");
+        voir.setOnAction(ev -> ouvrirFichierLocal(piece));
+        return voir;
+    }
+
+    private void ouvrirFichierLocal(Path fichier) {
+        try {
+            String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+            String chemin = fichier.toAbsolutePath().toString();
+            ProcessBuilder pb;
+            if (os.contains("win")) {
+                pb = new ProcessBuilder("cmd", "/c", "start", "", chemin);
+            } else if (os.contains("mac")) {
+                pb = new ProcessBuilder("open", chemin);
+            } else {
+                pb = new ProcessBuilder("xdg-open", chemin);
+            }
+            pb.start();
+        } catch (IOException ex) {
+            afficherErreur("Ouverture du justificatif", ex.getMessage());
+        }
     }
 
     private void fermerFenetre() {

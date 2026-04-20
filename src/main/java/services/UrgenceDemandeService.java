@@ -19,9 +19,11 @@ public final class UrgenceDemandeService {
 
 
     public int enregistrer(String message) throws IOException {
+        return enregistrer(message, null);
+    }
 
-        return UrgenceCampagneFichierStore.enregistrerDemande(message);
-
+    public int enregistrer(String message, String pieceImagePath) throws IOException {
+        return UrgenceCampagneFichierStore.enregistrerDemande(message, pieceImagePath);
     }
 
 
