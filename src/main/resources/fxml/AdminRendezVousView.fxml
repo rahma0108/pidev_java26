@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="view.AdminRendezVousViewController"
+      spacing="0.0"
+      styleClass="admin-rdv-page"
+      stylesheets="@admin-rendezvous.css">
+    <padding>
+        <Insets top="24.0" right="24.0" bottom="24.0" left="24.0"/>
+    </padding>
+
+    <VBox spacing="0.0" VBox.vgrow="ALWAYS" styleClass="admin-rdv-list-card">
+        <HBox spacing="12.0" styleClass="admin-rdv-header-row">
+            <Label text="Disponibilité" styleClass="admin-rdv-header-cell, col-dispo"/>
+            <Label text="Médecin" styleClass="admin-rdv-header-cell, col-medecin"/>
+            <Label text="Patient" styleClass="admin-rdv-header-cell, col-patient"/>
+            <Label text="Date et heure" styleClass="admin-rdv-header-cell, col-datetime"/>
+            <Label text="Statut" styleClass="admin-rdv-header-cell, col-status"/>
+            <Label text="Actions" styleClass="admin-rdv-header-cell, col-actions"/>
+        </HBox>
+
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS" styleClass="admin-rdv-scroll">
+            <content>
+                <VBox fx:id="rowsContainer" spacing="0.0" styleClass="admin-rdv-body"/>
+            </content>
+        </ScrollPane>
+    </VBox>
+</VBox>

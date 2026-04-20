@@ -9,6 +9,7 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
@@ -24,8 +25,15 @@ public class DashboardController {
     @FXML private Label totalEventsLabel;
     @FXML private Label aiWelcomeLabel;
     @FXML private Button themeToggleBtn;
+    @FXML private Button dashboardNavButton;
+    @FXML private Button usersNavButton;
+    @FXML private Button rendezVousNavButton;
+    @FXML private Button medicationsNavButton;
+    @FXML private Button eventsNavButton;
     @FXML private PieChart rolesPieChart;
     @FXML private PieChart statusPieChart;
+    @FXML private StackPane centerContentHost;
+    @FXML private ScrollPane dashboardScrollPane;
 
     @FXML private ImageView logoImage;
     @FXML private VBox statCard1, statCard2, statCard3, statCard4;
@@ -43,8 +51,17 @@ public class DashboardController {
         CARD_LIGHT + " -fx-padding: 16;";
     private static final String PANEL_DARK =
         CARD_DARK + " -fx-padding: 16;";
+    private static final String NAV_ACTIVE_STYLE =
+            "-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white; "
+                    + "-fx-font-size: 13px; -fx-alignment: CENTER-LEFT; "
+                    + "-fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;";
+    private static final String NAV_DEFAULT_STYLE =
+            "-fx-background-color: transparent; -fx-text-fill: white; "
+                    + "-fx-font-size: 13px; -fx-alignment: CENTER-LEFT; "
+                    + "-fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;";
 
     private static User loggedInUser;
+    private Parent adminRendezVousView;
 
     public static void setLoggedInUser(User user) {
         loggedInUser = user;
@@ -71,6 +88,7 @@ public class DashboardController {
 
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
         applyTheme();
+        setActiveMenu(dashboardNavButton);
         loadStats();
     }
 
@@ -197,14 +215,27 @@ public class DashboardController {
         });
     }
 
-    @FXML public void showDashboard()    { pageTitle.setText("Dashboard"); loadStats(); }
-    @FXML public void showUsers()        { navigateTo("/userlist.fxml"); }
+    @FXML
+    public void showDashboard() {
+        pageTitle.setText("Dashboard");
+        setActiveMenu(dashboardNavButton);
+        if (centerContentHost != null && dashboardScrollPane != null) {
+            centerContentHost.getChildren().setAll(dashboardScrollPane);
+        }
+        loadStats();
+    }
+    @FXML public void showUsers()        { setActiveMenu(usersNavButton); navigateTo("/userlist.fxml"); }
     @FXML
     public void showAppointments() {
-        navigateTo("/fxml/ListeDisponibilitesView.fxml");
+        setActiveMenu(rendezVousNavButton);
+        Parent view = getAdminRendezVousView();
+        if (view == null || centerContentHost == null) {
+            return;
+        }
+        centerContentHost.getChildren().setAll(view);
     }
-    @FXML public void showMedications()  { pageTitle.setText("Medications — coming soon"); }
-    @FXML public void showEvents()       { pageTitle.setText("Events — coming soon"); }
+    @FXML public void showMedications()  { setActiveMenu(medicationsNavButton); pageTitle.setText("Medications — coming soon"); }
+    @FXML public void showEvents()       { setActiveMenu(eventsNavButton); pageTitle.setText("Events — coming soon"); }
     @FXML public void handleLogout() {
         if (PopupHelper.confirmLogout()) {
             navigateTo("/main.fxml");
@@ -218,6 +249,28 @@ public class DashboardController {
             ThemeManager.apply(pageTitle.getScene());
         } catch (Exception e) {
             System.err.println("Navigation error: " + e.getMessage());
+        }
+    }
+
+    private Parent getAdminRendezVousView() {
+        if (adminRendezVousView != null) {
+            return adminRendezVousView;
+        }
+        try {
+            adminRendezVousView = FXMLLoader.load(getClass().getResource("/fxml/AdminRendezVousView.fxml"));
+            return adminRendezVousView;
+        } catch (Exception e) {
+            System.err.println("Rendez-vous admin view error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private void setActiveMenu(Button activeButton) {
+        for (Button button : new Button[]{dashboardNavButton, usersNavButton, rendezVousNavButton, medicationsNavButton, eventsNavButton}) {
+            if (button == null) {
+                continue;
+            }
+            button.setStyle(button == activeButton ? NAV_ACTIVE_STYLE : NAV_DEFAULT_STYLE);
         }
     }
 }

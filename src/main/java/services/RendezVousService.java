@@ -284,6 +284,20 @@ public class RendezVousService {
         }
     }
 
+    public List<RendezVous> listerTous() throws ServiceException {
+        String sql = baseSelectRdv() + " ORDER BY r.date_heure DESC ";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            List<RendezVous> list = new ArrayList<>();
+            while (rs.next()) {
+                list.add(mapRendezVous(rs));
+            }
+            return list;
+        } catch (SQLException e) {
+            throw new ServiceException("Erreur chargement de tous les rendez-vous.", e);
+        }
+    }
+
     public List<RendezVous> listerPourPatient(int patientId) throws ServiceException {
         String sql = baseSelectRdv() + " WHERE r.patient_id = ? ORDER BY r.date_heure DESC ";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {

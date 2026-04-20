@@ -42,6 +42,10 @@ public class RendezVousController {
         return rendezVousService.laisserAvis(rendezVousId, patientId, note, commentaire);
     }
 
+    public List<RendezVous> listerTousRendezVous() throws ServiceException {
+        return rendezVousService.listerTous();
+    }
+
     public List<RendezVous> listerPourPatient(int patientId) throws ServiceException {
         return rendezVousService.listerPourPatient(patientId);
     }

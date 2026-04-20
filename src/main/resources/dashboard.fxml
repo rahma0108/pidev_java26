@@ -23,27 +23,27 @@
             <Separator style="-fx-background-color: rgba(255,255,255,0.2);"/>
 
             <VBox spacing="4" style="-fx-padding: 16 12;">
-                <Button text="  Dashboard" onAction="#showDashboard"
+                <Button fx:id="dashboardNavButton" text="  Dashboard" onAction="#showDashboard"
                         prefWidth="196" prefHeight="42"
                         style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white;
                                -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
                                -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
-                <Button text="  Users" onAction="#showUsers"
+                <Button fx:id="usersNavButton" text="  Users" onAction="#showUsers"
                         prefWidth="196" prefHeight="42"
                         style="-fx-background-color: transparent; -fx-text-fill: white;
                                -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
                                -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
-                <Button text="  Rendez-vous" onAction="#showAppointments"
+                <Button fx:id="rendezVousNavButton" text="  Rendez-vous" onAction="#showAppointments"
                         prefWidth="196" prefHeight="42"
                         style="-fx-background-color: transparent; -fx-text-fill: white;
                                -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
                                -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
-                <Button text="  Medications" onAction="#showMedications"
+                <Button fx:id="medicationsNavButton" text="  Medications" onAction="#showMedications"
                         prefWidth="196" prefHeight="42"
                         style="-fx-background-color: transparent; -fx-text-fill: white;
                                -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
                                -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
-                <Button text="  Events" onAction="#showEvents"
+                <Button fx:id="eventsNavButton" text="  Events" onAction="#showEvents"
                         prefWidth="196" prefHeight="42"
                         style="-fx-background-color: transparent; -fx-text-fill: white;
                                -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
@@ -76,9 +76,13 @@
     </left>
 
     <center>
-        <ScrollPane fitToWidth="true"
-                    style="-fx-background-color: transparent; -fx-background: transparent;">
-            <VBox spacing="20" style="-fx-padding: 28;">
+        <StackPane fx:id="centerContentHost">
+            <children>
+                <ScrollPane fx:id="dashboardScrollPane"
+                            fitToWidth="true"
+                            style="-fx-background-color: transparent; -fx-background: transparent;">
+                    <content>
+                        <VBox spacing="20" style="-fx-padding: 28;">
 
                 <!-- TOP BAR with title + theme toggle -->
                 <HBox alignment="CENTER_LEFT">
@@ -181,7 +185,10 @@
                     </VBox>
                 </HBox>
 
-            </VBox>
-        </ScrollPane>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </children>
+        </StackPane>
     </center>
 </BorderPane>
