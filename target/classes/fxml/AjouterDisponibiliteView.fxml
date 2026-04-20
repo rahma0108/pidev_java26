@@ -4,10 +4,8 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -15,74 +13,91 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="view.AjouterDisponibiliteViewController"
-            prefWidth="560.0" prefHeight="520.0"
-            stylesheets="@style.css" styleClass="app-root medecin-page">
+            prefWidth="760.0" prefHeight="500.0"
+            stylesheets="@style.css" styleClass="app-root, medecin-page">
 
-    <VBox AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
-          AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-          spacing="14.0" styleClass="main-content page-container medecin-layout">
-        <padding>
-            <Insets bottom="20.0" left="24.0" right="24.0" top="20.0"/>
-        </padding>
+    <StackPane AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
+               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+               styleClass="page-shell, add-dispo-shell">
+        <children>
+            <VBox maxWidth="900.0"
+                  prefWidth="760.0"
+                  spacing="24.0"
+                  styleClass="main-content, medecin-layout, page-frame">
+                <padding>
+                    <Insets top="26.0" right="28.0" bottom="28.0" left="28.0"/>
+                </padding>
 
-        <HBox alignment="CENTER_LEFT" styleClass="navbar doctor-topbar" spacing="10.0">
-            <children>
-                <StackPane styleClass="brand-badge">
+                <HBox alignment="CENTER_LEFT" spacing="24.0" styleClass="topbar-card, header-card, doctor-topbar">
                     <children>
-                        <Label text="ML" styleClass="brand-icon"/>
+                        <VBox spacing="3.0" prefWidth="250.0" minWidth="220.0" styleClass="header-brand-block">
+                            <children>
+                                <Label text="MediLink" styleClass="brand-title"/>
+                                <Label text="Doctor workspace" styleClass="section-subtitle, header-brand-subtitle"/>
+                            </children>
+                        </VBox>
+                        <HBox spacing="10.0" alignment="CENTER" HBox.hgrow="ALWAYS" styleClass="header-nav-shell">
+                            <children>
+                                <Label text="Accueil" styleClass="nav-link"/>
+                                <Label text="Evenements" styleClass="nav-link"/>
+                                <Label text="Rendez-vous" styleClass="nav-link, nav-link-active"/>
+                            </children>
+                        </HBox>
+                        <VBox spacing="6.0" alignment="CENTER_RIGHT" prefWidth="220.0" minWidth="200.0" styleClass="header-status-shell">
+                            <children>
+                                <Label text="Espace medecin" styleClass="nav-status-chip"/>
+                            </children>
+                        </VBox>
                     </children>
-                </StackPane>
-                <Label text="MediLink" styleClass="brand-title"/>
-                <Label text="Accueil" styleClass="nav-link"/>
-                <Label text="Evenements" styleClass="nav-link"/>
-                <Label text="Rendez-vous" styleClass="nav-link nav-link-active"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Label text="Espace medecin" styleClass="nav-status-chip"/>
-                <Label text="Ajout de creneau" styleClass="nav-status-chip nav-status-chip-soft"/>
-            </children>
-        </HBox>
+                </HBox>
 
-        <VBox spacing="6.0" styleClass="doctor-hero-card">
-            <children>
-                <Label fx:id="pageTitleLabel" text="Nouvelle disponibilite" styleClass="page-title doctor-page-title"/>
-                <Label text="Ajoutez des creneaux precis dans un formulaire coherent avec l'espace medecin." styleClass="subtitle-text doctor-page-subtitle"/>
-            </children>
-        </VBox>
+                <VBox spacing="12.0" styleClass="content-card, add-dispo-card">
+                    <children>
+                        <VBox spacing="4.0">
+                            <children>
+                                <Label fx:id="pageTitleLabel" text="Nouvelle disponibilite" styleClass="page-title, doctor-page-title"/>
+                                <Label text="Ajoutez une plage horaire de disponibilite. Elle pourra etre reservee pour un rendez-vous." styleClass="section-subtitle, add-dispo-subtitle"/>
+                            </children>
+                        </VBox>
 
-        <VBox spacing="6.0">
-            <Label text="Identifiant medecin" labelFor="$medecinIdTextField" styleClass="field-label"/>
-            <TextField fx:id="medecinIdTextField" promptText="ex : 1" maxWidth="200.0"/>
-        </VBox>
+                        <VBox spacing="18.0" styleClass="add-dispo-form-card">
+                            <children>
+                                <VBox spacing="8.0">
+                                    <children>
+                                        <Label text="Date" styleClass="field-label"/>
+                                        <DatePicker fx:id="datePicker" promptText="jj/mm/aaaa" maxWidth="1.7976931348623157E308" styleClass="add-dispo-date-picker"/>
+                                    </children>
+                                </VBox>
 
-        <VBox spacing="6.0">
-            <Label text="Date" labelFor="$datePicker" styleClass="field-label"/>
-            <DatePicker fx:id="datePicker" maxWidth="220.0" promptText="Choisir une date"/>
-        </VBox>
+                                <HBox spacing="16.0" alignment="TOP_LEFT">
+                                    <children>
+                                        <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <Label text="Heure de debut" styleClass="field-label"/>
+                                                <TextField fx:id="heureDebutTextField" promptText="--:--" maxWidth="1.7976931348623157E308" styleClass="add-dispo-time-field"/>
+                                            </children>
+                                        </VBox>
+                                        <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <Label text="Heure de fin" styleClass="field-label"/>
+                                                <TextField fx:id="heureFinTextField" promptText="--:--" maxWidth="1.7976931348623157E308" styleClass="add-dispo-time-field"/>
+                                                <Label text="L'heure de fin doit etre posterieure a l'heure de debut." wrapText="true" styleClass="section-subtitle, add-dispo-help"/>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </HBox>
 
-        <HBox spacing="16.0" alignment="CENTER_LEFT">
-            <VBox spacing="6.0" HBox.hgrow="ALWAYS">
-                <Label text="Heure debut" labelFor="$heureDebutTextField" styleClass="field-label"/>
-                <TextField fx:id="heureDebutTextField" promptText="HH:mm"/>
+                                <HBox spacing="12.0" alignment="CENTER_LEFT" styleClass="add-dispo-actions">
+                                    <children>
+                                        <Button fx:id="ajouterButton" text="Enregistrer" defaultButton="true" styleClass="primary-button, availability-create-button, add-dispo-save-button"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
             </VBox>
-            <VBox spacing="6.0" HBox.hgrow="ALWAYS">
-                <Label text="Heure fin" labelFor="$heureFinTextField" styleClass="field-label"/>
-                <TextField fx:id="heureFinTextField" promptText="HH:mm"/>
-            </VBox>
-        </HBox>
-
-        <Label text="Apercu des creneaux (medecin selectionne)" styleClass="field-label"/>
-
-        <ScrollPane fitToWidth="true" prefHeight="160.0" minHeight="120.0" styleClass="card-soft availability-panel">
-            <content>
-                <FlowPane fx:id="apercuCardsContainer" hgap="10.0" vgap="10.0" prefWrapLength="500.0"/>
-            </content>
-        </ScrollPane>
-
-        <HBox spacing="12.0" alignment="CENTER_LEFT" styleClass="actions-bar">
-            <Button fx:id="ajouterButton" text="Ajouter" defaultButton="true" styleClass="primary-button"/>
-            <Button fx:id="supprimerButton" text="Supprimer" styleClass="danger-button"/>
-            <Button fx:id="reserverButton" text="Reserver" styleClass="secondary-button"/>
-            <Button fx:id="reinitialiserButton" text="Reinitialiser" styleClass="secondary-button"/>
-        </HBox>
-    </VBox>
+        </children>
+    </StackPane>
 </AnchorPane>

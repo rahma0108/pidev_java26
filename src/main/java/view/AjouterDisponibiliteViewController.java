@@ -3,28 +3,20 @@ package view;
 import controllers.DisponibiliteController;
 import exceptions.ServiceException;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import models.Disponibilite;
 import models.User;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 import java.util.function.UnaryOperator;
 
 public class AjouterDisponibiliteViewController {
@@ -35,27 +27,16 @@ public class AjouterDisponibiliteViewController {
     @FXML
     private Label pageTitleLabel;
     @FXML
-    private TextField medecinIdTextField;
-    @FXML
     private DatePicker datePicker;
     @FXML
     private TextField heureDebutTextField;
     @FXML
     private TextField heureFinTextField;
     @FXML
-    private FlowPane apercuCardsContainer;
-    @FXML
     private Button ajouterButton;
-    @FXML
-    private Button supprimerButton;
-    @FXML
-    private Button reserverButton;
-    @FXML
-    private Button reinitialiserButton;
 
     private DisponibiliteController disponibiliteController;
     private Runnable afterSaveCallback;
-    private Disponibilite selectionApercu;
     private Integer medecinIdContexte;
     private Disponibilite disponibiliteEnEdition;
     private boolean initialized;
@@ -66,7 +47,6 @@ public class AjouterDisponibiliteViewController {
 
     public void setMedecinIdContexte(Integer medecinIdContexte) {
         this.medecinIdContexte = medecinIdContexte;
-        appliquerContexteMedecin();
     }
 
     public void setDisponibiliteAEditer(Disponibilite disponibilite) {
@@ -81,36 +61,13 @@ public class AjouterDisponibiliteViewController {
         try {
             disponibiliteController = new DisponibiliteController();
         } catch (ServiceException e) {
-            ViewAlertUtil.erreur("Base de données", e.formatWithCauses());
+            ViewAlertUtil.erreur("Base de donnees", e.formatWithCauses());
             return;
         }
         configurerAideSaisie();
-        appliquerContexteMedecin();
         initialized = true;
         appliquerModeEdition();
-
-        medecinIdTextField.focusedProperty().addListener((obs, oldV, focused) -> {
-            if (!focused) {
-                rafraichirApercu();
-            }
-        });
-
-        ajouterButton.setOnAction(e -> handleAjouter());
-        reinitialiserButton.setOnAction(e -> viderFormulaire());
-        supprimerButton.setOnAction(e -> handleSupprimerApercu());
-        reserverButton.setOnAction(e -> ouvrirReservation());
-    }
-
-    private void appliquerContexteMedecin() {
-        if (medecinIdTextField == null) {
-            return;
-        }
-        if (medecinIdContexte != null) {
-            medecinIdTextField.setText(Integer.toString(medecinIdContexte));
-            medecinIdTextField.setDisable(true);
-        } else {
-            medecinIdTextField.setDisable(false);
-        }
+        ajouterButton.setOnAction(e -> handleEnregistrer());
     }
 
     private void appliquerModeEdition() {
@@ -119,7 +76,7 @@ public class AjouterDisponibiliteViewController {
                 pageTitleLabel.setText("Nouvelle disponibilite");
             }
             if (ajouterButton != null) {
-                ajouterButton.setText("Ajouter");
+                ajouterButton.setText("Enregistrer");
             }
             return;
         }
@@ -129,13 +86,6 @@ public class AjouterDisponibiliteViewController {
         }
         if (ajouterButton != null) {
             ajouterButton.setText("Enregistrer");
-        }
-        if (reserverButton != null) {
-            reserverButton.setDisable(true);
-        }
-        if (medecinIdTextField != null && disponibiliteEnEdition.getMedecin() != null) {
-            medecinIdTextField.setText(Integer.toString(disponibiliteEnEdition.getMedecin().getId()));
-            medecinIdTextField.setDisable(true);
         }
         if (datePicker != null) {
             datePicker.setValue(disponibiliteEnEdition.getDate());
@@ -150,7 +100,8 @@ public class AjouterDisponibiliteViewController {
 
     private void configurerAideSaisie() {
         datePicker.setEditable(true);
-        datePicker.getEditor().setPromptText("jj/MM/aaaa");
+        datePicker.getEditor().setPromptText("jj/mm/aaaa");
+        datePicker.getEditor().setTextFormatter(creerDateFormatter());
         datePicker.setConverter(new StringConverter<>() {
             @Override
             public String toString(LocalDate date) {
@@ -170,10 +121,40 @@ public class AjouterDisponibiliteViewController {
                 }
             }
         });
-        heureDebutTextField.setPromptText("HH:mm (ex: 09:30)");
-        heureFinTextField.setPromptText("HH:mm (ex: 10:30)");
+
+        heureDebutTextField.setPromptText("--:--");
+        heureFinTextField.setPromptText("--:--");
         heureDebutTextField.setTextFormatter(creerHeureFormatter());
         heureFinTextField.setTextFormatter(creerHeureFormatter());
+    }
+
+    private static TextFormatter<String> creerDateFormatter() {
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String next = change.getControlNewText();
+            if (next.isEmpty()) {
+                return change;
+            }
+
+            String digits = next.replace("/", "");
+            if (!digits.matches("\\d{0,8}")) {
+                return null;
+            }
+
+            String formatted = digits;
+            if (digits.length() > 2) {
+                formatted = digits.substring(0, 2) + "/" + digits.substring(2);
+            }
+            if (digits.length() > 4) {
+                formatted = digits.substring(0, 2) + "/" + digits.substring(2, 4) + "/" + digits.substring(4);
+            }
+
+            change.setText(formatted);
+            change.setRange(0, change.getControlText().length());
+            change.setCaretPosition(formatted.length());
+            change.setAnchor(formatted.length());
+            return change;
+        };
+        return new TextFormatter<>(filter);
     }
 
     private static TextFormatter<String> creerHeureFormatter() {
@@ -182,59 +163,49 @@ public class AjouterDisponibiliteViewController {
             if (next.isEmpty()) {
                 return change;
             }
-            if (!next.matches("\\d{0,2}:?\\d{0,2}")) {
+
+            String digits = next.replace(":", "");
+            if (!digits.matches("\\d{0,4}")) {
                 return null;
             }
-            if (next.matches("\\d{2}") && !next.contains(":")) {
-                change.setText(change.getText() + ":");
-                change.setRange(change.getRangeStart(), change.getRangeEnd());
+
+            String formatted = digits;
+            if (digits.length() > 2) {
+                formatted = digits.substring(0, 2) + ":" + digits.substring(2);
             }
+
+            change.setText(formatted);
+            change.setRange(0, change.getControlText().length());
+            change.setCaretPosition(formatted.length());
+            change.setAnchor(formatted.length());
             return change;
         };
         return new TextFormatter<>(filter);
     }
 
-    private void rafraichirApercu() {
+    private void handleEnregistrer() {
         if (disponibiliteController == null) {
             return;
         }
         try {
-            String t = medecinIdTextField.getText();
-            if (t == null || t.isBlank()) {
-                selectionApercu = null;
-                apercuCardsContainer.getChildren().clear();
-                return;
+            if (medecinIdContexte == null) {
+                throw new IllegalArgumentException("Aucun medecin connecte pour creer cette disponibilite.");
             }
-            int id = Integer.parseInt(t.trim());
-            renderApercuCards(disponibiliteController.afficherDisponibilitesMedecin(id));
-        } catch (NumberFormatException e) {
-            selectionApercu = null;
-            apercuCardsContainer.getChildren().clear();
-        } catch (ServiceException e) {
-            ViewAlertUtil.erreur("Aperçu", e.formatWithCauses());
-        }
-    }
 
-    private void handleAjouter() {
-        if (disponibiliteController == null) {
-            return;
-        }
-        try {
-            int medId = Integer.parseInt(medecinIdTextField.getText().trim());
             LocalDate date = datePicker.getValue();
             if (date == null && datePicker.getEditor().getText() != null && !datePicker.getEditor().getText().isBlank()) {
                 date = datePicker.getConverter().fromString(datePicker.getEditor().getText().trim());
                 datePicker.setValue(date);
             }
             if (date == null) {
-                ViewAlertUtil.erreur("Saisie", "Choisissez une date.");
-                return;
+                throw new IllegalArgumentException("Choisissez une date.");
             }
-            LocalTime debut = parseHeure(heureDebutTextField.getText());
-            LocalTime fin = parseHeure(heureFinTextField.getText());
+
+            LocalTime debut = parseHeure(heureDebutTextField.getText(), "heure de debut");
+            LocalTime fin = parseHeure(heureFinTextField.getText(), "heure de fin");
 
             User medecin = new User();
-            medecin.setId(medId);
+            medecin.setId(medecinIdContexte);
 
             Disponibilite d = new Disponibilite();
             if (disponibiliteEnEdition != null) {
@@ -247,27 +218,25 @@ public class AjouterDisponibiliteViewController {
 
             if (disponibiliteEnEdition == null) {
                 disponibiliteController.ajouterDisponibilite(d);
-                ViewAlertUtil.info("Succès", "Disponibilité ajoutée.");
+                ViewAlertUtil.info("Succes", "Disponibilite enregistree.");
             } else {
                 disponibiliteController.modifierDisponibilite(d);
-                ViewAlertUtil.info("Succès", "Disponibilité modifiée.");
+                ViewAlertUtil.info("Succes", "Disponibilite modifiee.");
             }
             if (afterSaveCallback != null) {
                 afterSaveCallback.run();
             }
-            rafraichirApercu();
-        } catch (NumberFormatException e) {
-            ViewAlertUtil.erreur("Saisie", "Identifiant médecin invalide (nombre entier).");
+            closeWindow();
         } catch (IllegalArgumentException e) {
             ViewAlertUtil.erreur("Saisie", e.getMessage());
         } catch (ServiceException e) {
-            ViewAlertUtil.erreur("Ajout", e.formatWithCauses());
+            ViewAlertUtil.erreur("Disponibilite", e.formatWithCauses());
         }
     }
 
-    private static LocalTime parseHeure(String raw) {
+    private static LocalTime parseHeure(String raw, String label) {
         if (raw == null || raw.isBlank()) {
-            throw new IllegalArgumentException("Indiquez une heure (ex. 09:00 ou 9:30).");
+            throw new IllegalArgumentException("Indiquez " + label + ".");
         }
         String s = raw.trim();
         try {
@@ -276,124 +245,14 @@ public class AjouterDisponibiliteViewController {
             try {
                 return LocalTime.parse(s, HEURE_FMT);
             } catch (DateTimeParseException e2) {
-                throw new IllegalArgumentException("Heure invalide : « " + s + " » (ex. 09:30).");
+                throw new IllegalArgumentException("Format invalide pour " + label + " (ex: 09:30).");
             }
         }
     }
 
-    private void viderFormulaire() {
-        if (medecinIdContexte == null) {
-            medecinIdTextField.clear();
-        }
-        datePicker.setValue(null);
-        heureDebutTextField.clear();
-        heureFinTextField.clear();
-        selectionApercu = null;
-        apercuCardsContainer.getChildren().clear();
-    }
-
-    private void handleSupprimerApercu() {
-        Disponibilite sel = selectionApercu;
-        if (sel == null) {
-            ViewAlertUtil.erreur("Suppression", "Sélectionnez une carte dans l'aperçu.");
-            return;
-        }
-        if (!ViewAlertUtil.confirmer("Suppression", "Supprimer la disponibilité n° " + sel.getId() + " ?")) {
-            return;
-        }
-        try {
-            disponibiliteController.supprimerDisponibilite(sel.getId());
-            ViewAlertUtil.info("Suppression", "Disponibilité supprimée.");
-            if (afterSaveCallback != null) {
-                afterSaveCallback.run();
-            }
-            rafraichirApercu();
-        } catch (ServiceException e) {
-            ViewAlertUtil.erreur("Suppression", e.formatWithCauses());
-        }
-    }
-
-    private void ouvrirReservation() {
-        Disponibilite sel = selectionApercu;
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ReserverRendezVousView.fxml"));
-            Parent root = loader.load();
-            ReserverRendezVousViewController ctrl = loader.getController();
-            if (sel != null) {
-                ctrl.prefillDisponibiliteId(sel.getId());
-            }
-            ctrl.setAfterReserveCallback(() -> {
-                if (afterSaveCallback != null) {
-                    afterSaveCallback.run();
-                }
-                rafraichirApercu();
-            });
-
-            Stage stage = new Stage();
-            stage.initModality(Modality.WINDOW_MODAL);
-            stage.initOwner(reserverButton.getScene().getWindow());
-            stage.setTitle("Réserver un rendez-vous");
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (IOException e) {
-            ViewAlertUtil.erreur("Interface", "Impossible d'ouvrir la réservation : " + e.getMessage());
-        }
-    }
-
-    private void renderApercuCards(List<Disponibilite> disponibilites) {
-        apercuCardsContainer.getChildren().clear();
-        selectionApercu = null;
-        if (disponibilites == null || disponibilites.isEmpty()) {
-            Label vide = new Label("Aucune disponibilité trouvée.");
-            vide.getStyleClass().add("subtitle");
-            apercuCardsContainer.getChildren().add(vide);
-            return;
-        }
-        for (Disponibilite d : disponibilites) {
-            apercuCardsContainer.getChildren().add(createApercuCard(d));
-        }
-    }
-
-    private VBox createApercuCard(Disponibilite d) {
-        Label titre = new Label("Disponibilité #" + d.getId());
-        titre.getStyleClass().add("card-title");
-        Label date = new Label("Date: " + (d.getDate() != null ? d.getDate() : "-"));
-        Label heure = new Label("Heure: "
-                + (d.getHeureDebut() != null ? d.getHeureDebut() : "-")
-                + " - "
-                + (d.getHeureFin() != null ? d.getHeureFin() : "-"));
-        Label statut = new Label("Statut: " + (d.getStatus() != null ? d.getStatus() : "-"));
-        date.getStyleClass().add("card-text");
-        heure.getStyleClass().add("card-text");
-        statut.getStyleClass().add("card-text");
-
-        VBox card = new VBox(6, titre, date, heure, statut);
-        card.setPrefWidth(230);
-        applyCardState(card, d.equals(selectionApercu));
-        card.setOnMouseClicked(e -> {
-            selectionApercu = d;
-            refreshApercuSelectionStyle();
-        });
-        return card;
-    }
-
-    private void refreshApercuSelectionStyle() {
-        for (javafx.scene.Node node : apercuCardsContainer.getChildren()) {
-            if (!(node instanceof VBox box) || box.getChildren().isEmpty()) {
-                continue;
-            }
-            boolean selected = false;
-            if (selectionApercu != null && box.getChildren().get(0) instanceof Label label) {
-                selected = label.getText().equals("Disponibilité #" + selectionApercu.getId());
-            }
-            applyCardState(box, selected);
-        }
-    }
-
-    private static void applyCardState(VBox card, boolean selected) {
-        card.getStyleClass().setAll("availability-card");
-        if (selected) {
-            card.getStyleClass().add("selected");
+    private void closeWindow() {
+        if (ajouterButton != null && ajouterButton.getScene() != null && ajouterButton.getScene().getWindow() instanceof Stage stage) {
+            stage.close();
         }
     }
 }

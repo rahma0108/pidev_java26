@@ -1106,6 +1106,46 @@
     -fx-text-fill: #1f67c1;
 }
 
+.medecin-page .add-dispo-shell {
+    -fx-alignment: TOP_CENTER;
+}
+
+.medecin-page .add-dispo-card {
+    -fx-padding: 20;
+    -fx-spacing: 18;
+}
+
+.medecin-page .add-dispo-subtitle {
+    -fx-font-size: 14px;
+}
+
+.medecin-page .add-dispo-form-card {
+    -fx-background-color: white;
+    -fx-background-radius: 20;
+    -fx-border-color: #e1eaf7;
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+    -fx-padding: 18 18 16 18;
+    -fx-spacing: 18;
+}
+
+.medecin-page .add-dispo-date-picker,
+.medecin-page .add-dispo-time-field {
+    -fx-pref-height: 44;
+}
+
+.medecin-page .add-dispo-help {
+    -fx-text-fill: #667892;
+}
+
+.medecin-page .add-dispo-actions {
+    -fx-padding: 8 0 0 0;
+}
+
+.medecin-page .add-dispo-save-button {
+    -fx-min-width: 150;
+}
+
 .medecin-page .status-cancelled {
     -fx-background-color: #fee8e7;
     -fx-text-fill: #bf3c33;
