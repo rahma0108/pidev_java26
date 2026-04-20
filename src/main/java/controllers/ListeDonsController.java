@@ -10,7 +10,9 @@ import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
@@ -20,6 +22,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -46,6 +49,8 @@ import javafx.util.Duration;
 
 public class ListeDonsController implements Initializable {
 
+    private static final double LARGEUR_CAMPAGNE = 350;
+    private static final double LARGEUR_MIN_CAMPAGNE = 320;
     private static final String CARD_STYLE_BASE = "-fx-background-color: rgba(15,23,42,0.78);"
             + " -fx-border-color: rgba(148,163,184,0.28); -fx-border-radius: 16; -fx-background-radius: 16;"
             + " -fx-padding: 14;"
@@ -134,6 +139,9 @@ public class ListeDonsController implements Initializable {
     private boolean campagneEnPause = false;
     private boolean pauseManuelleCampagnes = false;
     private boolean pauseSurvolCampagnes = false;
+    private double dragOffsetX;
+    private double dragOffsetY;
+    private boolean positionCampagneInitialisee = false;
 
     private ParticleBackground particules;
 
@@ -177,6 +185,7 @@ public class ListeDonsController implements Initializable {
         btnDemandeUrgence.setOnAction(e -> ouvrirDemandeUrgence());
 
         initialiserCampagnesAccueil();
+        activerDeplacementCampagnes();
         appliquerTri();
         appliquerFiltre();
         renderCards();
@@ -330,9 +339,11 @@ public class ListeDonsController implements Initializable {
         campagneTitreLabel = new Label();
         campagneTitreLabel.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #f8fafc;");
         campagneTitreLabel.setWrapText(true);
+        campagneTitreLabel.setMaxWidth(Double.MAX_VALUE);
         campagneCorpsLabel = new Label();
         campagneCorpsLabel.setWrapText(true);
         campagneCorpsLabel.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 14;");
+        campagneCorpsLabel.setMaxWidth(Double.MAX_VALUE);
 
         btnPauseCampagnes = new Button("Pause");
         btnPauseCampagnes.setStyle(
@@ -348,10 +359,64 @@ public class ListeDonsController implements Initializable {
         card.setPadding(new Insets(10));
         card.setStyle(CAMPAGNE_CARD_STYLE);
         card.setTranslateY(6);
-        card.setMaxWidth(Double.MAX_VALUE);
+        card.setPrefWidth(LARGEUR_CAMPAGNE);
+        card.setMinWidth(LARGEUR_MIN_CAMPAGNE);
+        card.setMaxWidth(LARGEUR_CAMPAGNE);
         card.setOnMouseEntered(e -> mettreCampagnesEnPauseSurvol());
         card.setOnMouseExited(e -> reprendreCampagnesApresSurvol());
         return card;
+    }
+
+    private void activerDeplacementCampagnes() {
+        campagnesBox.setManaged(false);
+        campagnesBox.setPickOnBounds(true);
+        campagnesBox.setPrefWidth(LARGEUR_CAMPAGNE);
+        campagnesBox.setMinWidth(LARGEUR_MIN_CAMPAGNE);
+        campagnesBox.setMaxWidth(LARGEUR_CAMPAGNE);
+        rootStack.layoutBoundsProperty().addListener((obs, oldV, newV) -> {
+            if (!positionCampagneInitialisee && newV.getWidth() > 0 && newV.getHeight() > 0) {
+                positionnerCampagnesParDefaut();
+            }
+        });
+        campagnesBox.setOnMousePressed(e -> {
+            if (e.getButton() != MouseButton.PRIMARY || e.getTarget() instanceof Button) {
+                return;
+            }
+            dragOffsetX = e.getX();
+            dragOffsetY = e.getY();
+        });
+        campagnesBox.setOnMouseDragged(e -> {
+            if (!e.isPrimaryButtonDown()) {
+                return;
+            }
+            Point2D p = rootStack.sceneToLocal(e.getSceneX(), e.getSceneY());
+            double nextX = p.getX() - dragOffsetX;
+            double nextY = p.getY() - dragOffsetY;
+            deplacerCampagnesAvecLimites(nextX, nextY);
+        });
+    }
+
+    private void deplacerCampagnesAvecLimites(double nextX, double nextY) {
+        double largeur = campagnesBox.getWidth() > 0 ? campagnesBox.getWidth() : LARGEUR_CAMPAGNE;
+        double hauteur = campagnesBox.getHeight() > 0 ? campagnesBox.getHeight() : campagnesBox.prefHeight(-1);
+        double maxX = Math.max(0, rootStack.getWidth() - largeur);
+        double maxY = Math.max(0, rootStack.getHeight() - hauteur);
+        double x = Math.max(0, Math.min(nextX, maxX));
+        double y = Math.max(0, Math.min(nextY, maxY));
+        campagnesBox.setLayoutX(x);
+        campagnesBox.setLayoutY(y);
+    }
+
+    private void positionnerCampagnesParDefaut() {
+        campagnesBox.applyCss();
+        campagnesBox.layout();
+        Bounds b = campagnesBox.getLayoutBounds();
+        double marge = 22;
+        double x = Math.max(0, rootStack.getWidth() - b.getWidth() - marge);
+        double y = marge;
+        campagnesBox.setLayoutX(x);
+        campagnesBox.setLayoutY(y);
+        positionCampagneInitialisee = true;
     }
 
     private void demarrerRotationCampagnes() {
@@ -382,6 +447,11 @@ public class ListeDonsController implements Initializable {
         CampagneAide campagne = campagnesActives.get(index);
         campagneTitreLabel.setText(safe(campagne.getTitre()));
         campagneCorpsLabel.setText(safe(campagne.getCorps()));
+        // La box est flottante (managed=false), donc on force le recalcul de taille
+        // pour éviter le texte tronqué lors des changements de campagne.
+        campagnesBox.applyCss();
+        campagnesBox.autosize();
+        deplacerCampagnesAvecLimites(campagnesBox.getLayoutX(), campagnesBox.getLayoutY());
     }
 
     private void basculerPauseCampagnes() {
