@@ -47,6 +47,8 @@ import ui.ParticleBackground;
 import services.DonIAService;
 import services.DonService;
 
+import utils.MediLinkDialogs;
+
 
 
 import java.io.IOException;
@@ -369,7 +371,9 @@ public class AjouterDonController implements Initializable {
 
             if (cat == null || cat.id() <= 0) {
 
-                new Alert(Alert.AlertType.WARNING, "Veuillez sélectionner une catégorie de don.").showAndWait();
+                Alert aw = new Alert(Alert.AlertType.WARNING, "Veuillez sélectionner une catégorie de don.");
+                MediLinkDialogs.style(aw);
+                aw.showAndWait();
 
                 return;
 
@@ -399,7 +403,9 @@ public class AjouterDonController implements Initializable {
 
             if (erreur != null) {
 
-                new Alert(Alert.AlertType.WARNING, erreur).showAndWait();
+                Alert aw = new Alert(Alert.AlertType.WARNING, erreur);
+                MediLinkDialogs.style(aw);
+                aw.showAndWait();
 
                 return;
 
@@ -419,16 +425,20 @@ public class AjouterDonController implements Initializable {
             DonIAService ia = donIAService();
             ia.enregistrerDonAvecAnalyse(d);
 
-            new Alert(Alert.AlertType.INFORMATION,
+            Alert ai = new Alert(Alert.AlertType.INFORMATION,
                     "Don enregistré avec succès.\n\n"
                             + "Il sera examiné par un administrateur. L’avis éventuel de l’IA sera visible "
-                            + "dans la gestion des dons (dons en attente).").showAndWait();
+                            + "dans la gestion des dons (dons en attente).");
+            MediLinkDialogs.style(ai);
+            ai.showAndWait();
 
             retourListe();
 
         } catch (NumberFormatException ex) {
 
-            new Alert(Alert.AlertType.ERROR, "La quantité doit être un nombre entier valide.").showAndWait();
+            Alert ae = new Alert(Alert.AlertType.ERROR, "La quantité doit être un nombre entier valide.");
+            MediLinkDialogs.style(ae);
+            ae.showAndWait();
 
         } catch (SQLException ex) {
 
@@ -437,6 +447,8 @@ public class AjouterDonController implements Initializable {
             a.setTitle("Erreur");
 
             a.setContentText(ex.getMessage());
+
+            MediLinkDialogs.style(a);
 
             a.showAndWait();
 
@@ -464,6 +476,7 @@ public class AjouterDonController implements Initializable {
         ta.setPrefColumnCount(60);
         a.getDialogPane().setContent(ta);
         a.getDialogPane().setMinWidth(560);
+        MediLinkDialogs.style(a);
         a.showAndWait();
     }
 
@@ -503,6 +516,8 @@ public class AjouterDonController implements Initializable {
             Alert a = new Alert(Alert.AlertType.ERROR);
 
             a.setContentText("Impossible de revenir à la liste : " + ex.getMessage());
+
+            MediLinkDialogs.style(a);
 
             a.showAndWait();
 

@@ -1,6 +1,7 @@
 package services;
 
 import models.AnalyseDonIA;
+import models.CampagneDonnee;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -93,6 +94,42 @@ public final class ClaudeAPIService implements DonAnalyseLLM {
             throw new IOException("Réponse Claude sans bloc texte exploitable : " + body);
         }
         return DonIAPrompt.parserJsonAnalyse(DonIAPrompt.extraireJsonObjet(texteModele));
+    }
+
+    public CampagneDonnee genererCampagneUrgence(String messageUrgence) throws IOException {
+        String userPrompt = CampagneIAPrompt.construirePromptCampagne(messageUrgence);
+        String requestBody = "{"
+                + "\"model\":\"" + DonIAPrompt.escapeJson(model) + "\","
+                + "\"max_tokens\":1024,"
+                + "\"messages\":[{\"role\":\"user\",\"content\":\"" + DonIAPrompt.escapeJson(userPrompt) + "\"}]"
+                + "}";
+
+        HttpURLConnection conn = (HttpURLConnection) URI.create(API_URL).toURL().openConnection();
+        conn.setRequestMethod("POST");
+        conn.setConnectTimeout(60_000);
+        conn.setReadTimeout(120_000);
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+        conn.setRequestProperty("x-api-key", apiKey);
+        conn.setRequestProperty("anthropic-version", ANTHROPIC_VERSION);
+
+        byte[] payload = requestBody.getBytes(StandardCharsets.UTF_8);
+        conn.setRequestProperty("Content-Length", String.valueOf(payload.length));
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(payload);
+        }
+
+        int code = conn.getResponseCode();
+        String body = lireCorps(conn, code >= 200 && code < 300 ? conn.getInputStream() : conn.getErrorStream());
+        if (code < 200 || code >= 300) {
+            throw new IOException("Claude API HTTP " + code + " : " + body);
+        }
+
+        String texteModele = extraireTextePremierBlocAnthropic(body);
+        if (texteModele == null || texteModele.isBlank()) {
+            throw new IOException("Réponse Claude sans bloc texte exploitable : " + body);
+        }
+        return CampagneIAPrompt.parserCampagne(DonIAPrompt.extraireJsonObjet(texteModele));
     }
 
     private static String extraireTextePremierBlocAnthropic(String responseJson) {

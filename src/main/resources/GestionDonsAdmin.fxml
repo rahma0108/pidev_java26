@@ -11,7 +11,6 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -101,6 +100,13 @@
          <Label fx:id="lblStatListeAttente" style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #f59e0b;" text="0" />
          <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Validés (dans la vue)" />
          <Label fx:id="lblStatListeValide" style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #16a34a;" text="0" />
+         <Separator />
+         <Label fx:id="lblUrgencesTitre" style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #b45309;" text="Demandes d'urgence (0)" wrapText="true" />
+         <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="360.0" prefHeight="260.0" style="-fx-background-color: transparent;">
+            <content>
+               <VBox fx:id="urgencesListBox" spacing="8.0" style="-fx-padding: 4 0 8 0;" />
+            </content>
+         </ScrollPane>
          <Region VBox.vgrow="ALWAYS" />
       </VBox>
    </right>

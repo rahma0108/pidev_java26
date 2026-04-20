@@ -13,7 +13,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -27,7 +29,12 @@ import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import models.Don;
+import models.UrgenceDemande;
+import services.CampagneAideService;
+import services.CampagneIAService;
 import services.DonService;
+import services.UrgenceDemandeService;
+import utils.MediLinkDialogs;
 
 import java.io.IOException;
 import java.net.URL;
@@ -115,7 +122,16 @@ public class GestionDonsAdminController implements Initializable {
     @FXML
     private Label lblStatListeValide;
 
+    @FXML
+    private Label lblUrgencesTitre;
+
+    @FXML
+    private VBox urgencesListBox;
+
     private final DonService donService = new DonService();
+    private final UrgenceDemandeService urgenceDemandeService = new UrgenceDemandeService();
+    private final CampagneAideService campagneAideService = new CampagneAideService();
+    private CampagneIAService campagneIa;
     private final ObservableList<Don> masterData = FXCollections.observableArrayList();
     private FilteredList<Don> filteredData;
     private SortedList<Don> sortedData;
@@ -154,6 +170,7 @@ public class GestionDonsAdminController implements Initializable {
         btnActualiser.setOnAction(e -> {
             chargerDepuisBase();
             appliquerFiltre();
+            rafraichirDemandesUrgence();
         });
         btnFermer.setOnAction(e -> fermerFenetre());
         btnTableauBord.setOnAction(e -> retourTableauBord());
@@ -161,6 +178,157 @@ public class GestionDonsAdminController implements Initializable {
         appliquerTri();
         appliquerFiltre();
         renderCards();
+        rafraichirDemandesUrgence();
+    }
+
+    private void rafraichirDemandesUrgence() {
+        urgencesListBox.getChildren().clear();
+        try {
+            var list = urgenceDemandeService.listerPourAdmin();
+            long nAttente = list.stream().filter(u -> "en_attente".equals(u.getStatut())).count();
+            lblUrgencesTitre.setText("Demandes d'urgence (" + nAttente + " en attente, " + list.size() + " au total)");
+            for (UrgenceDemande d : list) {
+                VBox row = new VBox(6);
+                Label badge = new Label(libelleStatutUrgence(d.getStatut()));
+                badge.setWrapText(true);
+                Label excerpt = new Label(tronquer(d.getMessage(), 140));
+                excerpt.setWrapText(true);
+                excerpt.setStyle("-fx-text-fill: #334155; -fx-font-size: 11;");
+                boolean attente = "en_attente".equals(d.getStatut());
+                if (attente) {
+                    badge.setStyle("-fx-text-fill: #c2410c; -fx-font-size: 10; -fx-font-weight: bold;");
+                    row.setStyle("-fx-background-color: #fff7ed; -fx-border-color: #fed7aa; -fx-border-radius: 8; -fx-padding: 8;");
+                    Button tr = new Button("Traiter");
+                    tr.setStyle("-fx-background-color: #ea580c; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 6 12;");
+                    tr.setOnAction(ev -> ouvrirTraitementUrgence(d));
+                    row.getChildren().addAll(badge, excerpt, tr);
+                } else if ("campagne_publiee".equals(d.getStatut())) {
+                    badge.setStyle("-fx-text-fill: #15803d; -fx-font-size: 10; -fx-font-weight: bold;");
+                    row.setStyle("-fx-background-color: #f0fdf4; -fx-border-color: #bbf7d0; -fx-border-radius: 8; -fx-padding: 8;");
+                    Button voir = new Button("Voir");
+                    voir.setStyle("-fx-background-color: #16a34a; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 6 12;");
+                    voir.setOnAction(ev -> ouvrirLectureDemandeUrgence(d));
+                    row.getChildren().addAll(badge, excerpt, voir);
+                } else {
+                    badge.setStyle("-fx-text-fill: #475569; -fx-font-size: 10; -fx-font-weight: bold;");
+                    row.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-padding: 8;");
+                    Button voir = new Button("Voir");
+                    voir.setStyle("-fx-background-color: #64748b; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 6 12;");
+                    voir.setOnAction(ev -> ouvrirLectureDemandeUrgence(d));
+                    row.getChildren().addAll(badge, excerpt, voir);
+                }
+                urgencesListBox.getChildren().add(row);
+            }
+        } catch (IOException ex) {
+            lblUrgencesTitre.setText("Demandes d'urgence (erreur)");
+            Label err = new Label(
+                    "Lecture du fichier local impossible (~/.medilink/urgence_campagnes.store). "
+                            + (ex.getMessage() != null ? ex.getMessage() : ""));
+            err.setWrapText(true);
+            err.setStyle("-fx-text-fill: #b91c1c; -fx-font-size: 11;");
+            urgencesListBox.getChildren().add(err);
+        }
+    }
+
+    private void ouvrirLectureDemandeUrgence(UrgenceDemande d) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Demande d'urgence #" + d.getId());
+        dialog.setHeaderText(libelleStatutUrgence(d.getStatut()));
+        VBox content = new VBox(10);
+        TextArea full = new TextArea(d.getMessage());
+        full.setEditable(false);
+        full.setWrapText(true);
+        full.setPrefRowCount(10);
+        Label note = new Label("Demande déjà traitée — consultation seule.");
+        note.setWrapText(true);
+        note.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11;");
+        content.getChildren().addAll(full, note);
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().setAll(ButtonType.OK);
+        if (rootPane.getScene() != null && rootPane.getScene().getWindow() != null) {
+            dialog.initOwner(rootPane.getScene().getWindow());
+        }
+        MediLinkDialogs.style(dialog);
+        dialog.showAndWait();
+    }
+
+    private static String libelleStatutUrgence(String statut) {
+        if (statut == null) {
+            return "—";
+        }
+        return switch (statut) {
+            case "en_attente" -> "En attente de traitement";
+            case "sans_campagne" -> "Traitée — pas de campagne publique";
+            case "campagne_publiee" -> "Traitée — campagne publiée sur l'accueil";
+            default -> statut;
+        };
+    }
+
+    private void ouvrirTraitementUrgence(UrgenceDemande d) {
+        if (!"en_attente".equals(d.getStatut())) {
+            ouvrirLectureDemandeUrgence(d);
+            return;
+        }
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Demande d'urgence #" + d.getId());
+        dialog.setHeaderText("Message reçu depuis l'accueil public");
+        VBox content = new VBox(10);
+        TextArea full = new TextArea(d.getMessage());
+        full.setEditable(false);
+        full.setWrapText(true);
+        full.setPrefRowCount(10);
+        Label help = new Label(
+                "« Pas besoin de campagne » : la demande est archivée sans affichage public. "
+                        + "« Lancer une campagne (IA) » : l'IA rédige titre + texte ; la campagne apparaît sur l'accueil.");
+        help.setWrapText(true);
+        help.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11;");
+        content.getChildren().addAll(full, help);
+        dialog.getDialogPane().setContent(content);
+        ButtonType pas = new ButtonType("Pas besoin de campagne", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType lancer = new ButtonType("Lancer une campagne (IA)", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().setAll(pas, lancer);
+        if (rootPane.getScene() != null && rootPane.getScene().getWindow() != null) {
+            dialog.initOwner(rootPane.getScene().getWindow());
+        }
+        MediLinkDialogs.style(dialog);
+        var result = dialog.showAndWait();
+        if (result.isEmpty()) {
+            return;
+        }
+        if (result.get() == pas) {
+            try {
+                urgenceDemandeService.marquerSansCampagne(d.getId());
+                rafraichirDemandesUrgence();
+                Alert ok = new Alert(Alert.AlertType.INFORMATION, "Demande classée sans campagne publique.");
+                MediLinkDialogs.style(ok);
+                ok.showAndWait();
+            } catch (IOException ex) {
+                afficherErreur("Mise à jour impossible", ex.getMessage());
+            }
+            return;
+        }
+        try {
+            if (campagneIa == null) {
+                campagneIa = new CampagneIAService();
+            }
+            var gen = campagneIa.genererDepuisMessage(d.getMessage());
+            campagneAideService.publier(d.getId(), gen.titre(), gen.corps());
+            rafraichirDemandesUrgence();
+            Alert ok = new Alert(Alert.AlertType.INFORMATION,
+                    "Campagne générée par l'IA et publiée sur l'accueil.\n\nTitre : " + gen.titre());
+            MediLinkDialogs.style(ok);
+            ok.showAndWait();
+        } catch (IOException | IllegalStateException ex) {
+            afficherErreur("IA ou publication", ex.getMessage() != null ? ex.getMessage() : ex.toString());
+        }
+    }
+
+    private static String tronquer(String s, int max) {
+        if (s == null) {
+            return "";
+        }
+        String t = s.trim();
+        return t.length() <= max ? t : t.substring(0, max) + "…";
     }
 
     private void fermerFenetre() {
@@ -216,8 +384,10 @@ public class GestionDonsAdminController implements Initializable {
         Integer qMin = DonFiltreTriUtil.parseIntOptional(tfQuantiteMin.getText());
         Integer qMax = DonFiltreTriUtil.parseIntOptional(tfQuantiteMax.getText());
         if (qMin != null && qMax != null && qMin > qMax) {
-            new Alert(Alert.AlertType.WARNING,
-                    "« Qté min » ne peut pas être supérieure à « Qté max ».").showAndWait();
+            Alert w = new Alert(Alert.AlertType.WARNING,
+                    "« Qté min » ne peut pas être supérieure à « Qté max ».");
+            MediLinkDialogs.style(w);
+            w.showAndWait();
             return false;
         }
         return true;
@@ -332,6 +502,7 @@ public class GestionDonsAdminController implements Initializable {
         confirm.setTitle("Suppression");
         confirm.setHeaderText(null);
         confirm.setContentText("Voulez-vous vraiment supprimer ce don ?");
+        MediLinkDialogs.style(confirm);
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
             return;
         }
@@ -343,7 +514,9 @@ public class GestionDonsAdminController implements Initializable {
             DonFiltreTriUtil.remplirFiltresSecondaires(masterData,
                     filtreUrgenceCombo, filtreEtatCombo, filtreUniteCombo, filtreCategorieCombo);
             appliquerFiltre();
-            new Alert(Alert.AlertType.INFORMATION, "Don supprimé.").showAndWait();
+            Alert ok = new Alert(Alert.AlertType.INFORMATION, "Don supprimé.");
+            MediLinkDialogs.style(ok);
+            ok.showAndWait();
         } catch (SQLException ex) {
             afficherErreur("Suppression impossible", ex.getMessage());
         }
@@ -351,8 +524,10 @@ public class GestionDonsAdminController implements Initializable {
 
     private void traiterDon(Don don, boolean accepter) {
         if (!"en_attente".equals(don.getStatut())) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Seuls les dons « en attente » peuvent être acceptés ou rejetés.").showAndWait();
+            Alert w = new Alert(Alert.AlertType.WARNING,
+                    "Seuls les dons « en attente » peuvent être acceptés ou rejetés.");
+            MediLinkDialogs.style(w);
+            w.showAndWait();
             return;
         }
         String action = accepter ? "accepter" : "rejeter";
@@ -385,6 +560,7 @@ public class GestionDonsAdminController implements Initializable {
         } else {
             confirm.setContentText(msg.toString());
         }
+        MediLinkDialogs.style(confirm);
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
             return;
         }
@@ -397,11 +573,15 @@ public class GestionDonsAdminController implements Initializable {
                 DonFiltreTriUtil.remplirFiltresSecondaires(masterData,
                         filtreUrgenceCombo, filtreEtatCombo, filtreUniteCombo, filtreCategorieCombo);
                 appliquerFiltre();
-                new Alert(Alert.AlertType.INFORMATION,
-                        accepter ? "Le don a été accepté (statut : valide)." : "Le don a été rejeté.").showAndWait();
+                Alert info = new Alert(Alert.AlertType.INFORMATION,
+                        accepter ? "Le don a été accepté (statut : valide)." : "Le don a été rejeté.");
+                MediLinkDialogs.style(info);
+                info.showAndWait();
             } else {
-                new Alert(Alert.AlertType.WARNING,
-                        "Impossible : le statut n'est plus « en attente » (rafraîchissez la liste).").showAndWait();
+                Alert warn = new Alert(Alert.AlertType.WARNING,
+                        "Impossible : le statut n'est plus « en attente » (rafraîchissez la liste).");
+                MediLinkDialogs.style(warn);
+                warn.showAndWait();
                 chargerDepuisBase();
                 appliquerFiltre();
             }
@@ -483,6 +663,7 @@ public class GestionDonsAdminController implements Initializable {
         a.setTitle(titre);
         a.setHeaderText(null);
         a.setContentText(detail != null ? detail : "Erreur inconnue.");
+        MediLinkDialogs.style(a);
         a.showAndWait();
     }
 }

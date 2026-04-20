@@ -17,14 +17,18 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import models.Don;
 import services.DonService;
+import ui.ParticleBackground;
+import utils.MediLinkDialogs;
 
 import java.io.IOException;
 import java.net.URL;
@@ -38,13 +42,21 @@ import java.util.stream.Collectors;
 
 public class MesDonsController implements Initializable {
 
-    private static final String CARD_STYLE_BASE = "-fx-background-color: #ffffff; -fx-border-color: #d7deea;"
-            + " -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 2;";
+    private static final String CARD_STYLE_BASE = "-fx-background-color: rgba(15,23,42,0.78);"
+            + " -fx-border-color: rgba(148,163,184,0.28); -fx-border-radius: 16; -fx-background-radius: 16;"
+            + " -fx-padding: 14;"
+            + " -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 20, 0, 0, 3);";
     private static final String CARD_STYLE_SELECTED = CARD_STYLE_BASE
-            + " -fx-border-color: #2563eb; -fx-border-width: 2;";
+            + " -fx-border-color: #3b82f6; -fx-border-width: 2;";
     private static final Set<String> STATUTS_MES_DONS = Set.of("en_attente", "valide");
 
     private Map<Integer, String> libellesCategorieCourants = Map.of();
+
+    @FXML
+    private StackPane rootStack;
+
+    @FXML
+    private Canvas particleCanvas;
 
     @FXML
     private BorderPane rootPane;
@@ -116,8 +128,17 @@ public class MesDonsController implements Initializable {
     private Don selectedDon;
     private VBox selectedCard;
 
+    private ParticleBackground particules;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        URL css = getClass().getResource("/styles/medilink-care.css");
+        if (css != null) {
+            rootStack.getStylesheets().add(css.toExternalForm());
+        }
+        particules = new ParticleBackground(particleCanvas, rootStack, 96);
+        particules.play();
+
         DonFiltreTriUtil.preparerCombosTri(tri1ChampCombo, tri2ChampCombo, tri3ChampCombo);
         DonFiltreTriUtil.preparerCombosOrdre(tri1OrdreCombo, tri2OrdreCombo, tri3OrdreCombo);
 
@@ -248,8 +269,10 @@ public class MesDonsController implements Initializable {
 
     private void ouvrirModifierDon(Don sel) {
         if (!peutModifierOuSupprimer(sel)) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Sélectionnez un don « en attente » ou « valide » pour le modifier.").showAndWait();
+            Alert w = new Alert(Alert.AlertType.WARNING,
+                    "Sélectionnez un don « en attente » ou « valide » pour le modifier.");
+            MediLinkDialogs.style(w);
+            w.showAndWait();
             return;
         }
         try {
@@ -268,14 +291,17 @@ public class MesDonsController implements Initializable {
 
     private void supprimerDon(Don sel) {
         if (!peutModifierOuSupprimer(sel)) {
-            new Alert(Alert.AlertType.WARNING,
-                    "Sélectionnez un don « en attente » ou « valide » pour le supprimer.").showAndWait();
+            Alert w = new Alert(Alert.AlertType.WARNING,
+                    "Sélectionnez un don « en attente » ou « valide » pour le supprimer.");
+            MediLinkDialogs.style(w);
+            w.showAndWait();
             return;
         }
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Suppression");
         confirm.setHeaderText(null);
         confirm.setContentText("Supprimer définitivement ce don ?");
+        MediLinkDialogs.style(confirm);
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
             return;
         }
@@ -286,14 +312,16 @@ public class MesDonsController implements Initializable {
             chargerDepuisBase();
             appliquerFiltre();
             majEtatBoutons();
-            new Alert(Alert.AlertType.INFORMATION, "Don supprimé.").showAndWait();
+            Alert ok = new Alert(Alert.AlertType.INFORMATION, "Don supprimé.");
+            MediLinkDialogs.style(ok);
+            ok.showAndWait();
         } catch (SQLException ex) {
             afficherErreur("Suppression impossible", ex.getMessage());
         }
     }
 
     private Stage stageCourant() {
-        return (Stage) rootPane.getScene().getWindow();
+        return (Stage) rootStack.getScene().getWindow();
     }
 
     private void renderCards() {
@@ -316,7 +344,7 @@ public class MesDonsController implements Initializable {
         }
         if (sortedData.isEmpty()) {
             Label empty = new Label("Aucun don à afficher (mes dons : en attente + valides).");
-            empty.setStyle("-fx-text-fill: #6c757d; -fx-font-size: 14;");
+            empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 14;");
             VBox wrap = new VBox(empty);
             wrap.setPadding(new Insets(20, 10, 20, 10));
             cardsContainer.getChildren().add(wrap);
@@ -325,14 +353,19 @@ public class MesDonsController implements Initializable {
 
     private VBox buildCard(Don don) {
         Label title = new Label(safe(don.getArticleDescription()));
-        title.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+        title.setStyle("-fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: #f8fafc;");
         Label quantite = new Label("Quantité : " + don.getQuantite() + " " + safe(don.getUnite()));
+        quantite.setStyle("-fx-text-fill: #cbd5e1;");
         Label statut = new Label("Statut : " + safe(don.getStatut()));
         statut.setStyle(styleStatut(don.getStatut()));
         Label etat = new Label("État : " + safe(don.getEtat()));
+        etat.setStyle("-fx-text-fill: #cbd5e1;");
         Label urgence = new Label("Urgence : " + safe(don.getNiveauUrgence()));
+        urgence.setStyle("-fx-text-fill: #cbd5e1;");
         Label cat = new Label("Catégorie : " + libellesCategorieCourants.getOrDefault(don.getCategorieId(), "—"));
+        cat.setStyle("-fx-text-fill: #cbd5e1;");
         Label details = new Label("Détails : " + safe(don.getDetailsSupplementaires()));
+        details.setStyle("-fx-text-fill: #94a3b8;");
         details.setWrapText(true);
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -341,6 +374,8 @@ public class MesDonsController implements Initializable {
 
         Button btnMod = new Button("Modifier");
         Button btnSup = new Button("Supprimer");
+        btnMod.getStyleClass().add("btn-care-secondary");
+        btnSup.getStyleClass().add("btn-care-secondary");
         boolean actionsOk = peutModifierOuSupprimer(don);
         btnMod.setDisable(!actionsOk);
         btnSup.setDisable(!actionsOk);
@@ -375,10 +410,10 @@ public class MesDonsController implements Initializable {
     private static String styleStatut(String statutRaw) {
         String statut = statutRaw == null ? "" : statutRaw.trim().toLowerCase();
         return switch (statut) {
-            case "en_attente", "en attente" -> "-fx-font-weight: bold; -fx-text-fill: #f59e0b;";
-            case "rejete", "rejeté" -> "-fx-font-weight: bold; -fx-text-fill: #dc2626;";
-            case "valide", "accepte", "accepté" -> "-fx-font-weight: bold; -fx-text-fill: #16a34a;";
-            default -> "-fx-font-weight: bold;";
+            case "en_attente", "en attente" -> "-fx-font-weight: bold; -fx-text-fill: #fbbf24;";
+            case "rejete", "rejeté" -> "-fx-font-weight: bold; -fx-text-fill: #f87171;";
+            case "valide", "accepte", "accepté" -> "-fx-font-weight: bold; -fx-text-fill: #4ade80;";
+            default -> "-fx-font-weight: bold; -fx-text-fill: #e2e8f0;";
         };
     }
 
@@ -387,6 +422,7 @@ public class MesDonsController implements Initializable {
         a.setTitle(titre);
         a.setHeaderText(null);
         a.setContentText(detail != null ? detail : "Erreur inconnue.");
+        MediLinkDialogs.style(a);
         a.showAndWait();
     }
 }

@@ -11,9 +11,9 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.paint.Color;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -25,9 +25,13 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import ui.ParticleBackground;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import models.CampagneAide;
 import models.Don;
+import services.CampagneAideService;
 import services.DonService;
+import utils.MediLinkDialogs;
 
 import java.io.IOException;
 import java.net.URL;
@@ -42,8 +46,6 @@ public class ListeDonsController implements Initializable {
             + " -fx-border-color: rgba(148,163,184,0.28); -fx-border-radius: 16; -fx-background-radius: 16;"
             + " -fx-padding: 14;"
             + " -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 20, 0, 0, 3);";
-    private static final String CARD_STYLE_SELECTED = CARD_STYLE_BASE
-            + " -fx-border-color: #3b82f6; -fx-border-width: 2;";
 
     @FXML
     private StackPane rootStack;
@@ -97,26 +99,28 @@ public class ListeDonsController implements Initializable {
     private Button btnAjouter;
 
     @FXML
-    private Button btnModifier;
-
-    @FXML
-    private Button btnSupprimer;
-
-    @FXML
     private Button btnMesDons;
 
     @FXML
     private Button btnEspaceAdmin;
 
     @FXML
+    private Button btnDemandeUrgence;
+
+    @FXML
+    private VBox campagnesBox;
+
+    @FXML
+    private Label lblDonsTitre;
+
+    @FXML
     private VBox cardsContainer;
 
     private final DonService donService = new DonService();
+    private final CampagneAideService campagneAideService = new CampagneAideService();
     private final ObservableList<Don> masterData = FXCollections.observableArrayList();
     private FilteredList<Don> filteredData;
     private SortedList<Don> sortedData;
-    private Don selectedDon;
-    private VBox selectedCard;
 
     private ParticleBackground particules;
 
@@ -155,21 +159,38 @@ public class ListeDonsController implements Initializable {
         tri3OrdreCombo.valueProperty().addListener((obs, o, n) -> appliquerTri());
 
         btnAjouter.setOnAction(e -> ouvrirAjouter());
-        btnModifier.setOnAction(e -> ouvrirModifier());
-        btnSupprimer.setOnAction(e -> supprimerSelection());
         btnMesDons.setOnAction(e -> ouvrirMesDons());
         btnEspaceAdmin.setOnAction(e -> ouvrirEspaceAdmin());
+        btnDemandeUrgence.setOnAction(e -> ouvrirDemandeUrgence());
 
         appliquerTri();
         appliquerFiltre();
         renderCards();
-        majEtatBoutons();
     }
 
-    private void majEtatBoutons() {
-        boolean hasSelection = selectedDon != null;
-        btnModifier.setDisable(!hasSelection);
-        btnSupprimer.setDisable(!hasSelection);
+    private void ouvrirDemandeUrgence() {
+        try {
+            Stage owner = stageCourant();
+            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
+                    getClass().getResource("/DemandeUrgence.fxml")));
+            Parent root = loader.load();
+            Stage w = new Stage();
+            w.initOwner(owner);
+            w.initModality(Modality.WINDOW_MODAL);
+            w.setTitle("Demande d'urgence — MediLink Care");
+            Scene sc = new Scene(root, 920, 640);
+            sc.setFill(Color.web("#060d18"));
+            URL css = getClass().getResource("/styles/medilink-care.css");
+            if (css != null) {
+                sc.getStylesheets().add(css.toExternalForm());
+            }
+            w.setScene(sc);
+            w.setMinWidth(720);
+            w.setMinHeight(520);
+            w.show();
+        } catch (IOException ex) {
+            afficherErreur("Ouverture de la demande d'urgence", ex.getMessage());
+        }
     }
 
     private void chargerDepuisBase() {
@@ -241,71 +262,15 @@ public class ListeDonsController implements Initializable {
         }
     }
 
-    private void ouvrirModifier() {
-        Don sel = selectedDon;
-        if (sel == null) {
-            new Alert(Alert.AlertType.WARNING, "Sélectionnez un don dans la liste pour le modifier.").showAndWait();
-            return;
-        }
-        try {
-            Stage stage = stageCourant();
-            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
-                    getClass().getResource("/ModifierDon.fxml")));
-            Parent root = loader.load();
-            ModifierDonController ctrl = loader.getController();
-            ctrl.setRetourFxml("/ListeDons.fxml");
-            ctrl.setDon(sel);
-            stage.setScene(new Scene(root, 560, 520));
-        } catch (IOException ex) {
-            afficherErreur("Ouverture du formulaire", ex.getMessage());
-        }
-    }
-
-    private void supprimerSelection() {
-        Don sel = selectedDon;
-        if (sel == null) {
-            new Alert(Alert.AlertType.WARNING, "Sélectionnez un don à supprimer.").showAndWait();
-            return;
-        }
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Suppression");
-        confirm.setHeaderText(null);
-        confirm.setContentText("Supprimer définitivement ce don ?");
-        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
-            return;
-        }
-        try {
-            donService.delete(sel.getId());
-            selectedDon = null;
-            selectedCard = null;
-            chargerDepuisBase();
-            appliquerFiltre();
-            majEtatBoutons();
-            new Alert(Alert.AlertType.INFORMATION, "Don supprimé.").showAndWait();
-        } catch (SQLException ex) {
-            afficherErreur("Suppression impossible", ex.getMessage());
-        }
-    }
-
     private Stage stageCourant() {
         return (Stage) rootStack.getScene().getWindow();
     }
 
     private void renderCards() {
+        rendreCampagnesAccueil();
         cardsContainer.getChildren().clear();
-        boolean selectedStillVisible = false;
         for (Don don : sortedData) {
-            VBox card = buildCard(don);
-            if (selectedDon != null && don.getId() == selectedDon.getId()) {
-                selectedStillVisible = true;
-                appliquerSelectionCard(card, don);
-            }
-            cardsContainer.getChildren().add(card);
-        }
-        if (!selectedStillVisible) {
-            selectedDon = null;
-            selectedCard = null;
-            majEtatBoutons();
+            cardsContainer.getChildren().add(buildCard(don));
         }
         if (sortedData.isEmpty()) {
             Label empty = new Label("Aucun don à afficher (ajustez filtres / recherche).");
@@ -314,6 +279,47 @@ public class ListeDonsController implements Initializable {
             wrap.setPadding(new Insets(20, 10, 20, 10));
             cardsContainer.getChildren().add(wrap);
         }
+    }
+
+    private static final String CAMPAGNE_CARD_STYLE = "-fx-background-color: rgba(30,41,59,0.88);"
+            + " -fx-border-color: rgba(251,191,36,0.55); -fx-border-radius: 14; -fx-background-radius: 14;"
+            + " -fx-padding: 14;"
+            + " -fx-effect: dropshadow(gaussian, rgba(251,191,36,0.15), 16, 0, 0, 2);";
+
+    private void rendreCampagnesAccueil() {
+        campagnesBox.getChildren().clear();
+        try {
+            var campagnes = campagneAideService.listerPourAccueil(12);
+            if (campagnes.isEmpty()) {
+                lblDonsTitre.setVisible(false);
+                lblDonsTitre.setManaged(false);
+                return;
+            }
+            lblDonsTitre.setVisible(true);
+            lblDonsTitre.setManaged(true);
+            Label titreSection = new Label("Campagnes d'aide");
+            titreSection.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #fbbf24;");
+            campagnesBox.getChildren().add(titreSection);
+            for (CampagneAide c : campagnes) {
+                campagnesBox.getChildren().add(buildCampagneCard(c));
+            }
+        } catch (IOException ex) {
+            lblDonsTitre.setVisible(false);
+            lblDonsTitre.setManaged(false);
+        }
+    }
+
+    private VBox buildCampagneCard(CampagneAide c) {
+        Label titre = new Label(c.getTitre());
+        titre.setStyle("-fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: #f8fafc;");
+        titre.setWrapText(true);
+        Label corps = new Label(c.getCorps());
+        corps.setWrapText(true);
+        corps.setStyle("-fx-text-fill: #e2e8f0;");
+        VBox card = new VBox(8, titre, corps);
+        card.setPadding(new Insets(10));
+        card.setStyle(CAMPAGNE_CARD_STYLE);
+        return card;
     }
 
     private VBox buildCard(Don don) {
@@ -337,18 +343,7 @@ public class ListeDonsController implements Initializable {
         VBox card = new VBox(8, title, row1, row2, details);
         card.setPadding(new Insets(10));
         card.setStyle(CARD_STYLE_BASE);
-        card.setOnMouseClicked(e -> appliquerSelectionCard(card, don));
         return card;
-    }
-
-    private void appliquerSelectionCard(VBox card, Don don) {
-        if (selectedCard != null) {
-            selectedCard.setStyle(CARD_STYLE_BASE);
-        }
-        selectedDon = don;
-        selectedCard = card;
-        selectedCard.setStyle(CARD_STYLE_SELECTED);
-        majEtatBoutons();
     }
 
     private static String safe(String value) {
@@ -370,6 +365,7 @@ public class ListeDonsController implements Initializable {
         a.setTitle(titre);
         a.setHeaderText(null);
         a.setContentText(detail != null ? detail : "Erreur inconnue.");
+        MediLinkDialogs.style(a);
         a.showAndWait();
     }
 }

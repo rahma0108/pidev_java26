@@ -47,15 +47,15 @@
                   </padding>
                   <HBox alignment="CENTER_LEFT" spacing="12.0">
                      <Label styleClass="label-muted" text="Urgence :" />
-                     <ComboBox fx:id="filtreUrgenceCombo" prefWidth="130.0" />
+                     <ComboBox fx:id="filtreUrgenceCombo" prefWidth="130.0" styleClass="combo-box combo-box-base" />
                      <Label styleClass="label-muted" text="État :" />
-                     <ComboBox fx:id="filtreEtatCombo" prefWidth="180.0" />
+                     <ComboBox fx:id="filtreEtatCombo" prefWidth="180.0" styleClass="combo-box combo-box-base" />
                   </HBox>
                   <HBox alignment="CENTER_LEFT" spacing="12.0">
                      <Label styleClass="label-muted" text="Unité :" />
-                     <ComboBox fx:id="filtreUniteCombo" prefWidth="130.0" />
+                     <ComboBox fx:id="filtreUniteCombo" prefWidth="130.0" styleClass="combo-box combo-box-base" />
                      <Label styleClass="label-muted" text="Catégorie :" />
-                     <ComboBox fx:id="filtreCategorieCombo" prefWidth="230.0" />
+                     <ComboBox fx:id="filtreCategorieCombo" prefWidth="230.0" styleClass="combo-box combo-box-base" />
                      <Label styleClass="label-muted" text="Qté min :" />
                      <TextField fx:id="tfQuantiteMin" prefWidth="76.0" promptText="vide" styleClass="field-care" />
                      <Label styleClass="label-muted" text="Qté max :" />
@@ -72,23 +72,22 @@
                   </padding>
                   <HBox alignment="CENTER_LEFT" spacing="10.0">
                      <Label style="-fx-font-weight: bold; -fx-text-fill: #93c5fd;" text="1" />
-                     <ComboBox fx:id="tri1ChampCombo" prefWidth="150.0" />
-                     <ComboBox fx:id="tri1OrdreCombo" prefWidth="110.0" />
+                     <ComboBox fx:id="tri1ChampCombo" prefWidth="150.0" styleClass="combo-box combo-box-base" />
+                     <ComboBox fx:id="tri1OrdreCombo" prefWidth="110.0" styleClass="combo-box combo-box-base" />
                      <Label style="-fx-font-weight: bold; -fx-text-fill: #93c5fd;" text="2" />
-                     <ComboBox fx:id="tri2ChampCombo" prefWidth="150.0" />
-                     <ComboBox fx:id="tri2OrdreCombo" prefWidth="110.0" />
+                     <ComboBox fx:id="tri2ChampCombo" prefWidth="150.0" styleClass="combo-box combo-box-base" />
+                     <ComboBox fx:id="tri2OrdreCombo" prefWidth="110.0" styleClass="combo-box combo-box-base" />
                      <Label style="-fx-font-weight: bold; -fx-text-fill: #93c5fd;" text="3" />
-                     <ComboBox fx:id="tri3ChampCombo" prefWidth="150.0" />
-                     <ComboBox fx:id="tri3OrdreCombo" prefWidth="110.0" />
+                     <ComboBox fx:id="tri3ChampCombo" prefWidth="150.0" styleClass="combo-box combo-box-base" />
+                     <ComboBox fx:id="tri3OrdreCombo" prefWidth="110.0" styleClass="combo-box combo-box-base" />
                   </HBox>
                </VBox>
             </content>
          </TitledPane>
          <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Button fx:id="btnAjouter" mnemonicParsing="false" styleClass="btn-care-primary" text="Ajouter" />
-            <Button fx:id="btnModifier" disable="true" mnemonicParsing="false" styleClass="btn-care-secondary" text="Modifier" />
-            <Button fx:id="btnSupprimer" disable="true" mnemonicParsing="false" styleClass="btn-care-secondary" text="Supprimer" />
             <Button fx:id="btnMesDons" mnemonicParsing="false" styleClass="btn-care-primary" text="Mes dons" />
+            <Button fx:id="btnDemandeUrgence" mnemonicParsing="false" styleClass="btn-care-urgence" text="Demande d'urgence" />
             <Button fx:id="btnEspaceAdmin" mnemonicParsing="false" styleClass="btn-care-primary" text="Espace admin" />
          </HBox>
       </VBox>
@@ -96,10 +95,15 @@
    <center>
       <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="scroll-care" BorderPane.alignment="CENTER">
          <content>
-            <VBox fx:id="cardsContainer" spacing="12.0">
+            <VBox spacing="16.0">
                <padding>
-                  <Insets bottom="8.0" left="4.0" right="4.0" top="8.0" />
+                  <Insets bottom="16.0" left="4.0" right="4.0" top="8.0" />
                </padding>
+               <children>
+                  <VBox fx:id="campagnesBox" spacing="10.0" />
+                  <Label fx:id="lblDonsTitre" styleClass="label-muted" text="Dons disponibles" />
+                  <VBox fx:id="cardsContainer" spacing="12.0" />
+               </children>
             </VBox>
          </content>
       </ScrollPane>

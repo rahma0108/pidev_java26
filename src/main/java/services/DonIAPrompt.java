@@ -47,7 +47,11 @@ public final class DonIAPrompt {
                 """.formatted(escapePourPrompt(t), escapePourPrompt(c), escapePourPrompt(d), quantite);
     }
 
-    private static String escapePourPrompt(String s) {
+    /** Échappe \ et " pour insertion sûre dans un bloc de prompt (réutilisé par CampagneIAPrompt, etc.). */
+    public static String escapePourPrompt(String s) {
+        if (s == null) {
+            return "";
+        }
         return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 

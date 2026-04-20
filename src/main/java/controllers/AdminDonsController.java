@@ -15,6 +15,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import models.Don;
 import services.DonService;
+import utils.MediLinkDialogs;
 
 import java.io.IOException;
 import java.net.URL;
@@ -177,6 +178,7 @@ public class AdminDonsController implements Initializable {
         a.setTitle(titre);
         a.setHeaderText(null);
         a.setContentText(detail != null ? detail : "Erreur inconnue.");
+        MediLinkDialogs.style(a);
         a.showAndWait();
     }
 }

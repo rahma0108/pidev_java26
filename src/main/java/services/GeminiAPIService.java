@@ -1,6 +1,7 @@
 package services;
 
 import models.AnalyseDonIA;
+import models.CampagneDonnee;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -189,6 +190,39 @@ public final class GeminiAPIService implements DonAnalyseLLM {
         throw new IOException("Gemini : aucun modèle n’a répondu.");
     }
 
+    public CampagneDonnee genererCampagneUrgence(String messageUrgence) throws IOException {
+        String prompt = CampagneIAPrompt.construirePromptCampagne(messageUrgence);
+        String body = "{\"contents\":[{\"parts\":[{\"text\":\""
+                + DonIAPrompt.escapeJson(prompt)
+                + "\"}]}]}";
+        IOException dernier = null;
+        for (String model : modelsToTryOrdre()) {
+            for (String ver : API_VERSIONS) {
+                String url = "https://generativelanguage.googleapis.com/" + ver + "/models/"
+                        + model + ":generateContent";
+                try {
+                    String texte = postGenerateContentRaw(url, body, model);
+                    return CampagneIAPrompt.parserCampagne(DonIAPrompt.extraireJsonObjet(texte));
+                } catch (IllegalStateException ex) {
+                    throw ex;
+                } catch (IOException ex) {
+                    dernier = ex;
+                    String msg = ex.getMessage() != null ? ex.getMessage() : "";
+                    if (msg.contains("HTTP 400")
+                            || msg.contains("HTTP 404")
+                            || msg.contains("HTTP 429")) {
+                        continue;
+                    }
+                    throw ex;
+                }
+            }
+        }
+        if (dernier != null) {
+            throw dernier;
+        }
+        throw new IOException("Gemini : aucun modèle n’a répondu.");
+    }
+
     /**
      * Interroge {@code GET v1beta/models} pour ne proposer que des ids réellement disponibles (évite HTTP 404
      * quand Google retire ou renomme un modèle comme {@code gemini-1.5-flash}).
@@ -291,6 +325,11 @@ public final class GeminiAPIService implements DonAnalyseLLM {
     }
 
     private AnalyseDonIA postGenerateContent(String url, String body, String modelUsed) throws IOException {
+        String texte = postGenerateContentRaw(url, body, modelUsed);
+        return DonIAPrompt.parserJsonAnalyse(DonIAPrompt.extraireJsonObjet(texte));
+    }
+
+    private String postGenerateContentRaw(String url, String body, String modelUsed) throws IOException {
         for (int tentative = 0; tentative < 2; tentative++) {
             HttpURLConnection conn = (HttpURLConnection) URI.create(url).toURL().openConnection();
             conn.setRequestMethod("POST");
@@ -354,7 +393,7 @@ public final class GeminiAPIService implements DonAnalyseLLM {
             if (texte == null || texte.isBlank()) {
                 throw new IOException("Réponse Gemini sans texte exploitable : " + response);
             }
-            return DonIAPrompt.parserJsonAnalyse(DonIAPrompt.extraireJsonObjet(texte));
+            return texte;
         }
         throw new IOException("Gemini : échec inattendu après tentatives.");
     }

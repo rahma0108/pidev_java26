@@ -11,9 +11,13 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import models.Don;
 import services.DonService;
+import ui.ParticleBackground;
+import utils.MediLinkDialogs;
 
 import java.io.IOException;
 import java.net.URL;
@@ -57,11 +61,26 @@ public class ModifierDonController implements Initializable {
     @FXML
     private Button btnAnnuler;
 
+    @FXML
+    private StackPane rootStack;
+
+    @FXML
+    private Canvas particleCanvas;
+
+    private ParticleBackground particules;
+
     private final DonService donService = new DonService();
     private Don don;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        URL css = getClass().getResource("/styles/medilink-care.css");
+        if (css != null) {
+            rootStack.getStylesheets().add(css.toExternalForm());
+        }
+        particules = new ParticleBackground(particleCanvas, rootStack, 96);
+        particules.play();
+
         DonFormChoices.preparerComboCategorieModification(cbCategorie);
         DonFormChoices.preparerComboString(cbUnite, DonFormChoices.UNITES, "Unités");
         DonFormChoices.preparerComboString(cbEtat, DonFormChoices.ETATS_DON, "Neuf / Non ouvert");
@@ -133,13 +152,17 @@ public class ModifierDonController implements Initializable {
 
     private void enregistrer() {
         if (don == null) {
-            new Alert(Alert.AlertType.ERROR, "Aucun don chargé.").showAndWait();
+            Alert e = new Alert(Alert.AlertType.ERROR, "Aucun don chargé.");
+            MediLinkDialogs.style(e);
+            e.showAndWait();
             return;
         }
         try {
             DonFormChoices.CategorieOption cat = cbCategorie.getValue();
             if (cat == null) {
-                new Alert(Alert.AlertType.WARNING, "Veuillez sélectionner une catégorie de don.").showAndWait();
+                Alert w = new Alert(Alert.AlertType.WARNING, "Veuillez sélectionner une catégorie de don.");
+                MediLinkDialogs.style(w);
+                w.showAndWait();
                 return;
             }
             int categorieId = cat.id();
@@ -154,7 +177,9 @@ public class ModifierDonController implements Initializable {
             String erreur = DonSaisieValidator.validerFormulaireDon(
                     categorieId, desc, quantite, unite, etat, urgence, details, dateExp);
             if (erreur != null) {
-                new Alert(Alert.AlertType.WARNING, erreur).showAndWait();
+                Alert w = new Alert(Alert.AlertType.WARNING, erreur);
+                MediLinkDialogs.style(w);
+                w.showAndWait();
                 return;
             }
 
@@ -180,14 +205,19 @@ public class ModifierDonController implements Initializable {
             misAJour.setTraductionIA(don.getTraductionIA());
 
             donService.update(misAJour);
-            new Alert(Alert.AlertType.INFORMATION, messageSuccesEnregistrement()).showAndWait();
+            Alert ok = new Alert(Alert.AlertType.INFORMATION, messageSuccesEnregistrement());
+            MediLinkDialogs.style(ok);
+            ok.showAndWait();
             retourListe();
         } catch (NumberFormatException ex) {
-            new Alert(Alert.AlertType.ERROR, "La quantité doit être un nombre entier valide.").showAndWait();
+            Alert e = new Alert(Alert.AlertType.ERROR, "La quantité doit être un nombre entier valide.");
+            MediLinkDialogs.style(e);
+            e.showAndWait();
         } catch (SQLException ex) {
             Alert a = new Alert(Alert.AlertType.ERROR);
             a.setTitle("Erreur");
             a.setContentText(ex.getMessage());
+            MediLinkDialogs.style(a);
             a.showAndWait();
         }
     }
@@ -199,7 +229,7 @@ public class ModifierDonController implements Initializable {
 
     private void retourListe() {
         try {
-            Stage stage = (Stage) btnAnnuler.getScene().getWindow();
+            Stage stage = (Stage) rootStack.getScene().getWindow();
             Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(retourFxml)));
             int w = "/GestionDonsAdmin.fxml".equals(retourFxml) ? 1180 : 960;
             int h = "/GestionDonsAdmin.fxml".equals(retourFxml) ? 780 : 680;
@@ -207,6 +237,7 @@ public class ModifierDonController implements Initializable {
         } catch (IOException ex) {
             Alert a = new Alert(Alert.AlertType.ERROR);
             a.setContentText("Impossible de revenir : " + ex.getMessage());
+            MediLinkDialogs.style(a);
             a.showAndWait();
         }
     }
