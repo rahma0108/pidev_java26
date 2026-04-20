@@ -133,6 +133,7 @@ public class ListeDonsController implements Initializable {
     private Button btnPauseCampagnes;
     private boolean campagneEnPause = false;
     private boolean pauseManuelleCampagnes = false;
+    private boolean pauseSurvolCampagnes = false;
 
     private ParticleBackground particules;
 
@@ -348,8 +349,8 @@ public class ListeDonsController implements Initializable {
         card.setStyle(CAMPAGNE_CARD_STYLE);
         card.setTranslateY(6);
         card.setMaxWidth(Double.MAX_VALUE);
-        card.setOnMouseEntered(e -> mettreCampagnesEnPause());
-        card.setOnMouseExited(e -> reprendreCampagnes());
+        card.setOnMouseEntered(e -> mettreCampagnesEnPauseSurvol());
+        card.setOnMouseExited(e -> reprendreCampagnesApresSurvol());
         return card;
     }
 
@@ -389,11 +390,11 @@ public class ListeDonsController implements Initializable {
             reprendreCampagnes();
         } else {
             pauseManuelleCampagnes = true;
-            mettreCampagnesEnPause();
+            mettreCampagnesEnPauseManuelle();
         }
     }
 
-    private void mettreCampagnesEnPause() {
+    private void mettreCampagnesEnPauseManuelle() {
         campagneEnPause = true;
         if (btnPauseCampagnes != null) {
             btnPauseCampagnes.setText("Reprendre");
@@ -401,6 +402,25 @@ public class ListeDonsController implements Initializable {
         if (rotationCampagnes != null) {
             rotationCampagnes.pause();
         }
+    }
+
+    private void mettreCampagnesEnPauseSurvol() {
+        if (pauseManuelleCampagnes || campagneEnPause) {
+            return;
+        }
+        pauseSurvolCampagnes = true;
+        campagneEnPause = true;
+        if (rotationCampagnes != null) {
+            rotationCampagnes.pause();
+        }
+    }
+
+    private void reprendreCampagnesApresSurvol() {
+        if (!pauseSurvolCampagnes || pauseManuelleCampagnes) {
+            return;
+        }
+        pauseSurvolCampagnes = false;
+        reprendreCampagnes();
     }
 
     private void reprendreCampagnes() {
