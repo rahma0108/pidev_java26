@@ -120,8 +120,11 @@ public class DisponibiliteService {
     public List<Disponibilite> listerReservables() throws ServiceException {
         String sql = """
                 SELECT d.id, d.date, d.heure_debut, d.heure_fin, d.status, d.created_at, d.medecin_id,
+                       um.id AS um_id, um.full_name AS um_name, um.email AS um_email, um.roles AS um_roles,
+                       um.preferred_time AS um_pref, um.max_days_ahead AS um_max,
                        r.id AS rdv_id, r.statut AS rdv_statut
                 FROM disponibilites d
+                LEFT JOIN `user` um ON um.id = d.medecin_id
                 LEFT JOIN rendez_vous r ON r.disponibilite_id = d.id
                 WHERE UPPER(status) IN ('LIBRE', 'STATUS_LIBRE')
                   AND (date > ? OR (date = ? AND heure_debut > ?))
@@ -152,15 +155,21 @@ public class DisponibiliteService {
         String sql = medecinId == null
                 ? """
                 SELECT d.id, d.date, d.heure_debut, d.heure_fin, d.status, d.created_at, d.medecin_id,
+                       um.id AS um_id, um.full_name AS um_name, um.email AS um_email, um.roles AS um_roles,
+                       um.preferred_time AS um_pref, um.max_days_ahead AS um_max,
                        r.id AS rdv_id, r.statut AS rdv_statut
                 FROM disponibilites d
+                LEFT JOIN `user` um ON um.id = d.medecin_id
                 LEFT JOIN rendez_vous r ON r.disponibilite_id = d.id
                 ORDER BY d.date, d.heure_debut
                 """
                 : """
                 SELECT d.id, d.date, d.heure_debut, d.heure_fin, d.status, d.created_at, d.medecin_id,
+                       um.id AS um_id, um.full_name AS um_name, um.email AS um_email, um.roles AS um_roles,
+                       um.preferred_time AS um_pref, um.max_days_ahead AS um_max,
                        r.id AS rdv_id, r.statut AS rdv_statut
                 FROM disponibilites d
+                LEFT JOIN `user` um ON um.id = d.medecin_id
                 LEFT JOIN rendez_vous r ON r.disponibilite_id = d.id
                 WHERE d.medecin_id = ?
                 ORDER BY d.date, d.heure_debut
@@ -184,8 +193,11 @@ public class DisponibiliteService {
     public Optional<Disponibilite> findById(int id) throws ServiceException {
         String sql = """
                 SELECT d.id, d.date, d.heure_debut, d.heure_fin, d.status, d.created_at, d.medecin_id,
+                       um.id AS um_id, um.full_name AS um_name, um.email AS um_email, um.roles AS um_roles,
+                       um.preferred_time AS um_pref, um.max_days_ahead AS um_max,
                        r.id AS rdv_id, r.statut AS rdv_statut
                 FROM disponibilites d
+                LEFT JOIN `user` um ON um.id = d.medecin_id
                 LEFT JOIN rendez_vous r ON r.disponibilite_id = d.id
                 WHERE d.id = ?
                 """;
@@ -205,8 +217,11 @@ public class DisponibiliteService {
     Optional<Disponibilite> findByIdForUpdate(Connection conn, int id) throws ServiceException {
         String sql = """
                 SELECT d.id, d.date, d.heure_debut, d.heure_fin, d.status, d.created_at, d.medecin_id,
+                       um.id AS um_id, um.full_name AS um_name, um.email AS um_email, um.roles AS um_roles,
+                       um.preferred_time AS um_pref, um.max_days_ahead AS um_max,
                        r.id AS rdv_id, r.statut AS rdv_statut
                 FROM disponibilites d
+                LEFT JOIN `user` um ON um.id = d.medecin_id
                 LEFT JOIN rendez_vous r ON r.disponibilite_id = d.id
                 WHERE d.id = ?
                 FOR UPDATE
@@ -312,8 +327,7 @@ public class DisponibiliteService {
         d.setStatus(toAppStatus(rs.getString("status")));
         Timestamp ca = rs.getTimestamp("created_at");
         d.setCreatedAt(ca != null ? ca.toLocalDateTime() : null);
-        Integer medecinId = (Integer) rs.getObject("medecin_id");
-        d.setMedecin(stubMedecin(medecinId));
+        d.setMedecin(mapMedecin(rs));
         Integer rendezVousId = (Integer) rs.getObject("rdv_id");
         if (rendezVousId != null) {
             models.RendezVous rendezVous = new models.RendezVous();
@@ -325,13 +339,37 @@ public class DisponibiliteService {
         return d;
     }
 
-    private static User stubMedecin(Integer id) {
-        User u = new User();
-        u.setId(id != null ? id : 0);
-        u.setFullName(id != null ? "Médecin #" + id : "(médecin non assigné)");
-        u.setEmail("");
-        u.setRoles(Collections.emptyList());
-        return u;
+    private static User mapMedecin(ResultSet rs) throws SQLException {
+        if (rs.getObject("um_id") == null) {
+            User u = new User();
+            u.setId(0);
+            u.setFullName("(medecin non assigne)");
+            u.setEmail("");
+            u.setRoles(Collections.emptyList());
+            return u;
+        }
+
+        Integer maxDaysAhead = (Integer) rs.getObject("um_max");
+        return new User(
+                rs.getInt("um_id"),
+                rs.getString("um_name"),
+                rs.getString("um_email"),
+                User.parseRoles(rs.getString("um_roles")),
+                parsePreferredTime(rs, "um_pref"),
+                maxDaysAhead
+        );
+    }
+
+    private static LocalTime parsePreferredTime(ResultSet rs, String column) throws SQLException {
+        String raw = rs.getString(column);
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalTime.parse(raw.trim());
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     private static String toDbStatus(String appStatus) {

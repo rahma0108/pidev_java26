@@ -6,7 +6,6 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -104,22 +103,23 @@
                                                            promptText="Motif du rendez-vous (optionnel)"
                                                            HBox.hgrow="ALWAYS"
                                                            styleClass="search-field"/>
-                                                <Button fx:id="reserverButton"
-                                                        text="Reserver cette disponibilite"
-                                                        defaultButton="true"
-                                                        styleClass="primary-button, patient-book-button"/>
                                             </children>
                                         </HBox>
 
-                                        <StackPane styleClass="patient-dispo-shell">
+                                        <VBox spacing="0.0" styleClass="rdv-list-shell, patient-dispo-shell">
                                             <children>
-                                                <ScrollPane fitToWidth="true" prefViewportHeight="280.0" styleClass="availability-scroll, patient-dispo-scroll">
+                                                <HBox spacing="14.0" styleClass="rdv-list-header, patient-dispo-list-header">
+                                                    <children>
+                                                        <Label text="Medecin" styleClass="rdv-header-cell, patient-dispo-col-medecin"/>
+                                                        <Label text="Date" styleClass="rdv-header-cell, patient-dispo-col-date"/>
+                                                        <Label text="Heure" styleClass="rdv-header-cell, patient-dispo-col-time"/>
+                                                        <Label text="Statut" styleClass="rdv-header-cell, patient-dispo-col-status"/>
+                                                        <Label text="Action" styleClass="rdv-header-cell, patient-dispo-col-action"/>
+                                                    </children>
+                                                </HBox>
+                                                <ScrollPane fitToWidth="true" prefViewportHeight="280.0" styleClass="rdv-list-scroll, patient-dispo-scroll">
                                                     <content>
-                                                        <FlowPane fx:id="creneauxCardsContainer"
-                                                                  hgap="18.0"
-                                                                  vgap="18.0"
-                                                                  prefWrapLength="1080.0"
-                                                                  styleClass="availability-grid, patient-dispo-grid"/>
+                                                        <VBox fx:id="creneauxListContainer" styleClass="rdv-list-body, patient-dispo-list-body"/>
                                                     </content>
                                                 </ScrollPane>
                                                 <VBox fx:id="disponibilitesEmptyBox"
@@ -134,7 +134,7 @@
                                                     </children>
                                                 </VBox>
                                             </children>
-                                        </StackPane>
+                                        </VBox>
                                     </children>
                                 </VBox>
 

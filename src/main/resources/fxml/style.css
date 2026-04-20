@@ -1224,18 +1224,126 @@
     -fx-border-width: 1;
 }
 
-.patient-page .patient-dispo-card-item {
-    -fx-pref-width: 300;
-    -fx-min-width: 280;
-    -fx-max-width: 320;
+.patient-page .rdv-list-shell {
+    -fx-background-color: #f8fbff;
+    -fx-background-radius: 22;
+    -fx-border-color: #d8e6f8;
+    -fx-border-radius: 22;
+    -fx-border-width: 1;
+    -fx-fill-width: true;
 }
 
-.patient-page .patient-dispo-footer {
+.patient-page .rdv-list-header {
     -fx-alignment: CENTER_LEFT;
-    -fx-spacing: 10;
+    -fx-padding: 16 18 16 18;
+    -fx-background-color: #dfeafb;
+    -fx-background-radius: 22 22 0 0;
+    -fx-border-color: transparent transparent #d1def5 transparent;
+    -fx-border-width: 0 0 1 0;
 }
 
-.patient-page .patient-dispo-book-button {
+.patient-page .rdv-header-cell {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1f67c1;
+}
+
+.patient-page .rdv-list-body {
+    -fx-background-color: white;
+    -fx-background-radius: 0 0 22 22;
+}
+
+.patient-page .rdv-list-scroll,
+.patient-page .rdv-list-scroll > .viewport {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.patient-page .rdv-row {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 14 18 14 18;
+    -fx-spacing: 14;
+    -fx-border-color: transparent transparent #e4ebf5 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.patient-page .rdv-row:hover {
+    -fx-background-color: #f6faff;
+}
+
+.patient-page .patient-dispo-row.selected {
+    -fx-background-color: #eef4ff;
+}
+
+.patient-page .rdv-cell-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #102a43;
+}
+
+.patient-page .rdv-actions-box {
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.patient-page .rdv-action-button {
+    -fx-padding: 0;
+    -fx-font-weight: 700;
+}
+
+.patient-page .icon-action-button {
+    -fx-min-width: 34;
+    -fx-pref-width: 34;
+    -fx-max-width: 34;
+    -fx-min-height: 34;
+    -fx-pref-height: 34;
+    -fx-max-height: 34;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER;
+    -fx-content-display: CENTER;
+}
+
+.patient-page .status-badge {
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-padding: 6 12 6 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+}
+
+.patient-page .status-waiting {
+    -fx-background-color: #fff1cc;
+    -fx-text-fill: #b7791f;
+}
+
+.patient-page .status-confirmed {
+    -fx-background-color: #e0f3ea;
+    -fx-text-fill: #1f7a52;
+}
+
+.patient-page .status-done {
+    -fx-background-color: #e6eefc;
+    -fx-text-fill: #325ea8;
+}
+
+.patient-page .status-cancelled {
+    -fx-background-color: #fee8e7;
+    -fx-text-fill: #bf3c33;
+}
+
+.patient-page .status-default {
+    -fx-background-color: #eef2f7;
+    -fx-text-fill: #5f6f86;
+}
+
+.patient-page .rdv-empty-state {
+    -fx-padding: 20;
+    -fx-font-size: 14px;
+    -fx-text-fill: #5f6f86;
+}
+
+.patient-page .patient-dispo-inline-button {
     -fx-padding: 10 16 10 16;
 }
 
@@ -1258,6 +1366,32 @@
 .patient-page .patient-col-calendar {
     -fx-pref-width: 160;
     -fx-min-width: 140;
+}
+
+.patient-page .patient-dispo-col-medecin {
+    -fx-pref-width: 300;
+    -fx-min-width: 260;
+}
+
+.patient-page .patient-dispo-col-date {
+    -fx-pref-width: 170;
+    -fx-min-width: 150;
+}
+
+.patient-page .patient-dispo-col-time {
+    -fx-pref-width: 200;
+    -fx-min-width: 180;
+}
+
+.patient-page .patient-dispo-col-status {
+    -fx-pref-width: 160;
+    -fx-min-width: 140;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.patient-page .patient-dispo-col-action {
+    -fx-pref-width: 170;
+    -fx-min-width: 150;
 }
 
 .medecin-page .status-cancelled {

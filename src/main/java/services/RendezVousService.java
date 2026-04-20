@@ -389,19 +389,13 @@ public class RendezVousService {
                 SELECT r.id r_id, r.date_heure, r.statut, r.motif, r.created_at r_created,
                        r.patient_id, r.disponibilite_id,
                        d.id d_id, d.date d_date, d.heure_debut, d.heure_fin, d.status d_status, d.created_at d_created,
-                       d.medecin_id AS um_id,
-                       CASE
-                           WHEN d.medecin_id IS NULL THEN '(medecin non assigne)'
-                           ELSE CONCAT('Medecin #', d.medecin_id)
-                       END AS um_name,
-                       CAST(NULL AS CHAR) AS um_email,
-                       CAST(NULL AS CHAR) AS um_roles,
-                       CAST(NULL AS TIME) AS um_pref,
-                       CAST(NULL AS SIGNED) AS um_max,
+                       um.id um_id, um.full_name um_name, um.email um_email, um.roles um_roles,
+                       um.preferred_time um_pref, um.max_days_ahead um_max,
                        up.id up_id, up.full_name up_name, up.email up_email, up.roles up_roles,
                        up.preferred_time up_pref, up.max_days_ahead up_max
                 FROM rendez_vous r
                 JOIN disponibilites d ON d.id = r.disponibilite_id
+                LEFT JOIN `user` um ON um.id = d.medecin_id
                 LEFT JOIN `user` up ON up.id = r.patient_id
                 """;
     }

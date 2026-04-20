@@ -11,7 +11,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -39,15 +38,13 @@ public class ReserverRendezVousViewController {
     @FXML
     private TextField motifTextField;
     @FXML
-    private FlowPane creneauxCardsContainer;
+    private VBox creneauxListContainer;
     @FXML
     private VBox disponibilitesEmptyBox;
     @FXML
     private Button retourButton;
     @FXML
     private Button mesRendezVousButton;
-    @FXML
-    private Button reserverButton;
     @FXML
     private VBox mesRendezVousListContainer;
     @FXML
@@ -93,9 +90,6 @@ public class ReserverRendezVousViewController {
         }
         if (mesRendezVousButton != null) {
             mesRendezVousButton.setOnAction(e -> ouvrirPreferences());
-        }
-        if (reserverButton != null) {
-            reserverButton.setOnAction(e -> handleReserver());
         }
 
         chargerCreneauxLibres();
@@ -150,7 +144,7 @@ public class ReserverRendezVousViewController {
     }
 
     private void renderCreneauxCards(List<Disponibilite> disponibilites) {
-        creneauxCardsContainer.getChildren().clear();
+        creneauxListContainer.getChildren().clear();
         boolean empty = disponibilites == null || disponibilites.isEmpty();
         disponibilitesEmptyBox.setVisible(empty);
         disponibilitesEmptyBox.setManaged(empty);
@@ -158,48 +152,42 @@ public class ReserverRendezVousViewController {
             return;
         }
         for (Disponibilite d : disponibilites) {
-            creneauxCardsContainer.getChildren().add(createCreneauCard(d));
+            creneauxListContainer.getChildren().add(createCreneauRow(d));
         }
     }
 
-    private VBox createCreneauCard(Disponibilite disponibilite) {
-        VBox card = new VBox(10);
-        card.getStyleClass().addAll("availability-card", "patient-dispo-card-item");
+    private HBox createCreneauRow(Disponibilite disponibilite) {
+        HBox row = new HBox(14);
+        row.getStyleClass().addAll("rdv-row", "patient-dispo-row");
         if (selectedDisponibilite != null && selectedDisponibilite.equals(disponibilite)) {
-            card.getStyleClass().add("selected");
+            row.getStyleClass().add("selected");
         }
 
-        Label medecinLabel = new Label(resolveMedecinName(disponibilite));
-        medecinLabel.getStyleClass().addAll("card-title", "patient-dispo-doctor");
-
-        Label dateLabel = new Label(formatDate(disponibilite));
-        dateLabel.getStyleClass().addAll("card-text", "patient-dispo-date");
-
-        Label heureLabel = new Label(formatTimeRange(disponibilite));
-        heureLabel.getStyleClass().addAll("card-text", "patient-dispo-time");
-
-        HBox footer = new HBox(10);
-        footer.getStyleClass().add("patient-dispo-footer");
+        Label medecinLabel = createRowCell(resolveMedecinName(disponibilite), "rdv-cell-label", "patient-dispo-col-medecin");
+        Label dateLabel = createRowCell(formatDate(disponibilite), "rdv-cell-label", "patient-dispo-col-date");
+        Label heureLabel = createRowCell(formatTimeRange(disponibilite), "rdv-cell-label", "patient-dispo-col-time");
 
         Label badge = new Label(isTresDemande(disponibilite) ? "Tres demande" : "Disponible");
         badge.getStyleClass().addAll("status-badge", isTresDemande(disponibilite) ? "status-waiting" : "status-available");
+        HBox statusBox = new HBox(badge);
+        statusBox.getStyleClass().add("patient-dispo-col-status");
 
-        Button reserveButton = new Button("Reserver cette disponibilite");
-        reserveButton.getStyleClass().addAll("primary-button", "patient-dispo-book-button");
+        Button reserveButton = new Button("Reserver");
+        reserveButton.getStyleClass().addAll("primary-button", "rdv-action-button", "patient-dispo-inline-button");
         reserveButton.setOnAction(e -> {
             selectedDisponibilite = disponibilite;
             renderCreneauxCards(creneauxReservables);
             handleReserver();
         });
+        HBox actionBox = new HBox(reserveButton);
+        actionBox.getStyleClass().addAll("rdv-actions-box", "patient-dispo-col-action");
 
-        footer.getChildren().addAll(badge, reserveButton);
-        card.getChildren().addAll(medecinLabel, dateLabel, heureLabel, footer);
-
-        card.setOnMouseClicked(e -> {
+        row.getChildren().addAll(medecinLabel, dateLabel, heureLabel, statusBox, actionBox);
+        row.setOnMouseClicked(e -> {
             selectedDisponibilite = disponibilite;
             renderCreneauxCards(creneauxReservables);
         });
-        return card;
+        return row;
     }
 
     private void chargerMesRendezVous() {

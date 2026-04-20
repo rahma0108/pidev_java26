@@ -33,7 +33,7 @@
                         style="-fx-background-color: transparent; -fx-text-fill: white;
                                -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
                                -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
-                <Button text="  Appointments" onAction="#showAppointments"
+                <Button text="  Rendez-vous" onAction="#showAppointments"
                         prefWidth="196" prefHeight="42"
                         style="-fx-background-color: transparent; -fx-text-fill: white;
                                -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
