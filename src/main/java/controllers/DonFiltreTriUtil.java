@@ -213,9 +213,9 @@ public final class DonFiltreTriUtil {
         result = ajouterNiveauTri(result, tri2Champ, tri2Ordre);
         result = ajouterNiveauTri(result, tri3Champ, tri3Ordre);
         if (result == null) {
-            result = Comparator.comparingInt(Don::getId);
+            result = tieBreakSansId();
         } else {
-            result = result.thenComparingInt(Don::getId);
+            result = result.thenComparing(tieBreakSansId());
         }
         return result;
     }
@@ -247,8 +247,14 @@ public final class DonFiltreTriUtil {
             case "Date de soumission" -> Comparator.comparing(
                     Don::getDateSoumission,
                     Comparator.nullsLast(Comparator.naturalOrder()));
-            default -> Comparator.comparingInt(Don::getId);
+            default -> tieBreakSansId();
         };
+    }
+
+    /** Ordre stable sans exposer l'identifiant technique du don. */
+    private static Comparator<Don> tieBreakSansId() {
+        return Comparator.comparing(Don::getDateSoumission, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(d -> Objects.toString(d.getArticleDescription(), ""), String.CASE_INSENSITIVE_ORDER);
     }
 
     private static int ordreStatut(String s) {

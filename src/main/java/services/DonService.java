@@ -76,8 +76,8 @@ public class DonService implements IService<Don> {
             int newId = lireIdGenereMySql(ps, conn);
             if (newId <= 0) {
                 throw new SQLException(
-                        "Identifiant du don introuvable après insertion : impossible d’associer l’avis IA. "
-                                + "Vérifiez la table dons (colonne AUTO_INCREMENT id).");
+                        "Enregistrement du don incomplet côté base : impossible d’associer l’avis IA. "
+                                + "Vérifiez la table dons (clé primaire AUTO_INCREMENT).");
             }
             d.setId(newId);
         }

@@ -146,7 +146,7 @@ public final class DonAvisStockageFichier {
         }
         Path f = fichierDans(racineEcriture(), d.getId());
         try (OutputStream os = Files.newOutputStream(f)) {
-            pr.store(os, "Avis IA — don id=" + d.getId());
+            pr.store(os, "Avis IA — MediLink / gdons");
         }
     }
 

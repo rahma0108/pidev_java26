@@ -235,7 +235,7 @@ public class GestionDonsAdminController implements Initializable {
 
     private void ouvrirLectureDemandeUrgence(UrgenceDemande d) {
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Demande d'urgence #" + d.getId());
+        dialog.setTitle("Demande d'urgence");
         dialog.setHeaderText(libelleStatutUrgence(d.getStatut()));
         VBox content = new VBox(10);
         TextArea full = new TextArea(d.getMessage());
@@ -277,7 +277,7 @@ public class GestionDonsAdminController implements Initializable {
             return;
         }
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Demande d'urgence #" + d.getId());
+        dialog.setTitle("Demande d'urgence");
         dialog.setHeaderText("Message reçu depuis l'accueil public");
         VBox content = new VBox(10);
         TextArea full = new TextArea(d.getMessage());

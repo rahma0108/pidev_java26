@@ -17,6 +17,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -24,16 +25,22 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import models.Don;
 import services.DonService;
+import services.RecuAcceptationPdfService;
 import ui.ParticleBackground;
 import utils.MediLinkDialogs;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -387,6 +394,16 @@ public class MesDonsController implements Initializable {
         HBox actions = new HBox(10, spacerActions, btnMod, btnSup);
 
         VBox card = new VBox(8, title, row1, row2, details, actions);
+        if (estDonAccepte(don)) {
+            Button btnRecuPdf = new Button();
+            btnRecuPdf.setGraphic(graphicBoutonRecuPdf());
+            btnRecuPdf.setTooltip(new Tooltip("Générer le reçu d'acceptation (PDF)"));
+            btnRecuPdf.getStyleClass().add("btn-care-secondary");
+            btnRecuPdf.setOnAction(e -> genererRecuPdf(don));
+            HBox rowRecu = new HBox(btnRecuPdf);
+            rowRecu.setPadding(new Insets(4, 0, 0, 0));
+            card.getChildren().add(rowRecu);
+        }
         card.setPadding(new Insets(10));
         card.setStyle(CARD_STYLE_BASE);
         card.setOnMouseClicked(e -> appliquerSelectionCard(card, don));
@@ -405,6 +422,54 @@ public class MesDonsController implements Initializable {
 
     private static String safe(String value) {
         return value == null || value.isBlank() ? "-" : value;
+    }
+
+    /** Aligné sur l'admin : don passé en « valide » après acceptation. */
+    private static boolean estDonAccepte(Don don) {
+        if (don == null || don.getStatut() == null) {
+            return false;
+        }
+        String s = don.getStatut().trim().toLowerCase(Locale.ROOT);
+        return "valide".equals(s) || "accepte".equals(s) || "accepté".equals(s);
+    }
+
+    private static javafx.scene.Node graphicBoutonRecuPdf() {
+        Label ic = new Label("\uD83D\uDCC4");
+        ic.setStyle("-fx-font-size: 18px;");
+        Label lib = new Label("Reçu PDF");
+        lib.setStyle("-fx-text-fill: #fca5a5; -fx-font-size: 12; -fx-font-weight: bold;");
+        HBox g = new HBox(8, ic, lib);
+        g.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        return g;
+    }
+
+    private void genererRecuPdf(Don don) {
+        try {
+            String cat = libellesCategorieCourants.getOrDefault(don.getCategorieId(), "—");
+            if ("—".equals(cat)) {
+                cat = "-";
+            }
+            FileChooser fc = new FileChooser();
+            fc.setTitle("Enregistrer le reçu PDF");
+            fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichier PDF", "*.pdf"));
+            String stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            fc.setInitialFileName("recu_acceptation_" + stamp + ".pdf");
+            java.io.File f = fc.showSaveDialog(stageCourant());
+            if (f == null) {
+                return;
+            }
+            Path p = f.toPath();
+            String name = p.getFileName().toString();
+            if (!name.toLowerCase().endsWith(".pdf")) {
+                p = p.getParent() != null ? p.getParent().resolve(name + ".pdf") : Path.of(name + ".pdf");
+            }
+            RecuAcceptationPdfService.ecrireFichier(don, cat, p);
+            Alert ok = new Alert(Alert.AlertType.INFORMATION, "Reçu enregistré :\n" + p.toAbsolutePath());
+            MediLinkDialogs.style(ok);
+            ok.showAndWait();
+        } catch (Exception ex) {
+            afficherErreur("Génération du PDF", ex.getMessage() != null ? ex.getMessage() : ex.toString());
+        }
     }
 
     private static String styleStatut(String statutRaw) {
