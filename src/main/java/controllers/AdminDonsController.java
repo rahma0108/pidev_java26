@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -30,6 +31,9 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -90,6 +94,15 @@ public class AdminDonsController implements Initializable {
     @FXML
     private NumberAxis axisEvolutionY;
 
+    @FXML
+    private BarChart<String, Number> barParCategorie;
+
+    @FXML
+    private CategoryAxis axisCategorieX;
+
+    @FXML
+    private NumberAxis axisCategorieY;
+
     private final DonService donService = new DonService();
     private final ObservableList<Don> masterData = FXCollections.observableArrayList();
 
@@ -122,6 +135,7 @@ public class AdminDonsController implements Initializable {
 
     private void styliserAxesCharts() {
         axisEvolutionX.setLabel("Période");
+        axisCategorieX.setLabel("Catégorie");
         lineEvolutionDons.setCreateSymbols(true);
     }
 
@@ -200,6 +214,7 @@ public class AdminDonsController implements Initializable {
         pieByUrgence.setData(urgSlices);
 
         majLineEvolution();
+        majBarParCategorie();
     }
 
     private void majLineEvolution() {
@@ -264,6 +279,51 @@ public class AdminDonsController implements Initializable {
             // fallback
         }
         return cle;
+    }
+
+    private void majBarParCategorie() {
+        Map<Integer, String> libelles = DonFormChoices.categoriesSansPlaceholder().stream()
+                .collect(Collectors.toMap(DonFormChoices.CategorieOption::id, DonFormChoices.CategorieOption::libelle,
+                        (a, b) -> a));
+
+        Map<String, Long> comptes = new LinkedHashMap<>();
+        for (Don d : masterData) {
+            int cid = d.getCategorieId();
+            String lib = libelles.get(cid);
+            if (lib == null || lib.isBlank()) {
+                lib = cid <= 0 ? "Non renseigné" : "Autre";
+            }
+            comptes.merge(lib, 1L, Long::sum);
+        }
+
+        List<Map.Entry<String, Long>> tri = comptes.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toList());
+
+        final int maxBarres = 10;
+        XYChart.Series<String, Number> serie = new XYChart.Series<>();
+        serie.setName("Dons");
+        if (tri.isEmpty()) {
+            serie.getData().add(new XYChart.Data<>("Aucun don", 0));
+        } else if (tri.size() <= maxBarres) {
+            for (Map.Entry<String, Long> e : tri) {
+                serie.getData().add(new XYChart.Data<>(e.getKey(), e.getValue()));
+            }
+        } else {
+            long autres = 0;
+            for (int i = 0; i < tri.size(); i++) {
+                if (i < maxBarres - 1) {
+                    Map.Entry<String, Long> e = tri.get(i);
+                    serie.getData().add(new XYChart.Data<>(e.getKey(), e.getValue()));
+                } else {
+                    autres += tri.get(i).getValue();
+                }
+            }
+            serie.getData().add(new XYChart.Data<>("Autres (" + (tri.size() - maxBarres + 1) + " cat.)", autres));
+        }
+
+        barParCategorie.getData().clear();
+        barParCategorie.getData().add(serie);
     }
 
     private static String normStatut(String s) {
