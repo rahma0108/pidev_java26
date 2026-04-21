@@ -17,6 +17,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,8 @@ public final class UrgenceCampagneFichierStore {
         String pieceImagePath;
         String statut;
         long createdAtEpochMilli;
+        /** Nullable : anciennes demandes ; sinon jeton session locale (préférences Java). */
+        String auteurToken;
     }
 
     private static final class CampagneSer implements Serializable {
@@ -110,10 +113,14 @@ public final class UrgenceCampagneFichierStore {
     }
 
     public static int enregistrerDemande(String message) throws IOException {
-        return enregistrerDemande(message, null);
+        return enregistrerDemande(message, null, null);
     }
 
     public static int enregistrerDemande(String message, String pieceImagePath) throws IOException {
+        return enregistrerDemande(message, pieceImagePath, null);
+    }
+
+    public static int enregistrerDemande(String message, String pieceImagePath, String auteurToken) throws IOException {
         LOCK.lock();
         try {
             Snapshot s = loadOrCreate();
@@ -123,9 +130,45 @@ public final class UrgenceCampagneFichierStore {
             d.pieceImagePath = pieceImagePath;
             d.statut = "en_attente";
             d.createdAtEpochMilli = System.currentTimeMillis();
+            d.auteurToken = auteurToken;
             s.demandes.add(d);
             save(s);
             return d.id;
+        } finally {
+            LOCK.unlock();
+        }
+    }
+
+    /**
+     * Demandes liées au jeton machine (pour « Mes campagnes »).
+     */
+    public static List<UrgenceDemande> listerDemandesPourAuteur(String auteurToken) throws IOException {
+        if (auteurToken == null || auteurToken.isBlank()) {
+            return List.of();
+        }
+        LOCK.lock();
+        try {
+            Snapshot s = loadOrCreate();
+            final String tok = auteurToken;
+            return s.demandes.stream()
+                    .filter(x -> tok.equals(x.auteurToken))
+                    .sorted(Comparator.comparingLong((DemandeSer x) -> x.createdAtEpochMilli).reversed())
+                    .map(UrgenceCampagneFichierStore::toDemande)
+                    .collect(Collectors.toList());
+        } finally {
+            LOCK.unlock();
+        }
+    }
+
+    /** Dernière campagne publiée liée à une demande, si elle existe. */
+    public static Optional<CampagneAide> trouverCampagnePourDemande(int demandeId) throws IOException {
+        LOCK.lock();
+        try {
+            Snapshot s = loadOrCreate();
+            return s.campagnes.stream()
+                    .filter(c -> c.demandeId == demandeId)
+                    .max(Comparator.comparingLong(c -> c.createdAtEpochMilli))
+                    .map(UrgenceCampagneFichierStore::toCampagne);
         } finally {
             LOCK.unlock();
         }
@@ -243,6 +286,7 @@ public final class UrgenceCampagneFichierStore {
         u.setPieceImagePath(d.pieceImagePath);
         u.setStatut(d.statut);
         u.setCreatedAt(new Timestamp(d.createdAtEpochMilli));
+        u.setAuteurToken(d.auteurToken);
         return u;
     }
 

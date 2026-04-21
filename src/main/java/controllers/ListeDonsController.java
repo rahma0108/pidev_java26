@@ -111,6 +111,9 @@ public class ListeDonsController implements Initializable {
     private Button btnMesDons;
 
     @FXML
+    private Button btnMesCampagnes;
+
+    @FXML
     private Button btnEspaceAdmin;
 
     @FXML
@@ -181,6 +184,7 @@ public class ListeDonsController implements Initializable {
 
         btnAjouter.setOnAction(e -> ouvrirAjouter());
         btnMesDons.setOnAction(e -> ouvrirMesDons());
+        btnMesCampagnes.setOnAction(e -> ouvrirMesCampagnes());
         btnEspaceAdmin.setOnAction(e -> ouvrirEspaceAdmin());
         btnDemandeUrgence.setOnAction(e -> ouvrirDemandeUrgence());
 
@@ -282,6 +286,17 @@ public class ListeDonsController implements Initializable {
             stage.setScene(new Scene(root, 960, 680));
         } catch (IOException ex) {
             afficherErreur("Ouverture de la page Mes dons", ex.getMessage());
+        }
+    }
+
+    private void ouvrirMesCampagnes() {
+        try {
+            Stage stage = stageCourant();
+            Parent root = FXMLLoader.load(Objects.requireNonNull(
+                    getClass().getResource("/MesCampagnes.fxml")));
+            stage.setScene(new Scene(root, 960, 680));
+        } catch (IOException ex) {
+            afficherErreur("Ouverture de la page Mes campagnes", ex.getMessage());
         }
     }
 

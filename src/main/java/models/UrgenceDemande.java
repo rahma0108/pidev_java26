@@ -11,6 +11,8 @@ public class UrgenceDemande {
     private String pieceImagePath;
     private String statut;
     private Timestamp createdAt;
+    /** Jeton machine (sans compte) : rattache la demande à « Mes campagnes ». */
+    private String auteurToken;
 
     public static UrgenceDemande fromResultSet(ResultSet rs) throws SQLException {
         UrgenceDemande u = new UrgenceDemande();
@@ -59,5 +61,13 @@ public class UrgenceDemande {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getAuteurToken() {
+        return auteurToken;
+    }
+
+    public void setAuteurToken(String auteurToken) {
+        this.auteurToken = auteurToken;
     }
 }

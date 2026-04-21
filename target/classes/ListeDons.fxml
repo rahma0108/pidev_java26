@@ -87,6 +87,7 @@
          <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Button fx:id="btnAjouter" mnemonicParsing="false" styleClass="btn-care-primary" text="Ajouter" />
             <Button fx:id="btnMesDons" mnemonicParsing="false" styleClass="btn-care-primary" text="Mes dons" />
+            <Button fx:id="btnMesCampagnes" mnemonicParsing="false" styleClass="btn-care-primary" text="Mes campagnes" />
             <Button fx:id="btnDemandeUrgence" mnemonicParsing="false" styleClass="btn-care-urgence" text="Demande d'urgence" />
             <Button fx:id="btnEspaceAdmin" mnemonicParsing="false" styleClass="btn-care-primary" text="Espace admin" />
          </HBox>

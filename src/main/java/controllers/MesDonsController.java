@@ -123,6 +123,9 @@ public class MesDonsController implements Initializable {
     private Button btnAccueil;
 
     @FXML
+    private Button btnMesCampagnes;
+
+    @FXML
     private Button btnEspaceAdmin;
 
     @FXML
@@ -175,6 +178,7 @@ public class MesDonsController implements Initializable {
         btnModifier.setOnAction(e -> ouvrirModifierDon(selectedDon));
         btnSupprimer.setOnAction(e -> supprimerDon(selectedDon));
         btnAccueil.setOnAction(e -> ouvrirAccueil());
+        btnMesCampagnes.setOnAction(e -> ouvrirMesCampagnes());
         btnEspaceAdmin.setOnAction(e -> ouvrirEspaceAdmin());
 
         appliquerTri();
@@ -260,6 +264,17 @@ public class MesDonsController implements Initializable {
             stage.setScene(new Scene(root, 960, 680));
         } catch (IOException ex) {
             afficherErreur("Ouverture accueil", ex.getMessage());
+        }
+    }
+
+    private void ouvrirMesCampagnes() {
+        try {
+            Stage stage = stageCourant();
+            Parent root = FXMLLoader.load(Objects.requireNonNull(
+                    getClass().getResource("/MesCampagnes.fxml")));
+            stage.setScene(new Scene(root, 960, 680));
+        } catch (IOException ex) {
+            afficherErreur("Ouverture Mes campagnes", ex.getMessage());
         }
     }
 
