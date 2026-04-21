@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
@@ -77,6 +81,22 @@
                   <PieChart fx:id="pieByStatut" labelsVisible="true" legendVisible="true" prefHeight="260.0" title="Dons par statut" HBox.hgrow="ALWAYS" />
                   <PieChart fx:id="pieByUrgence" labelsVisible="true" legendVisible="true" prefHeight="260.0" title="Dons par urgence" HBox.hgrow="ALWAYS" />
                </HBox>
+               <VBox spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-padding: 14;">
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <Label style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Évolution des dons (date de soumission)" />
+                     <Region HBox.hgrow="ALWAYS" />
+                     <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Regrouper :" />
+                     <ComboBox fx:id="cbPeriodeEvolution" prefWidth="140.0" />
+                  </HBox>
+                  <LineChart fx:id="lineEvolutionDons" animated="false" legendVisible="false" prefHeight="300.0" title="Nombre de dons déposés" VBox.vgrow="ALWAYS">
+                     <xAxis>
+                        <CategoryAxis fx:id="axisEvolutionX" side="BOTTOM" tickLabelRotation="-35" />
+                     </xAxis>
+                     <yAxis>
+                        <NumberAxis fx:id="axisEvolutionY" side="LEFT" autoRanging="true" minorTickCount="0" label="Nombre" />
+                     </yAxis>
+                  </LineChart>
+               </VBox>
             </VBox>
          </content>
       </ScrollPane>
