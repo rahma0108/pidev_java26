@@ -3,6 +3,7 @@ package view;
 import controllers.DisponibiliteController;
 import controllers.RendezVousController;
 import exceptions.ServiceException;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -14,9 +15,12 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import models.AIRecommendation;
 import models.Disponibilite;
 import models.RendezVous;
 import models.User;
+import services.DisponibiliteService;
+import services.PlanningAIService;
 import services.UserService;
 
 import java.io.IOException;
@@ -46,6 +50,8 @@ public class ReserverRendezVousViewController {
     @FXML
     private Button mesRendezVousButton;
     @FXML
+    private Button btnTrouverIA;
+    @FXML
     private VBox mesRendezVousListContainer;
     @FXML
     private Label disponibilitesCountLabel;
@@ -53,6 +59,8 @@ public class ReserverRendezVousViewController {
     private Label mesRendezVousCountLabel;
     @FXML
     private Label recommandationLabel;
+    @FXML
+    private Label labelResultatIA;
 
     private DisponibiliteController disponibiliteController;
     private RendezVousController rendezVousController;
@@ -141,6 +149,79 @@ public class ReserverRendezVousViewController {
         } catch (ServiceException e) {
             ViewAlertUtil.erreur("Reservation", e.formatWithCauses());
         }
+    }
+
+    @FXML
+    private void handleTrouverAvecIA() {
+
+        // 1. Recuperer les creneaux libres depuis ta base
+        List<Disponibilite> creneaux;
+        try {
+            DisponibiliteService disponibiliteService = new DisponibiliteService();
+            creneaux = disponibiliteService.listerReservables();
+        } catch (ServiceException e) {
+            if (labelResultatIA != null) {
+                labelResultatIA.setText("⚠ Impossible de charger les creneaux disponibles.");
+            }
+            ViewAlertUtil.erreur("Disponibilites", e.formatWithCauses());
+            return;
+        }
+
+        if (creneaux == null || creneaux.isEmpty()) {
+            labelResultatIA.setText("Aucun creneau disponible pour le moment.");
+            return;
+        }
+
+        // 2. Desactiver le bouton pendant l'appel
+        btnTrouverIA.setDisable(true);
+        labelResultatIA.setText("L'IA analyse les creneaux...");
+
+        final String prenomPatient = resolvePatientDisplayName();
+        final String preferenceHoraire = resolvePatientPreferenceHoraire();
+        final String urgenceDeclaree = "normale"; // TODO: remplacer par la vraie urgence quand elle sera capturee dans le parcours patient.
+
+        // 3. Appel en arriere-plan
+        Task<AIRecommendation> task = new Task<>() {
+            @Override
+            protected AIRecommendation call() {
+                PlanningAIService aiService = new PlanningAIService();
+                return aiService.recommanderCreneau(
+                        prenomPatient,
+                        preferenceHoraire,
+                        urgenceDeclaree,
+                        creneaux
+                );
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            AIRecommendation result = task.getValue();
+            btnTrouverIA.setDisable(false);
+
+            if (result == null) {
+                labelResultatIA.setText("⚠ Une erreur inattendue s'est produite.");
+                return;
+            }
+
+            if (result.isEchec()) {
+                labelResultatIA.setText("⚠ " + result.getAlerte());
+            } else {
+                labelResultatIA.setText(
+                        "✔ Creneau recommande : " + result.getCreneauRecommandeId()
+                                + "\n" + result.getJustification()
+                                + "\nConfiance : " + (int) (result.getNiveauConfiance() * 100) + "%"
+                );
+            }
+        });
+
+        task.setOnFailed(event -> {
+            btnTrouverIA.setDisable(false);
+            labelResultatIA.setText("⚠ Une erreur inattendue s'est produite.");
+        });
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
     }
 
     private void renderCreneauxCards(List<Disponibilite> disponibilites) {
@@ -326,6 +407,37 @@ public class ReserverRendezVousViewController {
 
     private String formatDate(Disponibilite disponibilite) {
         return disponibilite != null && disponibilite.getDate() != null ? disponibilite.getDate().format(DATE_FMT) : "-";
+    }
+
+    private String resolvePatientDisplayName() {
+        if (demoPatientId == null) {
+            return "Patient";
+        }
+        try {
+            User patient = userService.findById(demoPatientId).orElse(null);
+            if (patient == null || patient.getFullName() == null || patient.getFullName().isBlank()) {
+                return "Patient";
+            }
+            String[] parts = patient.getFullName().trim().split("\\s+");
+            return parts.length > 0 ? parts[0] : "Patient";
+        } catch (ServiceException e) {
+            return "Patient";
+        }
+    }
+
+    private String resolvePatientPreferenceHoraire() {
+        if (demoPatientId == null) {
+            return "matin";
+        }
+        try {
+            User patient = userService.findById(demoPatientId).orElse(null);
+            if (patient == null || patient.getPreferredTime() == null) {
+                return "matin";
+            }
+            return patient.getPreferredTime().getHour() < 12 ? "matin" : "apres-midi";
+        } catch (ServiceException e) {
+            return "matin";
+        }
     }
 
     private String formatTimeRange(Disponibilite disponibilite) {

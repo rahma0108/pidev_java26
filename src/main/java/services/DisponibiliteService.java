@@ -126,9 +126,9 @@ public class DisponibiliteService {
                 FROM disponibilites d
                 LEFT JOIN `user` um ON um.id = d.medecin_id
                 LEFT JOIN rendez_vous r ON r.disponibilite_id = d.id
-                WHERE UPPER(status) IN ('LIBRE', 'STATUS_LIBRE')
-                  AND (date > ? OR (date = ? AND heure_debut > ?))
-                ORDER BY date, heure_debut
+                WHERE UPPER(d.status) IN ('LIBRE', 'STATUS_LIBRE')
+                  AND (d.date > ? OR (d.date = ? AND d.heure_debut > ?))
+                ORDER BY d.date, d.heure_debut
                 """;
         LocalDate nowDate = LocalDate.now();
         LocalTime nowTime = LocalTime.now();

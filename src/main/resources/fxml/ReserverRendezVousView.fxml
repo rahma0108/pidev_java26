@@ -103,8 +103,14 @@
                                                            promptText="Motif du rendez-vous (optionnel)"
                                                            HBox.hgrow="ALWAYS"
                                                            styleClass="search-field"/>
+                                                <Button fx:id="btnTrouverIA"
+                                                        text="✨ Trouver avec l'IA"
+                                                        onAction="#handleTrouverAvecIA"
+                                                        styleClass="btn-ia"/>
                                             </children>
                                         </HBox>
+
+                                        <Label fx:id="labelResultatIA" text="" wrapText="true"/>
 
                                         <VBox spacing="0.0" styleClass="rdv-list-shell, patient-dispo-shell">
                                             <children>
