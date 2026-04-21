@@ -39,4 +39,14 @@ public final class UrgenceDemandeService {
     public void marquerSansCampagne(int id) throws IOException {
         UrgenceCampagneFichierStore.marquerSansCampagne(id);
     }
+
+    public void mettreAJourParAuteurCourant(int demandeId, String nouveauMessage,
+            boolean modifierPieceJointe, String nouveauCheminPieceAbsolu) throws IOException {
+        UrgenceCampagneFichierStore.mettreAJourDemandeParAuteur(
+                demandeId,
+                MediLinkSessionUtil.getOrCreateToken(),
+                nouveauMessage,
+                modifierPieceJointe,
+                nouveauCheminPieceAbsolu);
+    }
 }

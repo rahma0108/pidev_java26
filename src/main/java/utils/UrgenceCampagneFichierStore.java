@@ -160,6 +160,41 @@ public final class UrgenceCampagneFichierStore {
         }
     }
 
+    /**
+     * Met à jour le message et éventuellement la pièce jointe si la demande est encore en attente
+     * et appartient au jeton session (créateur sur cette machine).
+     */
+    public static void mettreAJourDemandeParAuteur(int demandeId, String auteurToken, String nouveauMessage,
+            boolean modifierPieceJointe, String nouveauCheminPieceAbsolu) throws IOException {
+        if (auteurToken == null || auteurToken.isBlank()) {
+            throw new IOException("Session locale introuvable.");
+        }
+        LOCK.lock();
+        try {
+            Snapshot s = loadOrCreate();
+            for (DemandeSer d : s.demandes) {
+                if (d.id != demandeId) {
+                    continue;
+                }
+                if (!"en_attente".equals(d.statut)) {
+                    throw new IOException("Cette demande ne peut plus être modifiée (déjà traitée par l'équipe).");
+                }
+                if (!auteurToken.equals(d.auteurToken)) {
+                    throw new IOException("Modification non autorisée pour cette demande.");
+                }
+                d.message = nouveauMessage;
+                if (modifierPieceJointe) {
+                    d.pieceImagePath = nouveauCheminPieceAbsolu;
+                }
+                save(s);
+                return;
+            }
+            throw new IOException("Demande introuvable.");
+        } finally {
+            LOCK.unlock();
+        }
+    }
+
     /** Dernière campagne publiée liée à une demande, si elle existe. */
     public static Optional<CampagneAide> trouverCampagnePourDemande(int demandeId) throws IOException {
         LOCK.lock();

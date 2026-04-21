@@ -196,8 +196,8 @@ public class DemandeUrgenceController implements Initializable {
             retirerImageJustificative();
             Alert ok = new Alert(Alert.AlertType.INFORMATION,
                     "Votre message a été transmis aux équipes. Il n'apparaît pas sur l'accueil ; un administrateur pourra "
-                            + "lancer une campagne d'aide publique si nécessaire. Vous pouvez suivre l'évolution depuis "
-                            + "« Mes campagnes » sur l'accueil.");
+                            + "lancer une campagne d'aide publique si nécessaire. Vous pouvez suivre ou modifier votre "
+                            + "demande (tant qu'elle est en attente) depuis « Mes campagnes » sur l'accueil.");
             MediLinkDialogs.style(ok);
             ok.showAndWait();
             fermer();
