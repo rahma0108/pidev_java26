@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
 
 <VBox spacing="16.0" stylesheets="@style.css" styleClass="page-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml" fx:controller="com.medilink.controller.BackController">
     <padding>
@@ -27,6 +28,8 @@
                         <TextField fx:id="txtPhoto" promptText="Lien Photo" prefWidth="180.0"/>
                     </children>
                 </FlowPane>
+                <Label text="Choisissez un lieu sur la carte (Tunisie) pour remplir automatiquement l'adresse." styleClass="card-meta"/>
+                <WebView fx:id="mapWebView" prefHeight="270.0" />
 
                 <HBox spacing="10.0" alignment="CENTER_LEFT">
                     <children>

@@ -20,49 +20,7 @@ import java.util.Objects;
 
 
 
-<<<<<<< HEAD
-public class MainFX extends Application {
-
-
-
-    @Override
-
-    public void start(Stage stage) {
-
-        try {
-
-            URL fxmlUrl = MainFX.class.getResource("/ListeDons.fxml");
-
-            if (fxmlUrl == null) {
-
-                System.err.println("[MainFX] FXML introuvable sur le classpath : /ListeDons.fxml");
-
-                return;
-
-            }
-
-            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(fxmlUrl));
-
-            Parent root = loader.load();
-
-            stage.setTitle("Gestion des dons — Medilink");
-
-            stage.setScene(new Scene(root, 960, 680));
-
-            stage.show();
-
-        } catch (Throwable t) {
-
-            System.err.println("[MainFX] Erreur au démarrage : " + t.getClass().getName() + " — " + t.getMessage());
-
-            t.printStackTrace(System.err);
-
-        }
-
-    }
-=======
 public class MainFX {
->>>>>>> gestion-dons-java
 
 
 
@@ -70,11 +28,7 @@ public class MainFX {
 
         try {
 
-<<<<<<< HEAD
-            launch(args);
-=======
             Application.launch(FxBootstrap.class, args);
->>>>>>> gestion-dons-java
 
         } catch (Throwable t) {
 
@@ -86,8 +40,6 @@ public class MainFX {
 
     }
 
-<<<<<<< HEAD
-=======
     public static class FxBootstrap extends Application {
         @Override
         public void start(Stage stage) {
@@ -127,6 +79,5 @@ public class MainFX {
         }
     }
 
->>>>>>> gestion-dons-java
 }
 

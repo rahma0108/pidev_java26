@@ -2,12 +2,17 @@ package com.medilink.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.concurrent.Worker;
 import javafx.scene.control.Alert;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
+import netscape.javascript.JSObject;
+import javafx.application.Platform;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -37,6 +42,8 @@ public class BackController implements Initializable {
 
     @FXML
     private FlowPane participationCardsContainer;
+    @FXML
+    private WebView mapWebView;
 
     private final List<String> events = new ArrayList<>();
     private final List<String> participations = new ArrayList<>();
@@ -45,7 +52,45 @@ public class BackController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        initializeMapPicker();
         renderEventCards(events);
+    }
+
+    private void initializeMapPicker() {
+        if (mapWebView == null) {
+            return;
+        }
+        WebEngine engine = mapWebView.getEngine();
+        engine.setPromptHandler(promptData -> {
+            String msg = promptData.getMessage();
+            if (msg != null && msg.startsWith("MAP_PICK|")) {
+                String[] parts = msg.split("\\|", 4);
+                if (parts.length >= 4) {
+                    try {
+                        double lat = Double.parseDouble(parts[1]);
+                        double lon = Double.parseDouble(parts[2]);
+                        String address = parts[3];
+                        new JavaBridge().onAddressSelected(address, lat, lon);
+                    } catch (NumberFormatException ignored) {
+                        // Ignore malformed map payload.
+                    }
+                }
+            }
+            return "";
+        });
+        URL mapPage = getClass().getResource("/com/medilink/map-picker.html");
+        if (mapPage == null) {
+            showError("Carte introuvable (resource /com/medilink/map-picker.html).");
+            return;
+        }
+        engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            if (newState == Worker.State.SUCCEEDED) {
+                JSObject window = (JSObject) engine.executeScript("window");
+                window.setMember("javaBridge", new JavaBridge());
+                engine.executeScript("if (window.onJavaReady) { window.onJavaReady(); }");
+            }
+        });
+        engine.load(mapPage.toExternalForm());
     }
 
     @FXML
@@ -246,5 +291,16 @@ public class BackController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    public class JavaBridge {
+        public void onAddressSelected(String address, double lat, double lon) {
+            Platform.runLater(() -> {
+                String value = (address == null || address.isBlank())
+                        ? String.format("Lat %.6f, Lon %.6f", lat, lon)
+                        : address;
+                txtLieu.setText(value);
+            });
+        }
     }
 }

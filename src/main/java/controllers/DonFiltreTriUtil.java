@@ -14,12 +14,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-<<<<<<< HEAD
-/**
- * Recherche, filtres combinés et tri multi-niveaux pour l'écran liste des dons.
- */
-=======
->>>>>>> gestion-dons-java
 public final class DonFiltreTriUtil {
 
     public static final String TRI_AUCUN = "— (aucun) —";
@@ -30,20 +24,11 @@ public final class DonFiltreTriUtil {
 
     public static final List<String> TRI_NIVEAUX = List.of(
             TRI_AUCUN,
-<<<<<<< HEAD
-            "ID",
-=======
->>>>>>> gestion-dons-java
             "Quantité",
             "Statut",
             "Urgence",
             "État",
-<<<<<<< HEAD
-            "Date de soumission",
-            "Description"
-=======
             "Date de soumission"
->>>>>>> gestion-dons-java
     );
 
     private DonFiltreTriUtil() {
@@ -206,15 +191,6 @@ public final class DonFiltreTriUtil {
             return true;
         }
         String needle = q.trim().toLowerCase();
-<<<<<<< HEAD
-        if (needle.matches("\\d+")) {
-            int idNeedle = Integer.parseInt(needle);
-            if (don.getId() == idNeedle) {
-                return true;
-            }
-        }
-=======
->>>>>>> gestion-dons-java
         return contientIgnoreCase(don.getArticleDescription(), needle)
                 || contientIgnoreCase(don.getDetailsSupplementaires(), needle)
                 || contientIgnoreCase(don.getUnite(), needle)
@@ -237,15 +213,9 @@ public final class DonFiltreTriUtil {
         result = ajouterNiveauTri(result, tri2Champ, tri2Ordre);
         result = ajouterNiveauTri(result, tri3Champ, tri3Ordre);
         if (result == null) {
-<<<<<<< HEAD
-            result = Comparator.comparingInt(Don::getId);
-        } else {
-            result = result.thenComparingInt(Don::getId);
-=======
             result = tieBreakSansId();
         } else {
             result = result.thenComparing(tieBreakSansId());
->>>>>>> gestion-dons-java
         }
         return result;
     }
@@ -264,10 +234,6 @@ public final class DonFiltreTriUtil {
 
     private static Comparator<Don> comparateurPourLibelle(String champ) {
         return switch (champ) {
-<<<<<<< HEAD
-            case "ID" -> Comparator.comparingInt(Don::getId);
-=======
->>>>>>> gestion-dons-java
             case "Quantité" -> Comparator.comparingInt(Don::getQuantite);
             case "Statut" -> Comparator
                     .comparingInt((Don d) -> ordreStatut(d.getStatut()))
@@ -281,15 +247,6 @@ public final class DonFiltreTriUtil {
             case "Date de soumission" -> Comparator.comparing(
                     Don::getDateSoumission,
                     Comparator.nullsLast(Comparator.naturalOrder()));
-<<<<<<< HEAD
-            case "Description" -> Comparator.comparing(
-                    d -> Objects.toString(d.getArticleDescription(), ""),
-                    String.CASE_INSENSITIVE_ORDER);
-            default -> Comparator.comparingInt(Don::getId);
-        };
-    }
-
-=======
             default -> tieBreakSansId();
         };
     }
@@ -299,8 +256,6 @@ public final class DonFiltreTriUtil {
         return Comparator.comparing(Don::getDateSoumission, Comparator.nullsLast(Comparator.naturalOrder()))
                 .thenComparing(d -> Objects.toString(d.getArticleDescription(), ""), String.CASE_INSENSITIVE_ORDER);
     }
-
->>>>>>> gestion-dons-java
     private static int ordreStatut(String s) {
         if (s == null) {
             return 9;

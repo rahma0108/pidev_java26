@@ -80,7 +80,7 @@ public class MedecinDashboardViewController {
 
     @FXML
     private void showEvents() {
-        ViewAlertUtil.info("Événements", "Module événements à brancher.");
+        SceneNavigator.switchScene(getAnyNode(), "/com/medilink/main.fxml", "MediLink - Evenements", 1100, 750);
     }
 
     @FXML

@@ -1,3 +1,5 @@
+package userfx;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -15,7 +17,7 @@ public class MainFX {
         @Override
         public void start(Stage stage) throws Exception {
             try {
-                java.sql.Connection conn = userfx.MyConnection.getInstance().getConnection();
+                java.sql.Connection conn = MyConnection.getInstance().getConnection();
                 if (conn != null) {
                     System.out.println("Database connected!");
                 }

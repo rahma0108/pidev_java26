@@ -64,7 +64,7 @@ public class DashboardController {
 
     private static User loggedInUser;
     private Parent adminRendezVousView;
-    private Parent adminDonsView;
+    private Parent eventsView;
 
     public static void setLoggedInUser(User user) {
         loggedInUser = user;
@@ -277,16 +277,13 @@ public class DashboardController {
     @FXML
     public void showEvents() {
         setActiveMenu(eventsNavButton);
-        if (!isAdminUser()) {
-            showAccessDenied("Acces reserve aux administrateurs.");
-            return;
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/com/medilink/main.fxml"));
+            pageTitle.getScene().setRoot(root);
+        } catch (Exception e) {
+            showAccessDenied("Impossible de charger la vue evenements.");
+            System.err.println("Events view error: " + e.getMessage());
         }
-        Parent view = getAdminDonsView();
-        if (view == null || centerContentHost == null) {
-            showAccessDenied("Impossible de charger la vue admin des dons.");
-            return;
-        }
-        centerContentHost.getChildren().setAll(view);
     }
     @FXML public void handleLogout() {
         if (PopupHelper.confirmLogout()) {
@@ -313,19 +310,6 @@ public class DashboardController {
             return adminRendezVousView;
         } catch (Exception e) {
             System.err.println("Rendez-vous admin view error: " + e.getMessage());
-            return null;
-        }
-    }
-
-    private Parent getAdminDonsView() {
-        if (adminDonsView != null) {
-            return adminDonsView;
-        }
-        try {
-            adminDonsView = FXMLLoader.load(getClass().getResource("/AdminDons.fxml"));
-            return adminDonsView;
-        } catch (Exception e) {
-            System.err.println("Admin dons view error: " + e.getMessage());
             return null;
         }
     }
