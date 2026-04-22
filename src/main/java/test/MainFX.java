@@ -20,45 +20,7 @@ import java.util.Objects;
 
 
 
-public class MainFX extends Application {
-
-
-
-    @Override
-
-    public void start(Stage stage) {
-
-        try {
-
-            URL fxmlUrl = MainFX.class.getResource("/ListeDons.fxml");
-
-            if (fxmlUrl == null) {
-
-                System.err.println("[MainFX] FXML introuvable sur le classpath : /ListeDons.fxml");
-
-                return;
-
-            }
-
-            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(fxmlUrl));
-
-            Parent root = loader.load();
-
-            stage.setTitle("Gestion des dons — Medilink");
-
-            stage.setScene(new Scene(root, 960, 680));
-
-            stage.show();
-
-        } catch (Throwable t) {
-
-            System.err.println("[MainFX] Erreur au démarrage : " + t.getClass().getName() + " — " + t.getMessage());
-
-            t.printStackTrace(System.err);
-
-        }
-
-    }
+public class MainFX {
 
 
 
@@ -66,7 +28,7 @@ public class MainFX extends Application {
 
         try {
 
-            launch(args);
+            Application.launch(FxBootstrap.class, args);
 
         } catch (Throwable t) {
 
@@ -76,6 +38,45 @@ public class MainFX extends Application {
 
         }
 
+    }
+
+    public static class FxBootstrap extends Application {
+        @Override
+        public void start(Stage stage) {
+
+            try {
+
+                URL fxmlUrl = MainFX.class.getResource("/landing.fxml");
+
+                if (fxmlUrl == null) {
+
+                    System.err.println("[MainFX] FXML introuvable sur le classpath : /landing.fxml");
+
+                    return;
+
+                }
+
+                FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(fxmlUrl));
+
+                Parent root = loader.load();
+
+                stage.setTitle("MediLink Care");
+
+                stage.setScene(new Scene(root, 1366, 860));
+                stage.setMinWidth(1200);
+                stage.setMinHeight(760);
+
+                stage.show();
+
+            } catch (Throwable t) {
+
+                System.err.println("[MainFX] Erreur au démarrage : " + t.getClass().getName() + " — " + t.getMessage());
+
+                t.printStackTrace(System.err);
+
+            }
+
+        }
     }
 
 }

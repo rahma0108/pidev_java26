@@ -119,12 +119,18 @@ public class AdminDonsController implements Initializable {
         chargerDepuisBase();
         majTableauDeBord();
 
-        btnActualiser.setOnAction(e -> {
-            chargerDepuisBase();
-            majTableauDeBord();
-        });
-        btnRetourListe.setOnAction(e -> retourListe());
-        btnOuvrirGestion.setOnAction(e -> ouvrirFenetreGestionDons());
+        if (btnActualiser != null) {
+            btnActualiser.setOnAction(e -> {
+                chargerDepuisBase();
+                majTableauDeBord();
+            });
+        }
+        if (btnRetourListe != null) {
+            btnRetourListe.setOnAction(e -> retourListe());
+        }
+        if (btnOuvrirGestion != null) {
+            btnOuvrirGestion.setOnAction(e -> ouvrirFenetreGestionDons());
+        }
     }
 
     private void preparerComboPeriode() {
@@ -153,6 +159,11 @@ public class AdminDonsController implements Initializable {
         } catch (IOException ex) {
             afficherErreur("Ouverture impossible", ex.getMessage());
         }
+    }
+
+    @FXML
+    private void handleOpenGestion() {
+        ouvrirFenetreGestionDons();
     }
 
     private void chargerDepuisBase() {
