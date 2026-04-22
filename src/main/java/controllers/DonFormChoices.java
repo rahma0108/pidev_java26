@@ -2,13 +2,27 @@ package controllers;
 
 import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
+<<<<<<< HEAD
 
+=======
+import models.CategorieDons;
+import utils.MyConnection;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+>>>>>>> gestion-dons-java
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+<<<<<<< HEAD
  * Valeurs affichées comme sur le formulaire Symfony / maquettes (catégorie, unité, état, urgence).
  * Les ids catégorie 1–5 doivent correspondre à ta table {@code categories} dans {@code medilink} ; adapte si besoin.
+=======
+ * Valeurs affichées dans les formulaires (catégorie, unité, état, urgence).
+ * Les catégories sont lues depuis la table {@code categories_dons} si possible.
+>>>>>>> gestion-dons-java
  */
 public final class DonFormChoices {
 
@@ -26,11 +40,15 @@ public final class DonFormChoices {
     public static List<CategorieOption> categoriesAvecPlaceholder() {
         List<CategorieOption> l = new ArrayList<>();
         l.add(new CategorieOption(0, "Sélectionnez une catégorie"));
+<<<<<<< HEAD
         l.add(new CategorieOption(1, "Médicaments"));
         l.add(new CategorieOption(2, "Matériel médical"));
         l.add(new CategorieOption(3, "Mobilité et équipement"));
         l.add(new CategorieOption(4, "Masques et consommables"));
         l.add(new CategorieOption(5, "Autre"));
+=======
+        l.addAll(categoriesDepuisBaseOuDefaut());
+>>>>>>> gestion-dons-java
         return l;
     }
 
@@ -39,6 +57,36 @@ public final class DonFormChoices {
         return new ArrayList<>(all.subList(1, all.size()));
     }
 
+<<<<<<< HEAD
+=======
+    private static List<CategorieOption> categoriesDepuisBaseOuDefaut() {
+        List<CategorieOption> categories = new ArrayList<>();
+        Connection conn = MyConnection.getInstance().getConn();
+        if (conn != null) {
+            String req = "SELECT id, nom, description, icone, couleur, created_at FROM categories_dons ORDER BY id";
+            try (PreparedStatement ps = conn.prepareStatement(req);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    CategorieDons row = CategorieDons.fromResultSet(rs);
+                    categories.add(new CategorieOption(row.getId(), row.getNom()));
+                }
+            } catch (Exception ignored) {
+                // fallback ci-dessous
+            }
+        }
+        if (!categories.isEmpty()) {
+            return categories;
+        }
+        // Valeurs de secours si la table est vide/inaccessible.
+        categories.add(new CategorieOption(1, "Médicaments"));
+        categories.add(new CategorieOption(2, "Matériel médical"));
+        categories.add(new CategorieOption(3, "Mobilité et équipement"));
+        categories.add(new CategorieOption(4, "Masques et consommables"));
+        categories.add(new CategorieOption(5, "Autre"));
+        return categories;
+    }
+
+>>>>>>> gestion-dons-java
     public static final List<String> UNITES = List.of(
             "Boîtes", "Unités", "Pièces", "Flacons", "Seringues", "Autre");
 

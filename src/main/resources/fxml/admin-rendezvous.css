@@ -1,0 +1,151 @@
+.admin-rdv-page {
+    -fx-background-color: transparent;
+}
+
+.admin-rdv-title {
+    -fx-font-size: 30px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1a1a2e;
+}
+
+.admin-rdv-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6f7383;
+}
+
+.admin-rdv-toolbar {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: #e3e6eb;
+    -fx-border-radius: 12;
+    -fx-padding: 10;
+}
+
+.admin-rdv-search,
+.admin-rdv-combo {
+    -fx-background-color: #f7f8fb;
+    -fx-background-radius: 8;
+    -fx-border-color: #d8dce4;
+    -fx-border-radius: 8;
+}
+
+.admin-rdv-btn {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.admin-rdv-btn-secondary {
+    -fx-background-color: #f2f4f8;
+    -fx-border-color: #d7dce5;
+    -fx-border-radius: 8;
+    -fx-text-fill: #273142;
+}
+
+.admin-rdv-btn-primary {
+    -fx-background-color: #d34c5f;
+    -fx-text-fill: white;
+}
+
+.admin-rdv-list-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: #e3e6eb;
+    -fx-border-radius: 12;
+}
+
+.admin-rdv-list-top {
+    -fx-padding: 10 14;
+}
+
+.admin-rdv-count {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #354052;
+}
+
+.admin-rdv-header-row {
+    -fx-padding: 9 14;
+    -fx-background-color: #f4f6fa;
+    -fx-border-color: #e7ebf1;
+    -fx-border-width: 1 0 1 0;
+}
+
+.admin-rdv-header-cell {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #616979;
+}
+
+.admin-rdv-row {
+    -fx-padding: 9 14;
+    -fx-border-color: #edf0f5;
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: center-left;
+}
+
+.admin-rdv-cell {
+    -fx-font-size: 12px;
+    -fx-text-fill: #1f2735;
+    -fx-wrap-text: true;
+}
+
+.col-dispo { -fx-min-width: 220; -fx-pref-width: 220; -fx-max-width: 220; }
+.col-medecin { -fx-min-width: 170; -fx-pref-width: 170; -fx-max-width: 170; }
+.col-patient { -fx-min-width: 140; -fx-pref-width: 140; -fx-max-width: 140; }
+.col-datetime { -fx-min-width: 150; -fx-pref-width: 150; -fx-max-width: 150; }
+.col-status { -fx-min-width: 110; -fx-pref-width: 110; -fx-max-width: 110; }
+.col-actions { -fx-min-width: 170; -fx-pref-width: 170; -fx-max-width: 170; }
+
+.status-badge {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-padding: 2 8;
+    -fx-background-radius: 20;
+}
+
+.status-waiting {
+    -fx-background-color: #fff6cc;
+    -fx-text-fill: #8a6a00;
+}
+
+.status-confirmed {
+    -fx-background-color: #d8f4dc;
+    -fx-text-fill: #1a7d35;
+}
+
+.status-cancelled {
+    -fx-background-color: #ffe0e0;
+    -fx-text-fill: #9f1d1d;
+}
+
+.status-done {
+    -fx-background-color: #dbe6ff;
+    -fx-text-fill: #2852b4;
+}
+
+.status-default {
+    -fx-background-color: #ebedf2;
+    -fx-text-fill: #5f6878;
+}
+
+.admin-rdv-actions {
+    -fx-spacing: 6;
+    -fx-alignment: center-left;
+}
+
+.admin-rdv-action-btn {
+    -fx-background-color: #eef2f8;
+    -fx-border-color: #d7dce5;
+    -fx-border-radius: 7;
+    -fx-background-radius: 7;
+    -fx-font-size: 11px;
+    -fx-cursor: hand;
+}
+
+.admin-rdv-empty {
+    -fx-padding: 20;
+    -fx-font-size: 12px;
+    -fx-text-fill: #707988;
+}

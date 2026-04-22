@@ -1,0 +1,500 @@
+/* MediLink Care — thème sombre (inspiré landing dark / glass) */
+
+/* Fond animé (canvas #050a14) — racine transparente pour éviter le double fond */
+.root-care {
+    -fx-background-color: transparent;
+}
+
+.border-content-care {
+    -fx-background-color: transparent;
+}
+
+.panel-header {
+    -fx-background-color: rgba(15, 23, 42, 0.72);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(148, 163, 184, 0.22);
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 24, 0, 0, 4);
+}
+
+.brand-title {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f8fafc;
+}
+
+.brand-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #93c5fd;
+    -fx-opacity: 0.95;
+}
+
+/* Bloc urgence accueil — toujours visible sous le logo */
+.panel-urgence-care {
+    -fx-background-color: rgba(124, 45, 18, 0.28);
+    -fx-border-color: rgba(251, 191, 36, 0.45);
+    -fx-border-width: 1.5;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 4 8 4 8;
+}
+
+.urgence-titre {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #fed7aa;
+}
+
+.btn-care-urgence {
+    -fx-background-color: #ea580c;
+    -fx-text-fill: white;
+    -fx-background-radius: 999;
+    -fx-padding: 10 22;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-care-urgence:hover {
+    -fx-background-color: #c2410c;
+}
+
+/* Barre urgence pleine largeur en bas de l’accueil (lisible, thème sombre) */
+.footer-urgence-panel {
+    -fx-background-color: rgba(24, 12, 8, 0.96);
+    -fx-border-color: rgba(251, 146, 60, 0.65);
+    -fx-border-width: 2 0 0 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 12, 0, 0, -2);
+}
+
+.footer-urgence-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #fdba74;
+}
+
+.footer-urgence-field {
+    -fx-min-width: 220px;
+}
+
+.footer-urgence-panel .text-area .content {
+    -fx-background-color: rgba(15, 23, 42, 0.98);
+}
+
+.footer-urgence-panel .text-area {
+    -fx-control-inner-background: rgba(15, 23, 42, 0.98);
+}
+
+.label-muted {
+    -fx-text-fill: #cbd5e1;
+}
+
+.label-dim {
+    -fx-text-fill: #94a3b8;
+}
+
+.badge-filtres {
+    -fx-text-fill: #38bdf8;
+    -fx-font-weight: bold;
+}
+
+.field-care {
+    -fx-background-color: rgba(30, 41, 59, 0.85);
+    -fx-border-color: rgba(148, 163, 184, 0.35);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-text-fill: #f1f5f9;
+    -fx-prompt-text-fill: #64748b;
+    -fx-padding: 8 12;
+}
+
+.field-care:focused {
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 1.5;
+}
+
+.form-title-care {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f8fafc;
+}
+
+.text-area.field-care .content {
+    -fx-background-color: rgba(30, 41, 59, 0.92);
+}
+
+.date-picker-care {
+    -fx-background-color: transparent;
+}
+
+.date-picker-care .text-field {
+    -fx-background-color: rgba(30, 41, 59, 0.85);
+    -fx-border-color: rgba(148, 163, 184, 0.35);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-text-fill: #f1f5f9;
+    -fx-padding: 8 12;
+}
+
+.date-picker-care .text-field:focused {
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 1.5;
+}
+
+/* Boutons */
+.btn-care-primary {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+    -fx-background-radius: 999;
+    -fx-padding: 10 20;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-care-primary:hover {
+    -fx-background-color: #1d4ed8;
+}
+
+.btn-care-secondary {
+    -fx-background-color: rgba(51, 65, 85, 0.9);
+    -fx-text-fill: #e2e8f0;
+    -fx-background-radius: 999;
+    -fx-padding: 10 18;
+    -fx-font-weight: bold;
+    -fx-border-color: rgba(148, 163, 184, 0.35);
+    -fx-border-radius: 999;
+    -fx-cursor: hand;
+}
+
+.btn-care-secondary:hover {
+    -fx-background-color: rgba(71, 85, 105, 0.95);
+}
+
+.btn-care-secondary:disabled {
+    -fx-opacity: 0.45;
+    -fx-text-fill: #94a3b8;
+}
+
+.scroll-care {
+    -fx-background-color: transparent;
+}
+
+.scroll-care > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* TitledPane */
+.titled-pane-care {
+    -fx-text-fill: #e2e8f0;
+}
+
+.titled-pane-care > .title {
+    -fx-background-color: rgba(37, 99, 235, 0.22);
+    -fx-border-color: rgba(96, 165, 250, 0.28);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.titled-pane-care > .title .text {
+    -fx-fill: #e2e8f0;
+}
+
+.titled-pane-care .content {
+    -fx-background-color: rgba(15, 23, 42, 0.55);
+    -fx-border-color: rgba(148, 163, 184, 0.12);
+}
+
+/* ComboBox (liste déroulante) — bouton fermé */
+.combo-box-base {
+    -fx-background-color: rgba(30, 41, 59, 0.92);
+    -fx-border-color: rgba(148, 163, 184, 0.35);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.combo-box-base > .list-cell {
+    -fx-text-fill: #f1f5f9;
+}
+
+/*
+ * Popup du ComboBox : ne pas utiliser "> .list-view" (le ListView n’est pas toujours
+ * enfant direct → fond Modena blanc + texte clair = illisible).
+ */
+.combo-box-popup .list-view {
+    -fx-background-color: #1e293b;
+}
+
+.combo-box-popup .virtual-flow .clipped-container .sheet .list-cell,
+.combo-box-popup .list-cell {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #f1f5f9;
+}
+
+.combo-box-popup .list-cell .text {
+    -fx-fill: #f1f5f9;
+}
+
+.combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: #334155;
+    -fx-text-fill: #ffffff;
+}
+
+.combo-box-popup .list-cell:filled:hover .text {
+    -fx-fill: #ffffff;
+}
+
+.combo-box-popup .list-cell:filled:selected,
+.combo-box-popup .list-cell:filled:selected:hover {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: #ffffff;
+}
+
+.combo-box-popup .list-cell:filled:selected .text,
+.combo-box-popup .list-cell:filled:selected:hover .text {
+    -fx-fill: #ffffff;
+}
+
+/* Même popup pour toute ComboBox (même sans styleClass combo-box-base sur l’écran) */
+.combo-box-popup .scroll-bar:vertical,
+.combo-box-popup .scroll-bar:horizontal {
+    -fx-background-color: #0f172a;
+}
+
+.combo-box-popup .scroll-bar .thumb {
+    -fx-background-color: #475569;
+}
+
+/* Alert / DialogPane — appeler MediLinkDialogs.style(alert) avant show */
+.dialog-care {
+    -fx-background-color: rgba(15, 23, 42, 0.98);
+    -fx-border-color: rgba(148, 163, 184, 0.45);
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.dialog-care .label {
+    -fx-text-fill: #e2e8f0;
+}
+
+.dialog-care .header-panel .label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f8fafc;
+}
+
+.dialog-care .button-bar .button {
+    -fx-background-radius: 8;
+    -fx-padding: 8 18;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-background-color: rgba(51, 65, 85, 0.95);
+    -fx-text-fill: #e2e8f0;
+    -fx-border-color: rgba(148, 163, 184, 0.4);
+    -fx-border-radius: 8;
+}
+
+.dialog-care .button:default {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+}
+
+.dialog-care .text-area {
+    -fx-control-inner-background: rgba(30, 41, 59, 0.95);
+    -fx-text-fill: #e2e8f0;
+    -fx-border-color: rgba(148, 163, 184, 0.35);
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.dialog-care .text-area .content {
+    -fx-background-color: rgba(30, 41, 59, 0.95);
+}
+
+/* Page fenêtre « Demande d'urgence » (deux cartes, style proche profil / dashboard sombre) */
+.demande-urgence-root {
+    -fx-background-color: #060d18;
+}
+
+.dem-urg-header {
+    -fx-background-color: rgba(11, 20, 38, 0.98);
+    -fx-border-color: rgba(148, 163, 184, 0.22);
+    -fx-border-width: 0 0 1 0;
+}
+
+.dem-urg-page-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f8fafc;
+}
+
+.btn-dem-urg-back {
+    -fx-background-color: rgba(30, 41, 59, 0.6);
+    -fx-text-fill: #93c5fd;
+    -fx-border-color: rgba(148, 163, 184, 0.35);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 8 16;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-dem-urg-back:hover {
+    -fx-background-color: rgba(51, 65, 85, 0.85);
+    -fx-text-fill: #e0f2fe;
+}
+
+/* Évite le fond gris / blanc par défaut du ScrollPane (Modena) */
+.dem-urg-scroll {
+    -fx-background-color: #060d18;
+    -fx-background: #060d18;
+}
+
+.dem-urg-scroll > .viewport {
+    -fx-background-color: #060d18;
+}
+
+.dem-urg-scroll > .corner {
+    -fx-background-color: #060d18;
+}
+
+.dem-urg-scroll .scroll-bar:vertical,
+.dem-urg-scroll .scroll-bar:horizontal {
+    -fx-background-color: #0f172a;
+}
+
+.dem-urg-scroll .scroll-bar .thumb {
+    -fx-background-color: #475569;
+}
+
+.dem-urg-body {
+    -fx-background-color: #060d18;
+}
+
+.dem-urg-card-side {
+    -fx-background-color: rgba(15, 23, 42, 0.92);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(148, 163, 184, 0.28);
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 20, 0, 0, 4);
+}
+
+.dem-urg-card-main {
+    -fx-background-color: rgba(15, 23, 42, 0.92);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(148, 163, 184, 0.28);
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 20, 0, 0, 4);
+}
+
+.dem-urg-side-icon {
+    -fx-min-width: 52px;
+    -fx-min-height: 52px;
+    -fx-max-width: 52px;
+    -fx-max-height: 52px;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0f172a;
+    -fx-background-color: linear-gradient(to bottom right, #fb923c, #ea580c);
+    -fx-background-radius: 26;
+}
+
+.dem-urg-side-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f8fafc;
+}
+
+.dem-urg-badge {
+    -fx-background-color: rgba(51, 65, 85, 0.9);
+    -fx-text-fill: #cbd5e1;
+    -fx-padding: 4 10;
+    -fx-background-radius: 999;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.dem-urg-badge-ok {
+    -fx-background-color: rgba(22, 101, 52, 0.45);
+    -fx-text-fill: #86efac;
+    -fx-border-color: rgba(74, 222, 128, 0.5);
+    -fx-border-radius: 999;
+}
+
+.dem-urg-sep {
+    -fx-background-color: rgba(148, 163, 184, 0.25);
+}
+
+.dem-urg-sep .line {
+    -fx-border-color: transparent;
+    -fx-background-color: rgba(148, 163, 184, 0.35);
+}
+
+.dem-urg-section-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #93c5fd;
+}
+
+.dem-urg-form-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f8fafc;
+}
+
+.dem-urg-textarea {
+    -fx-min-height: 200px;
+    -fx-background-color: #0f172a;
+    -fx-control-inner-background: #0f172a;
+    -fx-text-fill: #e2e8f0;
+    -fx-prompt-text-fill: #64748b;
+    -fx-border-color: rgba(148, 163, 184, 0.45);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 4;
+}
+
+.dem-urg-textarea .content {
+    -fx-background-color: #0f172a;
+}
+
+.dem-urg-textarea .scroll-pane {
+    -fx-background-color: #0f172a;
+}
+
+.dem-urg-textarea .scroll-pane .viewport {
+    -fx-background-color: #0f172a;
+}
+
+.dem-urg-textarea .scroll-pane .corner {
+    -fx-background-color: #0f172a;
+}
+
+.dem-urg-textarea .scroll-bar:vertical,
+.dem-urg-textarea .scroll-bar:horizontal {
+    -fx-background-color: #0f172a;
+}
+
+.dem-urg-textarea .scroll-bar .thumb {
+    -fx-background-color: #475569;
+}
+
+/* Spécificité > .scroll-care transparent pour la fenêtre urgence uniquement */
+.demande-urgence-root .dem-urg-scroll {
+    -fx-background-color: #060d18;
+    -fx-background: #060d18;
+}
+
+.demande-urgence-root .dem-urg-scroll > .viewport {
+    -fx-background-color: #060d18;
+}
+
+.demande-urgence-root .dem-urg-scroll > .corner {
+    -fx-background-color: #060d18;
+}
