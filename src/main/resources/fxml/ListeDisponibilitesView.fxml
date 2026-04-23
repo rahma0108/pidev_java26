@@ -98,7 +98,7 @@
                                                 <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                                                     <children>
                                                         <Label text="Mes rendez-vous" styleClass="section-title"/>
-                                                        <Label text="Recherchez, triez et gerer vos rendez-vous sans TableView." styleClass="section-subtitle"/>
+                                                        <Label text="Recherchez, triez et gerer vos rendez-vous dans une liste fluide." styleClass="section-subtitle"/>
                                                     </children>
                                                 </VBox>
                                                 <Label fx:id="rendezVousCountLabel"

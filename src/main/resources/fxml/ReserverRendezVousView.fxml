@@ -2,10 +2,12 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -103,6 +105,12 @@
                                                            promptText="Motif du rendez-vous (optionnel)"
                                                            HBox.hgrow="ALWAYS"
                                                            styleClass="search-field"/>
+                                                <ComboBox fx:id="comboPreferenceHoraire"
+                                                          promptText="Preference horaire"
+                                                          prefWidth="160.0"/>
+                                                <ComboBox fx:id="comboUrgence"
+                                                          promptText="Urgence"
+                                                          prefWidth="140.0"/>
                                                 <Button fx:id="btnTrouverIA"
                                                         text="✨ Trouver avec l'IA"
                                                         onAction="#handleTrouverAvecIA"
@@ -112,20 +120,18 @@
 
                                         <Label fx:id="labelResultatIA" text="" wrapText="true"/>
 
-                                        <VBox spacing="0.0" styleClass="rdv-list-shell, patient-dispo-shell">
+                                        <VBox spacing="12.0" styleClass="patient-card-list-shell">
                                             <children>
-                                                <HBox spacing="14.0" styleClass="rdv-list-header, patient-dispo-list-header">
-                                                    <children>
-                                                        <Label text="Medecin" styleClass="rdv-header-cell, patient-dispo-col-medecin"/>
-                                                        <Label text="Date" styleClass="rdv-header-cell, patient-dispo-col-date"/>
-                                                        <Label text="Heure" styleClass="rdv-header-cell, patient-dispo-col-time"/>
-                                                        <Label text="Statut" styleClass="rdv-header-cell, patient-dispo-col-status"/>
-                                                        <Label text="Action" styleClass="rdv-header-cell, patient-dispo-col-action"/>
-                                                    </children>
-                                                </HBox>
-                                                <ScrollPane fitToWidth="true" prefViewportHeight="280.0" styleClass="rdv-list-scroll, patient-dispo-scroll">
+                                                <Label text="Les disponibilites sont presentees en cartes, avec des actions adaptees au contexte."
+                                                       wrapText="true"
+                                                       styleClass="section-subtitle"/>
+                                                <ScrollPane fitToWidth="true" prefViewportHeight="380.0" styleClass="rdv-list-scroll, patient-dispo-scroll">
                                                     <content>
-                                                        <VBox fx:id="creneauxListContainer" styleClass="rdv-list-body, patient-dispo-list-body"/>
+                                                        <FlowPane fx:id="creneauxListContainer"
+                                                                  hgap="18.0"
+                                                                  vgap="18.0"
+                                                                  prefWrapLength="980.0"
+                                                                  styleClass="patient-card-list-body"/>
                                                     </content>
                                                 </ScrollPane>
                                                 <VBox fx:id="disponibilitesEmptyBox"
@@ -161,19 +167,18 @@
                                             </children>
                                         </HBox>
 
-                                        <VBox spacing="0.0" styleClass="rdv-list-shell, patient-rdv-list-shell">
+                                        <VBox spacing="12.0" styleClass="patient-card-list-shell, patient-rdv-list-shell">
                                             <children>
-                                                <HBox spacing="14.0" styleClass="rdv-list-header, patient-rdv-list-header">
-                                                    <children>
-                                                        <Label text="Medecin" styleClass="rdv-header-cell, patient-col-medecin"/>
-                                                        <Label text="Date et heure" styleClass="rdv-header-cell, patient-col-date"/>
-                                                        <Label text="Statut" styleClass="rdv-header-cell, patient-col-status"/>
-                                                        <Label text="Calendrier" styleClass="rdv-header-cell, patient-col-calendar"/>
-                                                    </children>
-                                                </HBox>
-                                                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefViewportHeight="280.0" styleClass="rdv-list-scroll">
+                                                <Label text="Chaque rendez-vous est resume dans une carte avec ses actions utiles."
+                                                       wrapText="true"
+                                                       styleClass="section-subtitle"/>
+                                                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefViewportHeight="320.0" styleClass="rdv-list-scroll">
                                                     <content>
-                                                        <VBox fx:id="mesRendezVousListContainer" styleClass="rdv-list-body"/>
+                                                        <FlowPane fx:id="mesRendezVousListContainer"
+                                                                  hgap="18.0"
+                                                                  vgap="18.0"
+                                                                  prefWrapLength="980.0"
+                                                                  styleClass="patient-card-list-body"/>
                                                     </content>
                                                 </ScrollPane>
                                             </children>

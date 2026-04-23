@@ -3,14 +3,20 @@ package view;
 import controllers.RendezVousController;
 import exceptions.ServiceException;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.Tooltip;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import models.Disponibilite;
 import models.RendezVous;
 
@@ -31,20 +37,13 @@ public class AdminRendezVousViewController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
-    @FXML
-    private TextField searchField;
-    @FXML
-    private ComboBox<String> statusFilterComboBox;
-    @FXML
-    private Button sortDateCroissantButton;
-    @FXML
-    private Button sortDateDecroissantButton;
-    @FXML
-    private Button resetButton;
-    @FXML
-    private Label countLabel;
-    @FXML
-    private VBox rowsContainer;
+    @FXML private TextField searchField;
+    @FXML private ComboBox<String> statusFilterComboBox;
+    @FXML private Button sortDateCroissantButton;
+    @FXML private Button sortDateDecroissantButton;
+    @FXML private Button resetButton;
+    @FXML private Label countLabel;
+    @FXML private FlowPane rowsContainer;
 
     private RendezVousController rendezVousController;
     private final List<RendezVous> source = new ArrayList<>();
@@ -127,7 +126,7 @@ public class AdminRendezVousViewController {
                 .sorted(comparator)
                 .toList();
 
-        renderRows(filtered);
+        renderCards(filtered);
     }
 
     private boolean matchesSearch(RendezVous rdv, String query) {
@@ -158,7 +157,7 @@ public class AdminRendezVousViewController {
         applyFilters();
     }
 
-    private void renderRows(List<RendezVous> rendezVousList) {
+    private void renderCards(List<RendezVous> rendezVousList) {
         rowsContainer.getChildren().clear();
         if (countLabel != null) {
             int count = rendezVousList == null ? 0 : rendezVousList.size();
@@ -173,59 +172,87 @@ public class AdminRendezVousViewController {
         }
 
         for (RendezVous rdv : rendezVousList) {
-            rowsContainer.getChildren().add(createRow(rdv));
+            rowsContainer.getChildren().add(createCard(rdv));
         }
     }
 
-    private HBox createRow(RendezVous rdv) {
-        HBox row = new HBox(12);
-        row.getStyleClass().add("admin-rdv-row");
+    private VBox createCard(RendezVous rdv) {
+        VBox card = new VBox(12);
+        card.setPrefWidth(320);
+        card.setMaxWidth(320);
+        card.getStyleClass().add("admin-rdv-card");
+        card.setPadding(new Insets(16));
 
-        Label dispoCell = createCell(resolveDisponibilite(rdv), "col-dispo");
-        Label medecinCell = createCell(resolveMedecin(rdv), "col-medecin");
-        Label patientCell = createCell(resolvePatient(rdv), "col-patient");
-        Label dateCell = createCell(formatDateTime(rdv != null ? rdv.getDateHeure() : null), "col-datetime");
+        HBox header = new HBox(12);
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label avatar = buildAvatar(resolveInitials(resolvePatient(rdv)), avatarBackgroundFor(rdv), "#27466f");
 
-        Label statusBadge = new Label(formatStatus(rdv != null ? rdv.getStatut() : null));
-        statusBadge.getStyleClass().addAll("status-badge", statusClass(rdv != null ? rdv.getStatut() : null));
-        HBox statusBox = new HBox(statusBadge);
-        statusBox.getStyleClass().add("col-status");
+        VBox nameBox = new VBox(2);
+        Label patient = new Label(resolvePatient(rdv));
+        patient.getStyleClass().add("admin-rdv-card-title");
+        Label medecin = new Label(resolveMedecin(rdv));
+        medecin.getStyleClass().add("admin-rdv-card-subtitle");
+        nameBox.getChildren().addAll(patient, medecin);
+        header.getChildren().addAll(avatar, nameBox);
 
-        HBox actions = new HBox(6);
-        actions.getStyleClass().addAll("admin-rdv-actions", "col-actions");
+        javafx.scene.control.Separator separator = new javafx.scene.control.Separator();
 
-        Button calBtn = createActionButton("📅", "Calendrier");
-        calBtn.setOnAction(e -> ViewAlertUtil.info(
-                "Calendrier",
-                "Rendez-vous le " + formatDateTime(rdv != null ? rdv.getDateHeure() : null)
-        ));
+        HBox badges = new HBox(8);
+        badges.setAlignment(Pos.CENTER_LEFT);
+        badges.getChildren().addAll(
+                buildBadge(resolveRoleBadge(rdv), "badge-role"),
+                buildBadge(formatStatus(rdv != null ? rdv.getStatut() : null).toUpperCase(Locale.ROOT), badgeClassForStatus(rdv != null ? rdv.getStatut() : null))
+        );
 
-        Button viewBtn = createActionButton("👁", "Voir détail");
-        viewBtn.setOnAction(e -> ViewAlertUtil.info("Détail", buildDetails(rdv)));
+        VBox details = new VBox(6);
+        details.getChildren().addAll(
+                buildInfo(resolveDisponibilite(rdv)),
+                buildInfo(formatDateTime(rdv != null ? rdv.getDateHeure() : null)),
+                buildInfo("Motif : " + safe(rdv != null ? rdv.getMotif() : null))
+        );
 
-        Button editBtn = createActionButton("✎", "Modifier");
+        HBox buttons = new HBox(8);
+        buttons.setAlignment(Pos.CENTER_LEFT);
+
+        Button infoBtn = buildActionButton("Voir", "admin-rdv-btn-purple");
+        infoBtn.setOnAction(e -> showDetailsPopup(rdv));
+
+        Button editBtn = buildActionButton("Modifier", "admin-rdv-btn-blue");
         editBtn.setOnAction(e -> editRendezVous(rdv));
 
-        Button deleteBtn = createActionButton("🗑", "Supprimer");
+        Button deleteBtn = buildActionButton("Annuler", "admin-rdv-btn-red");
         deleteBtn.setDisable(rdv == null || RendezVous.TERMINE.equals(rdv.getStatut()));
         deleteBtn.setOnAction(e -> deleteRendezVous(rdv));
 
-        actions.getChildren().addAll(calBtn, viewBtn, editBtn, deleteBtn);
-        row.getChildren().addAll(dispoCell, medecinCell, patientCell, dateCell, statusBox, actions);
-        return row;
+        buttons.getChildren().addAll(infoBtn, editBtn, deleteBtn);
+        card.getChildren().addAll(header, separator, badges, details, buttons);
+        return card;
     }
 
-    private Label createCell(String text, String colClass) {
-        Label label = new Label(text);
-        label.getStyleClass().addAll("admin-rdv-cell", colClass);
-        return label;
-    }
-
-    private Button createActionButton(String text, String tooltipText) {
+    private Button buildActionButton(String text, String styleClass) {
         Button button = new Button(text);
-        button.getStyleClass().add("admin-rdv-action-btn");
-        button.setTooltip(new Tooltip(tooltipText));
+        button.getStyleClass().addAll("admin-rdv-card-btn", styleClass);
         return button;
+    }
+
+    private Label buildAvatar(String initials, String background, String textColor) {
+        Label avatar = new Label(initials);
+        avatar.getStyleClass().add("admin-rdv-avatar");
+        avatar.setStyle("-fx-background-color: " + background + "; -fx-text-fill: " + textColor + ";");
+        return avatar;
+    }
+
+    private Label buildBadge(String text, String styleClass) {
+        Label badge = new Label(text);
+        badge.getStyleClass().addAll("admin-rdv-badge", styleClass);
+        return badge;
+    }
+
+    private Label buildInfo(String text) {
+        Label info = new Label(text);
+        info.getStyleClass().add("admin-rdv-card-info");
+        info.setWrapText(true);
+        return info;
     }
 
     private void deleteRendezVous(RendezVous rdv) {
@@ -277,7 +304,7 @@ public class AdminRendezVousViewController {
             return "Disponibilité #" + dispo.getId();
         }
         return dispo.getDate().format(DATE_FORMATTER)
-                + " - " + dispo.getHeureDebut().format(TIME_FORMATTER)
+                + " • " + dispo.getHeureDebut().format(TIME_FORMATTER)
                 + " à " + dispo.getHeureFin().format(TIME_FORMATTER);
     }
 
@@ -312,19 +339,6 @@ public class AdminRendezVousViewController {
         };
     }
 
-    private String statusClass(String status) {
-        if (status == null) {
-            return "status-default";
-        }
-        return switch (status.toUpperCase(Locale.ROOT)) {
-            case RendezVous.EN_ATTENTE -> "status-waiting";
-            case RendezVous.CONFIRME -> "status-confirmed";
-            case RendezVous.ANNULE -> "status-cancelled";
-            case RendezVous.TERMINE -> "status-done";
-            default -> "status-default";
-        };
-    }
-
     private String buildDetails(RendezVous rdv) {
         if (rdv == null) {
             return "Rendez-vous introuvable.";
@@ -335,6 +349,74 @@ public class AdminRendezVousViewController {
                 + "Date et heure: " + formatDateTime(rdv.getDateHeure()) + "\n"
                 + "Statut: " + formatStatus(rdv.getStatut()) + "\n"
                 + "Motif: " + safe(rdv.getMotif());
+    }
+
+    private void showDetailsPopup(RendezVous rdv) {
+        if (rdv == null) {
+            return;
+        }
+
+        VBox root = new VBox(16);
+        root.setPadding(new Insets(22));
+        root.setStyle("-fx-background-color: white; -fx-background-radius: 16; "
+                + "-fx-border-color: #dde5f0; -fx-border-radius: 16;");
+
+        HBox header = new HBox(14);
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label avatar = buildAvatar(resolveInitials(resolvePatient(rdv)), avatarBackgroundFor(rdv), "#27466f");
+
+        VBox headerText = new VBox(3);
+        Label title = new Label(resolvePatient(rdv));
+        title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;");
+        Label subtitle = new Label(resolveMedecin(rdv));
+        subtitle.setStyle("-fx-font-size: 12px; -fx-text-fill: #7b8aa0;");
+        headerText.getChildren().addAll(title, subtitle);
+        header.getChildren().addAll(avatar, headerText);
+
+        javafx.scene.control.Separator separator = new javafx.scene.control.Separator();
+
+        HBox badges = new HBox(8);
+        badges.setAlignment(Pos.CENTER_LEFT);
+        badges.getChildren().addAll(
+                buildBadge(resolveRoleBadge(rdv), "badge-role"),
+                buildBadge(formatStatus(rdv.getStatut()).toUpperCase(Locale.ROOT), badgeClassForStatus(rdv.getStatut()))
+        );
+
+        VBox details = new VBox(8);
+        details.getChildren().addAll(
+                buildPopupLine("Disponibilité", resolveDisponibilite(rdv)),
+                buildPopupLine("Date et heure", formatDateTime(rdv.getDateHeure())),
+                buildPopupLine("Statut", formatStatus(rdv.getStatut())),
+                buildPopupLine("Motif", safe(rdv.getMotif()))
+        );
+
+        HBox footer = new HBox();
+        footer.setAlignment(Pos.CENTER_RIGHT);
+        Button closeBtn = new Button("Fermer");
+        closeBtn.getStyleClass().addAll("admin-rdv-card-btn", "admin-rdv-btn-blue");
+        footer.getChildren().add(closeBtn);
+
+        root.getChildren().addAll(header, separator, badges, details, footer);
+
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.setTitle("Détail du rendez-vous");
+        popup.setScene(new Scene(root, 430, 320));
+        popup.setResizable(false);
+
+        closeBtn.setOnAction(e -> popup.close());
+        popup.show();
+    }
+
+    private HBox buildPopupLine(String labelText, String valueText) {
+        Label label = new Label(labelText + " :");
+        label.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #42526b;");
+        Label value = new Label(valueText == null || valueText.isBlank() ? "-" : valueText);
+        value.setStyle("-fx-font-size: 13px; -fx-text-fill: #1f2735;");
+        value.setWrapText(true);
+        HBox line = new HBox(8, label, value);
+        line.setAlignment(Pos.TOP_LEFT);
+        return line;
     }
 
     private String safe(String value) {
@@ -351,4 +433,41 @@ public class AdminRendezVousViewController {
         return mapping;
     }
 
+    private String resolveInitials(String text) {
+        if (text == null || text.isBlank()) {
+            return "?";
+        }
+        String[] parts = text.trim().split("\\s+");
+        if (parts.length == 1) {
+            return parts[0].substring(0, 1).toUpperCase(Locale.ROOT);
+        }
+        return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase(Locale.ROOT);
+    }
+
+    private String avatarBackgroundFor(RendezVous rdv) {
+        String[] colors = {"#E6F1FB", "#E1F5EE", "#F1EFE8", "#FBEAF0", "#FAEEDA"};
+        String seed = resolvePatient(rdv);
+        return colors[Math.abs(seed.hashCode()) % colors.length];
+    }
+
+    private String resolveRoleBadge(RendezVous rdv) {
+        String medecin = resolveMedecin(rdv).toUpperCase(Locale.ROOT);
+        if (!"-".equals(medecin)) {
+            return "MEDECIN";
+        }
+        return "USER";
+    }
+
+    private String badgeClassForStatus(String status) {
+        if (status == null) {
+            return "badge-default";
+        }
+        return switch (status.toUpperCase(Locale.ROOT)) {
+            case RendezVous.EN_ATTENTE -> "badge-waiting";
+            case RendezVous.CONFIRME -> "badge-confirmed";
+            case RendezVous.ANNULE -> "badge-cancelled";
+            case RendezVous.TERMINE -> "badge-done";
+            default -> "badge-default";
+        };
+    }
 }

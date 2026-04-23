@@ -6,14 +6,21 @@ import exceptions.ServiceException;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.AIRecommendation;
 import models.Disponibilite;
@@ -39,28 +46,38 @@ public class ReserverRendezVousViewController {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
-    @FXML
-    private TextField motifTextField;
-    @FXML
-    private VBox creneauxListContainer;
-    @FXML
-    private VBox disponibilitesEmptyBox;
-    @FXML
-    private Button retourButton;
-    @FXML
-    private Button mesRendezVousButton;
-    @FXML
-    private Button btnTrouverIA;
-    @FXML
-    private VBox mesRendezVousListContainer;
-    @FXML
-    private Label disponibilitesCountLabel;
-    @FXML
-    private Label mesRendezVousCountLabel;
-    @FXML
-    private Label recommandationLabel;
-    @FXML
-    private Label labelResultatIA;
+    private static final String CARD_BASE_STYLE =
+            "-fx-background-color: white; -fx-background-radius: 16; -fx-border-radius: 16; "
+                    + "-fx-border-color: #e0e0e0; -fx-border-width: 0.5; -fx-padding: 16;";
+    private static final String CARD_SELECTED_STYLE =
+            "-fx-background-color: #f7faff; -fx-background-radius: 16; -fx-border-radius: 16; "
+                    + "-fx-border-color: #2d6ecf; -fx-border-width: 1.5; -fx-padding: 16;";
+    private static final String META_CHIP_STYLE =
+            "-fx-background-color: #eef4ff; -fx-text-fill: #0c447c; -fx-background-radius: 10; "
+                    + "-fx-padding: 4 10; -fx-font-size: 11px; -fx-font-weight: 700;";
+    private static final String ICON_BUTTON_PRIMARY_STYLE =
+            "-fx-background-color: #185FA5; -fx-text-fill: white; -fx-background-radius: 8; "
+                    + "-fx-padding: 8 14; -fx-font-size: 12px; -fx-cursor: hand; -fx-border-color: transparent;";
+    private static final String ICON_BUTTON_SECONDARY_STYLE =
+            "-fx-background-color: #534AB7; -fx-text-fill: white; -fx-background-radius: 8; "
+                    + "-fx-padding: 8 14; -fx-font-size: 12px; -fx-cursor: hand; -fx-border-color: transparent;";
+    private static final String ICON_BUTTON_DANGER_STYLE =
+            "-fx-background-color: #d54836; -fx-text-fill: white; -fx-background-radius: 8; "
+                    + "-fx-padding: 8 14; -fx-font-size: 12px; -fx-cursor: hand; -fx-border-color: transparent;";
+
+    @FXML private TextField motifTextField;
+    @FXML private FlowPane creneauxListContainer;
+    @FXML private VBox disponibilitesEmptyBox;
+    @FXML private Button retourButton;
+    @FXML private Button mesRendezVousButton;
+    @FXML private Button btnTrouverIA;
+    @FXML private FlowPane mesRendezVousListContainer;
+    @FXML private Label disponibilitesCountLabel;
+    @FXML private Label mesRendezVousCountLabel;
+    @FXML private Label recommandationLabel;
+    @FXML private Label labelResultatIA;
+    @FXML private ComboBox<String> comboPreferenceHoraire;
+    @FXML private ComboBox<String> comboUrgence;
 
     private DisponibiliteController disponibiliteController;
     private RendezVousController rendezVousController;
@@ -98,6 +115,14 @@ public class ReserverRendezVousViewController {
         }
         if (mesRendezVousButton != null) {
             mesRendezVousButton.setOnAction(e -> ouvrirPreferences());
+        }
+        if (comboPreferenceHoraire != null) {
+            comboPreferenceHoraire.getItems().addAll("matin", "apres-midi");
+            comboPreferenceHoraire.setValue(resolvePatientPreferenceHoraire());
+        }
+        if (comboUrgence != null) {
+            comboUrgence.getItems().addAll("normale", "moderee", "haute");
+            comboUrgence.setValue("normale");
         }
 
         chargerCreneauxLibres();
@@ -153,15 +178,13 @@ public class ReserverRendezVousViewController {
 
     @FXML
     private void handleTrouverAvecIA() {
-
-        // 1. Recuperer les creneaux libres depuis ta base
         List<Disponibilite> creneaux;
         try {
             DisponibiliteService disponibiliteService = new DisponibiliteService();
             creneaux = disponibiliteService.listerReservables();
         } catch (ServiceException e) {
             if (labelResultatIA != null) {
-                labelResultatIA.setText("⚠ Impossible de charger les creneaux disponibles.");
+                labelResultatIA.setText("Impossible de charger les creneaux disponibles.");
             }
             ViewAlertUtil.erreur("Disponibilites", e.formatWithCauses());
             return;
@@ -172,15 +195,17 @@ public class ReserverRendezVousViewController {
             return;
         }
 
-        // 2. Desactiver le bouton pendant l'appel
         btnTrouverIA.setDisable(true);
         labelResultatIA.setText("L'IA analyse les creneaux...");
 
         final String prenomPatient = resolvePatientDisplayName();
-        final String preferenceHoraire = resolvePatientPreferenceHoraire();
-        final String urgenceDeclaree = "normale"; // TODO: remplacer par la vraie urgence quand elle sera capturee dans le parcours patient.
+        final String preferenceHoraire = comboPreferenceHoraire != null && comboPreferenceHoraire.getValue() != null
+                ? comboPreferenceHoraire.getValue()
+                : resolvePatientPreferenceHoraire();
+        final String urgenceDeclaree = comboUrgence != null && comboUrgence.getValue() != null
+                ? comboUrgence.getValue()
+                : "normale";
 
-        // 3. Appel en arriere-plan
         Task<AIRecommendation> task = new Task<>() {
             @Override
             protected AIRecommendation call() {
@@ -199,24 +224,28 @@ public class ReserverRendezVousViewController {
             btnTrouverIA.setDisable(false);
 
             if (result == null) {
-                labelResultatIA.setText("⚠ Une erreur inattendue s'est produite.");
+                labelResultatIA.setText("Une erreur inattendue s'est produite.");
                 return;
             }
 
             if (result.isEchec()) {
-                labelResultatIA.setText("⚠ " + result.getAlerte());
-            } else {
-                labelResultatIA.setText(
-                        "✔ Creneau recommande : " + result.getCreneauRecommandeId()
-                                + "\n" + result.getJustification()
-                                + "\nConfiance : " + (int) (result.getNiveauConfiance() * 100) + "%"
-                );
+                labelResultatIA.setText(result.getAlerte());
+                return;
             }
+
+            Disponibilite recommande = trouverCreneauParId(result.getCreneauRecommandeId());
+            if (recommande == null) {
+                labelResultatIA.setText("Creneau recommande introuvable. Reessaie.");
+                return;
+            }
+
+            labelResultatIA.setText("");
+            afficherPopupRecommandation(recommande, result);
         });
 
         task.setOnFailed(event -> {
             btnTrouverIA.setDisable(false);
-            labelResultatIA.setText("⚠ Une erreur inattendue s'est produite.");
+            labelResultatIA.setText("Une erreur inattendue s'est produite.");
         });
 
         Thread thread = new Thread(task);
@@ -233,42 +262,82 @@ public class ReserverRendezVousViewController {
             return;
         }
         for (Disponibilite d : disponibilites) {
-            creneauxListContainer.getChildren().add(createCreneauRow(d));
+            creneauxListContainer.getChildren().add(createCreneauCard(d));
         }
     }
 
-    private HBox createCreneauRow(Disponibilite disponibilite) {
-        HBox row = new HBox(14);
-        row.getStyleClass().addAll("rdv-row", "patient-dispo-row");
-        if (selectedDisponibilite != null && selectedDisponibilite.equals(disponibilite)) {
-            row.getStyleClass().add("selected");
-        }
+    private VBox createCreneauCard(Disponibilite disponibilite) {
+        VBox card = new VBox(12);
+        boolean isSelected = selectedDisponibilite != null && selectedDisponibilite.equals(disponibilite);
+        card.setStyle(isSelected ? CARD_SELECTED_STYLE : CARD_BASE_STYLE);
+        card.setPrefWidth(360);
+        card.setMaxWidth(360);
 
-        Label medecinLabel = createRowCell(resolveMedecinName(disponibilite), "rdv-cell-label", "patient-dispo-col-medecin");
-        Label dateLabel = createRowCell(formatDate(disponibilite), "rdv-cell-label", "patient-dispo-col-date");
-        Label heureLabel = createRowCell(formatTimeRange(disponibilite), "rdv-cell-label", "patient-dispo-col-time");
+        HBox header = new HBox(12);
+        header.setAlignment(Pos.CENTER_LEFT);
 
-        Label badge = new Label(isTresDemande(disponibilite) ? "Tres demande" : "Disponible");
-        badge.getStyleClass().addAll("status-badge", isTresDemande(disponibilite) ? "status-waiting" : "status-available");
-        HBox statusBox = new HBox(badge);
-        statusBox.getStyleClass().add("patient-dispo-col-status");
+        Label avatar = buildAvatar(resolveInitials(resolveMedecinName(disponibilite)), avatarBackgroundFor(disponibilite), "#27466f");
+        Label title = new Label(resolveMedecinName(disponibilite));
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;");
+        Label subtitle = new Label(formatDate(disponibilite) + " • " + formatTimeRange(disponibilite));
+        subtitle.setStyle("-fx-font-size: 12px; -fx-text-fill: #7b8aa0;");
+        VBox titleBox = new VBox(2, title, subtitle);
+        header.getChildren().addAll(avatar, titleBox);
+
+        javafx.scene.control.Separator separator = new javafx.scene.control.Separator();
+
+        HBox chips = new HBox(8);
+        chips.setAlignment(Pos.CENTER_LEFT);
+        chips.getChildren().addAll(
+                buildMetaChip("MEDECIN", resolveShortRoleLabel(disponibilite)),
+                buildStatusChip(isTresDemande(disponibilite) ? "TRES DEMANDE" : "DISPONIBLE"),
+                buildSelectionChip(isSelected ? "CHOISI" : "LIBRE")
+        );
+
+        VBox details = new VBox(6);
+        details.getChildren().addAll(
+                buildSimpleInfo("Patient", resolvePatientDisplayName()),
+                buildSimpleInfo("Preference", comboPreferenceHoraire != null && comboPreferenceHoraire.getValue() != null
+                        ? comboPreferenceHoraire.getValue()
+                        : resolvePatientPreferenceHoraire()),
+                buildSimpleInfo("Creneau", "#" + disponibilite.getId())
+        );
+
+        HBox actions = new HBox(8);
+        actions.setAlignment(Pos.CENTER_LEFT);
+
+        Button chooseButton = new Button("Choisir");
+        chooseButton.setStyle(ICON_BUTTON_SECONDARY_STYLE);
+        chooseButton.setOnAction(e -> ViewAlertUtil.info(
+                "Disponibilite",
+                "Medecin : " + resolveMedecinName(disponibilite) + "\n"
+                        + "Date : " + formatDate(disponibilite) + "\n"
+                        + "Heure : " + formatTimeRange(disponibilite) + "\n"
+                        + "Statut : " + (isTresDemande(disponibilite) ? "Tres demande" : "Disponible")
+        ));
+
+        Button editButton = new Button("Selectionner");
+        editButton.setStyle(ICON_BUTTON_PRIMARY_STYLE);
+        editButton.setOnAction(e -> {
+            selectedDisponibilite = disponibilite;
+            renderCreneauxCards(creneauxReservables);
+        });
 
         Button reserveButton = new Button("Reserver");
-        reserveButton.getStyleClass().addAll("primary-button", "rdv-action-button", "patient-dispo-inline-button");
+        reserveButton.setStyle(ICON_BUTTON_DANGER_STYLE);
         reserveButton.setOnAction(e -> {
             selectedDisponibilite = disponibilite;
             renderCreneauxCards(creneauxReservables);
             handleReserver();
         });
-        HBox actionBox = new HBox(reserveButton);
-        actionBox.getStyleClass().addAll("rdv-actions-box", "patient-dispo-col-action");
 
-        row.getChildren().addAll(medecinLabel, dateLabel, heureLabel, statusBox, actionBox);
-        row.setOnMouseClicked(e -> {
+        actions.getChildren().addAll(chooseButton, editButton, reserveButton);
+        card.getChildren().addAll(header, separator, chips, details, actions);
+        card.setOnMouseClicked(e -> {
             selectedDisponibilite = disponibilite;
             renderCreneauxCards(creneauxReservables);
         });
-        return row;
+        return card;
     }
 
     private void chargerMesRendezVous() {
@@ -284,14 +353,14 @@ public class ReserverRendezVousViewController {
             List<RendezVous> rdvs = rendezVousController.listerPourPatient(demoPatientId);
             if (mesRendezVousCountLabel != null) {
                 int count = rdvs.size();
-                mesRendezVousCountLabel.setText(count + (count > 1 ? " rendez-vous" : " rendez-vous"));
+                mesRendezVousCountLabel.setText(count + " rendez-vous");
             }
             if (rdvs.isEmpty()) {
                 renderMesRendezVousEmpty("Aucun rendez-vous trouve.");
                 return;
             }
             for (RendezVous rdv : rdvs) {
-                mesRendezVousListContainer.getChildren().add(createRendezVousRow(rdv));
+                mesRendezVousListContainer.getChildren().add(createRendezVousCard(rdv));
             }
         } catch (ServiceException e) {
             ViewAlertUtil.erreur("Rendez-vous", e.formatWithCauses());
@@ -304,35 +373,121 @@ public class ReserverRendezVousViewController {
         mesRendezVousListContainer.getChildren().add(empty);
     }
 
-    private HBox createRendezVousRow(RendezVous rdv) {
-        HBox row = new HBox(14);
-        row.getStyleClass().add("rdv-row");
+    private VBox createRendezVousCard(RendezVous rdv) {
+        VBox card = new VBox(12);
+        card.setStyle(CARD_BASE_STYLE);
+        card.setPrefWidth(360);
+        card.setMaxWidth(360);
 
-        Label medecinLabel = createRowCell(resolveMedecinName(rdv.getDisponibilite()), "rdv-cell-label", "patient-col-medecin");
-        Label dateHeureLabel = createRowCell(formatDateHeure(rdv.getDateHeure()), "rdv-cell-label", "patient-col-date");
+        HBox header = new HBox(12);
+        header.setAlignment(Pos.CENTER_LEFT);
 
-        Label statutBadge = new Label(formatStatut(rdv.getStatut()));
-        statutBadge.getStyleClass().addAll("status-badge", statusClassFor(rdv.getStatut()));
-        HBox statutBox = new HBox(statutBadge);
-        statutBox.getStyleClass().add("patient-col-status");
+        Label avatar = buildAvatar(resolveInitials(resolveMedecinName(rdv.getDisponibilite())), avatarBackgroundFor(rdv), "#4b4b4b");
+        Label title = new Label(resolveMedecinName(rdv.getDisponibilite()));
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;");
+        Label subtitle = new Label(formatDateHeure(rdv.getDateHeure()));
+        subtitle.setStyle("-fx-font-size: 12px; -fx-text-fill: #7b8aa0;");
+        VBox titleBox = new VBox(2, title, subtitle);
+        header.getChildren().addAll(avatar, titleBox);
 
-        HBox calendarBox = new HBox(8);
-        calendarBox.getStyleClass().addAll("rdv-actions-box", "patient-col-calendar");
+        javafx.scene.control.Separator separator = new javafx.scene.control.Separator();
+
+        HBox chips = new HBox(8);
+        chips.setAlignment(Pos.CENTER_LEFT);
+        chips.getChildren().addAll(
+                buildMetaChip("RDV", scenarioLabelFor(rdv.getStatut())),
+                buildStatusChip(formatStatut(rdv.getStatut()).toUpperCase(Locale.ROOT))
+        );
+
+        VBox details = new VBox(6);
+        details.getChildren().addAll(
+                buildSimpleInfo("Motif", resolveMotif(rdv)),
+                buildSimpleInfo("Date", formatDateHeure(rdv.getDateHeure()))
+        );
+
+        HBox actions = new HBox(8);
+        actions.setAlignment(Pos.CENTER_LEFT);
 
         if (!RendezVous.ANNULE.equalsIgnoreCase(rdv.getStatut())) {
-            Button calendrierButton = createActionButton("📅", "Ajouter au calendrier",
-                    "secondary-button", "rdv-action-button", "icon-action-button", "calendar-action");
+            Button calendrierButton = new Button("Calendrier");
+            calendrierButton.setStyle(ICON_BUTTON_SECONDARY_STYLE);
             calendrierButton.setOnAction(e ->
-                    ViewAlertUtil.info("Calendrier", "Placeholder calendrier pour le rendez-vous du " + formatDateHeure(rdv.getDateHeure()) + "."));
-            calendarBox.getChildren().add(calendrierButton);
-        } else {
-            Label nonDisponible = new Label("-");
-            nonDisponible.getStyleClass().add("rdv-cell-label");
-            calendarBox.getChildren().add(nonDisponible);
+                    ViewAlertUtil.info("Rendez-vous",
+                            "Medecin : " + resolveMedecinName(rdv.getDisponibilite()) + "\n"
+                                    + "Date : " + formatDateHeure(rdv.getDateHeure()) + "\n"
+                                    + "Motif : " + resolveMotif(rdv)));
+            actions.getChildren().add(calendrierButton);
         }
 
-        row.getChildren().addAll(medecinLabel, dateHeureLabel, statutBox, calendarBox);
-        return row;
+        if (RendezVous.EN_ATTENTE.equalsIgnoreCase(rdv.getStatut()) || RendezVous.CONFIRME.equalsIgnoreCase(rdv.getStatut())) {
+            Button detailsButton = new Button("Details");
+            detailsButton.setStyle(ICON_BUTTON_PRIMARY_STYLE);
+            detailsButton.setOnAction(e -> ViewAlertUtil.info(
+                    "Rendez-vous",
+                    "Medecin : " + resolveMedecinName(rdv.getDisponibilite()) + "\n"
+                            + "Date : " + formatDateHeure(rdv.getDateHeure()) + "\n"
+                            + "Motif : " + resolveMotif(rdv) + "\n"
+                            + "Statut : " + formatStatut(rdv.getStatut())
+            ));
+            actions.getChildren().add(detailsButton);
+        }
+
+        if (!RendezVous.TERMINE.equalsIgnoreCase(rdv.getStatut())) {
+            Button calendrierButton = new Button("Annuler");
+            calendrierButton.setStyle(ICON_BUTTON_DANGER_STYLE);
+            calendrierButton.setOnAction(e ->
+                    ViewAlertUtil.info("Calendrier", "Placeholder calendrier pour le rendez-vous du " + formatDateHeure(rdv.getDateHeure()) + "."));
+            actions.getChildren().add(calendrierButton);
+        }
+
+        if (actions.getChildren().isEmpty()) {
+            Button calendrierButton = new Button("Voir");
+            calendrierButton.setStyle(ICON_BUTTON_SECONDARY_STYLE);
+            calendrierButton.setOnAction(e ->
+                    ViewAlertUtil.info("Rendez-vous", "Aucune action disponible pour ce scenario."));
+            actions.getChildren().add(calendrierButton);
+        }
+
+        card.getChildren().addAll(header, separator, chips, details, actions);
+        return card;
+    }
+
+    private Label buildMetaChip(String label, String value) {
+        Label chip = new Label(value == null || value.isBlank() ? label : value.toUpperCase(Locale.ROOT));
+        chip.setStyle(META_CHIP_STYLE);
+        return chip;
+    }
+
+    private Label buildStatusChip(String text) {
+        return buildPill(text, "#eef7e8", "#4f6500");
+    }
+
+    private Label buildSelectionChip(String text) {
+        return buildPill(text, "#eef4ff", "#0c447c");
+    }
+
+    private Label buildPill(String text, String background, String color) {
+        Label pill = new Label(text);
+        pill.setStyle("-fx-background-color: " + background + "; -fx-text-fill: " + color + "; "
+                + "-fx-background-radius: 10; -fx-padding: 4 10; -fx-font-size: 11px; -fx-font-weight: 700;");
+        return pill;
+    }
+
+    private Label buildAvatar(String initials, String background, String color) {
+        Label avatar = new Label(initials);
+        avatar.setAlignment(Pos.CENTER);
+        avatar.setMinSize(54, 54);
+        avatar.setPrefSize(54, 54);
+        avatar.setMaxSize(54, 54);
+        avatar.setStyle("-fx-background-color: " + background + "; -fx-text-fill: " + color + "; "
+                + "-fx-background-radius: 999; -fx-font-size: 16px; -fx-font-weight: bold;");
+        return avatar;
+    }
+
+    private Label buildSimpleInfo(String label, String value) {
+        Label info = new Label((value == null || value.isBlank() ? label : value));
+        info.setStyle("-fx-font-size: 12px; -fx-text-fill: #7b8aa0;");
+        return info;
     }
 
     private Label createRowCell(String text, String... styleClasses) {
@@ -361,6 +516,71 @@ public class ReserverRendezVousViewController {
         }
     }
 
+    private Disponibilite trouverCreneauParId(String id) {
+        if (creneauxReservables == null || id == null) {
+            return null;
+        }
+        try {
+            int idInt = Integer.parseInt(id.trim());
+            return creneauxReservables.stream()
+                    .filter(d -> d.getId() == idInt)
+                    .findFirst()
+                    .orElse(null);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private void afficherPopupRecommandation(Disponibilite creneau, AIRecommendation result) {
+        String medecin = creneau.getMedecin() != null
+                ? creneau.getMedecin().getFullName()
+                : "Medecin inconnu";
+
+        String details = "Medecin   : " + medecin + "\n"
+                + "Date      : " + formatDate(creneau) + "\n"
+                + "Heure     : " + formatTimeRange(creneau) + "\n"
+                + "Confiance : " + (int) (result.getNiveauConfiance() * 100) + "%\n\n"
+                + "Justification :\n" + result.getJustification();
+
+        Label titre = new Label("Recommandation IA");
+        titre.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        Label contenu = new Label(details);
+        contenu.setWrapText(true);
+        contenu.setStyle("-fx-font-size: 13px;");
+
+        Button btnReserver = new Button("Reserver ce creneau");
+        btnReserver.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; "
+                + "-fx-font-size: 13px; -fx-padding: 8 20 8 20; -fx-cursor: hand;");
+        btnReserver.setGraphic(new Label("✔"));
+
+        Button btnAnnuler = new Button("Annuler");
+        btnAnnuler.setStyle("-fx-font-size: 13px; -fx-padding: 8 20 8 20; -fx-cursor: hand;");
+
+        HBox boutons = new HBox(12, btnReserver, btnAnnuler);
+        boutons.setAlignment(Pos.CENTER_RIGHT);
+
+        VBox layout = new VBox(16, titre, contenu, boutons);
+        layout.setPadding(new Insets(24));
+        layout.setStyle("-fx-background-color: white; -fx-border-radius: 12; -fx-background-radius: 12;");
+        layout.setPrefWidth(420);
+
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.setTitle("Recommandation IA");
+        popup.setScene(new Scene(layout));
+        popup.setResizable(false);
+
+        btnAnnuler.setOnAction(e -> popup.close());
+        btnReserver.setOnAction(e -> {
+            popup.close();
+            selectedDisponibilite = creneau;
+            handleReserver();
+        });
+
+        popup.show();
+    }
+
     private void ouvrirPreferences() {
         ViewAlertUtil.info("Mes preferences", "La gestion des preferences patient sera integree ici.");
     }
@@ -387,7 +607,7 @@ public class ReserverRendezVousViewController {
             return;
         }
         Disponibilite first = creneauxReservables.get(0);
-        recommandationLabel.setText("Creneau recommande: " + resolveMedecinName(first) + " le " + formatDate(first) + " a " + formatTime(first.getHeureDebut()) + ".");
+        recommandationLabel.setText("Creneau suggere : " + resolveMedecinName(first) + " le " + formatDate(first) + " a " + formatTime(first.getHeureDebut()) + ".");
     }
 
     private boolean isTresDemande(Disponibilite disponibilite) {
@@ -425,6 +645,10 @@ public class ReserverRendezVousViewController {
         }
     }
 
+    private String resolveShortRoleLabel(Disponibilite disponibilite) {
+        return disponibilite != null && disponibilite.getMedecin() != null ? "MEDECIN" : "USER";
+    }
+
     private String resolvePatientPreferenceHoraire() {
         if (demoPatientId == null) {
             return "matin";
@@ -438,6 +662,13 @@ public class ReserverRendezVousViewController {
         } catch (ServiceException e) {
             return "matin";
         }
+    }
+
+    private String resolveMotif(RendezVous rdv) {
+        if (rdv == null || rdv.getMotif() == null || rdv.getMotif().isBlank()) {
+            return "Motif non renseigne";
+        }
+        return rdv.getMotif();
     }
 
     private String formatTimeRange(Disponibilite disponibilite) {
@@ -468,17 +699,66 @@ public class ReserverRendezVousViewController {
         };
     }
 
-    private String statusClassFor(String statut) {
+    private String scenarioLabelFor(String statut) {
         if (statut == null) {
-            return "status-default";
+            return "USER";
         }
         return switch (statut.toUpperCase(Locale.ROOT)) {
-            case RendezVous.EN_ATTENTE -> "status-waiting";
-            case RendezVous.CONFIRME -> "status-confirmed";
-            case RendezVous.TERMINE -> "status-done";
-            case RendezVous.ANNULE -> "status-cancelled";
-            default -> "status-default";
+            case RendezVous.EN_ATTENTE -> "EN ATTENTE";
+            case RendezVous.CONFIRME -> "CONFIRME";
+            case RendezVous.TERMINE -> "TERMINE";
+            case RendezVous.ANNULE -> "ANNULE";
+            default -> "USER";
         };
+    }
+
+    private String statusBackgroundFor(String statut) {
+        if (statut == null) {
+            return "#eef4ff";
+        }
+        return switch (statut.toUpperCase(Locale.ROOT)) {
+            case RendezVous.EN_ATTENTE -> "#fff4dc";
+            case RendezVous.CONFIRME -> "#e7f7ee";
+            case RendezVous.TERMINE -> "#ece9ff";
+            case RendezVous.ANNULE -> "#fdeaea";
+            default -> "#eef4ff";
+        };
+    }
+
+    private String statusTextColorFor(String statut) {
+        if (statut == null) {
+            return "#46658f";
+        }
+        return switch (statut.toUpperCase(Locale.ROOT)) {
+            case RendezVous.EN_ATTENTE -> "#8b5a00";
+            case RendezVous.CONFIRME -> "#10643c";
+            case RendezVous.TERMINE -> "#5a48a8";
+            case RendezVous.ANNULE -> "#9f2f2f";
+            default -> "#46658f";
+        };
+    }
+
+    private String resolveInitials(String text) {
+        if (text == null || text.isBlank()) {
+            return "?";
+        }
+        String[] parts = text.trim().split("\\s+");
+        if (parts.length == 1) {
+            return parts[0].substring(0, 1).toUpperCase(Locale.ROOT);
+        }
+        return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase(Locale.ROOT);
+    }
+
+    private String avatarBackgroundFor(Disponibilite disponibilite) {
+        String[] colors = {"#E6F1FB", "#E1F5EE", "#F1EFE8", "#FBEAF0", "#FAEEDA"};
+        String name = resolveMedecinName(disponibilite);
+        return colors[Math.abs(name.hashCode()) % colors.length];
+    }
+
+    private String avatarBackgroundFor(RendezVous rdv) {
+        String[] colors = {"#E6F1FB", "#E1F5EE", "#F1EFE8", "#FBEAF0", "#FAEEDA"};
+        String name = resolveMedecinName(rdv != null ? rdv.getDisponibilite() : null);
+        return colors[Math.abs(name.hashCode()) % colors.length];
     }
 
     private Integer chargerConfiguredPatientId() {

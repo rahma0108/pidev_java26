@@ -6,13 +6,14 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="view.AdminRendezVousViewController"
-      spacing="0.0"
+      spacing="16.0"
       styleClass="admin-rdv-page"
       stylesheets="@admin-rendezvous.css">
     <padding>
@@ -28,28 +29,25 @@
                   prefWidth="170.0"
                   promptText="Tous les statuts"
                   styleClass="admin-rdv-combo"/>
-        <Button fx:id="sortDateCroissantButton" text="Date croissant" styleClass="admin-rdv-btn, admin-rdv-btn-secondary"/>
-        <Button fx:id="sortDateDecroissantButton" text="Date décroissant" styleClass="admin-rdv-btn, admin-rdv-btn-secondary"/>
-        <Button fx:id="resetButton" text="Reset" styleClass="admin-rdv-btn, admin-rdv-btn-secondary"/>
+        <Button fx:id="sortDateCroissantButton" text="Date croissante" styleClass="admin-rdv-btn, admin-rdv-btn-secondary"/>
+        <Button fx:id="sortDateDecroissantButton" text="Date décroissante" styleClass="admin-rdv-btn, admin-rdv-btn-secondary"/>
+        <Button fx:id="resetButton" text="Réinitialiser" styleClass="admin-rdv-btn, admin-rdv-btn-secondary"/>
     </HBox>
 
-    <VBox spacing="0.0" VBox.vgrow="ALWAYS" styleClass="admin-rdv-list-card">
+    <VBox spacing="14.0" VBox.vgrow="ALWAYS" styleClass="admin-rdv-list-card">
         <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="admin-rdv-list-top">
             <Label fx:id="countLabel" text="0 rendez-vous" styleClass="admin-rdv-count"/>
             <Region HBox.hgrow="ALWAYS"/>
-        </HBox>
-        <HBox spacing="12.0" styleClass="admin-rdv-header-row">
-            <Label text="Disponibilité" styleClass="admin-rdv-header-cell, col-dispo"/>
-            <Label text="Médecin" styleClass="admin-rdv-header-cell, col-medecin"/>
-            <Label text="Patient" styleClass="admin-rdv-header-cell, col-patient"/>
-            <Label text="Date et heure" styleClass="admin-rdv-header-cell, col-datetime"/>
-            <Label text="Statut" styleClass="admin-rdv-header-cell, col-status"/>
-            <Label text="Actions" styleClass="admin-rdv-header-cell, col-actions"/>
+            <Label text="Cartes admin" styleClass="admin-rdv-count, admin-rdv-soft-note"/>
         </HBox>
 
         <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS" styleClass="admin-rdv-scroll">
             <content>
-                <VBox fx:id="rowsContainer" spacing="0.0" styleClass="admin-rdv-body"/>
+                <FlowPane fx:id="rowsContainer"
+                          hgap="18.0"
+                          vgap="18.0"
+                          prefWrapLength="980.0"
+                          styleClass="admin-rdv-cards-body"/>
             </content>
         </ScrollPane>
     </VBox>

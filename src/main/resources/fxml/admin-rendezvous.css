@@ -1,24 +1,13 @@
 .admin-rdv-page {
-    -fx-background-color: transparent;
-}
-
-.admin-rdv-title {
-    -fx-font-size: 30px;
-    -fx-font-weight: 800;
-    -fx-text-fill: #1a1a2e;
-}
-
-.admin-rdv-subtitle {
-    -fx-font-size: 12px;
-    -fx-text-fill: #6f7383;
+    -fx-background-color: #f0f4f8;
 }
 
 .admin-rdv-toolbar {
     -fx-background-color: white;
     -fx-background-radius: 12;
-    -fx-border-color: #e3e6eb;
+    -fx-border-color: #e0e0e0;
     -fx-border-radius: 12;
-    -fx-padding: 10;
+    -fx-padding: 12 14 12 14;
 }
 
 .admin-rdv-search,
@@ -27,6 +16,7 @@
     -fx-background-radius: 8;
     -fx-border-color: #d8dce4;
     -fx-border-radius: 8;
+    -fx-font-size: 13px;
 }
 
 .admin-rdv-btn {
@@ -43,105 +33,135 @@
     -fx-text-fill: #273142;
 }
 
-.admin-rdv-btn-primary {
-    -fx-background-color: #d34c5f;
-    -fx-text-fill: white;
-}
-
 .admin-rdv-list-card {
     -fx-background-color: white;
     -fx-background-radius: 12;
     -fx-border-color: #e3e6eb;
     -fx-border-radius: 12;
+    -fx-padding: 14;
 }
 
 .admin-rdv-list-top {
-    -fx-padding: 10 14;
+    -fx-padding: 0 0 6 0;
 }
 
 .admin-rdv-count {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1a1a2e;
+}
+
+.admin-rdv-soft-note {
     -fx-font-size: 12px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #354052;
+    -fx-text-fill: #7b8aa0;
 }
 
-.admin-rdv-header-row {
-    -fx-padding: 9 14;
-    -fx-background-color: #f4f6fa;
-    -fx-border-color: #e7ebf1;
-    -fx-border-width: 1 0 1 0;
+.admin-rdv-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
 }
 
-.admin-rdv-header-cell {
-    -fx-font-size: 11px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #616979;
+.admin-rdv-scroll > .viewport {
+    -fx-background-color: transparent;
 }
 
-.admin-rdv-row {
-    -fx-padding: 9 14;
-    -fx-border-color: #edf0f5;
-    -fx-border-width: 0 0 1 0;
-    -fx-alignment: center-left;
+.admin-rdv-cards-body {
+    -fx-padding: 8;
 }
 
-.admin-rdv-cell {
+.admin-rdv-card {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 0.5;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.admin-rdv-avatar {
+    -fx-min-width: 54;
+    -fx-min-height: 54;
+    -fx-pref-width: 54;
+    -fx-pref-height: 54;
+    -fx-max-width: 54;
+    -fx-max-height: 54;
+    -fx-background-radius: 999;
+    -fx-alignment: center;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.admin-rdv-card-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a1a2e;
+}
+
+.admin-rdv-card-subtitle {
     -fx-font-size: 12px;
-    -fx-text-fill: #1f2735;
-    -fx-wrap-text: true;
+    -fx-text-fill: #7b8aa0;
 }
 
-.col-dispo { -fx-min-width: 220; -fx-pref-width: 220; -fx-max-width: 220; }
-.col-medecin { -fx-min-width: 170; -fx-pref-width: 170; -fx-max-width: 170; }
-.col-patient { -fx-min-width: 140; -fx-pref-width: 140; -fx-max-width: 140; }
-.col-datetime { -fx-min-width: 150; -fx-pref-width: 150; -fx-max-width: 150; }
-.col-status { -fx-min-width: 110; -fx-pref-width: 110; -fx-max-width: 110; }
-.col-actions { -fx-min-width: 170; -fx-pref-width: 170; -fx-max-width: 170; }
-
-.status-badge {
+.admin-rdv-badge {
     -fx-font-size: 11px;
-    -fx-font-weight: 700;
-    -fx-padding: 2 8;
-    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-padding: 4 10;
+    -fx-background-radius: 10;
 }
 
-.status-waiting {
+.badge-role {
+    -fx-background-color: #eef4ff;
+    -fx-text-fill: #0c447c;
+}
+
+.badge-waiting {
     -fx-background-color: #fff6cc;
     -fx-text-fill: #8a6a00;
 }
 
-.status-confirmed {
+.badge-confirmed {
     -fx-background-color: #d8f4dc;
     -fx-text-fill: #1a7d35;
 }
 
-.status-cancelled {
+.badge-cancelled {
     -fx-background-color: #ffe0e0;
     -fx-text-fill: #9f1d1d;
 }
 
-.status-done {
+.badge-done {
     -fx-background-color: #dbe6ff;
     -fx-text-fill: #2852b4;
 }
 
-.status-default {
+.badge-default {
     -fx-background-color: #ebedf2;
     -fx-text-fill: #5f6878;
 }
 
-.admin-rdv-actions {
-    -fx-spacing: 6;
-    -fx-alignment: center-left;
+.admin-rdv-card-info {
+    -fx-font-size: 12px;
+    -fx-text-fill: #7b8aa0;
 }
 
-.admin-rdv-action-btn {
-    -fx-background-color: #eef2f8;
-    -fx-border-color: #d7dce5;
-    -fx-border-radius: 7;
-    -fx-background-radius: 7;
-    -fx-font-size: 11px;
+.admin-rdv-card-btn {
+    -fx-background-radius: 8;
     -fx-cursor: hand;
+    -fx-font-size: 12px;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+    -fx-padding: 8 14;
+}
+
+.admin-rdv-btn-purple {
+    -fx-background-color: #534AB7;
+}
+
+.admin-rdv-btn-blue {
+    -fx-background-color: #185FA5;
+}
+
+.admin-rdv-btn-red {
+    -fx-background-color: #d54836;
 }
 
 .admin-rdv-empty {
