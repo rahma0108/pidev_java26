@@ -1,51 +1,55 @@
 /* ═══════════════════════════════════════
-   MediLink Dark Theme
+   MediLink Dark Mode — Login/Register/Dashboard
    ═══════════════════════════════════════ */
 
-/* ── Root ── */
+/* Page background */
 .root {
-    -fx-base: #1a1a2e;
-    -fx-background: #1a1a2e;
-    -fx-control-inner-background: #16213e;
-    -fx-text-fill: #e0e0e0;
+    -fx-background-color: #0d1b2a;
 }
 
-/* ── Labels ── */
+/* White cards become dark cards */
+.dark-card {
+    -fx-background-color: #16213e !important;
+    -fx-border-color: #1a3a5a !important;
+}
+
+/* All labels */
 .label {
     -fx-text-fill: #e0e0e0;
 }
 
-/* ── TextFields ── */
+/* Input fields */
 .text-field, .password-field {
-    -fx-background-color: #16213e;
+    -fx-background-color: #0d1b2a;
     -fx-text-fill: #e0e0e0;
-    -fx-prompt-text-fill: #556677;
-    -fx-border-color: #2a3a5a;
+    -fx-prompt-text-fill: #445566;
+    -fx-border-color: #1a3a5a;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
 }
 
-/* ── Buttons — keep colored ones as-is ── */
+/* Buttons — only the plain ones */
 .button {
     -fx-background-color: #16213e;
     -fx-text-fill: #e0e0e0;
-    -fx-border-color: #2a3a5a;
+    -fx-border-color: #1a3a5a;
 }
 
-/* ── CheckBox ── */
+/* CheckBox */
 .check-box .label {
     -fx-text-fill: #aabbcc;
 }
 
-/* ── Separator ── */
+/* Separator */
 .separator .line {
-    -fx-border-color: #2a3a5a;
+    -fx-border-color: #1a3a5a;
 }
 
-/* ── TableView ── */
+/* TableView */
 .table-view {
     -fx-background-color: #16213e;
     -fx-control-inner-background: #16213e;
+    -fx-border-color: #1a3a5a;
 }
 .table-view .column-header {
     -fx-background-color: #0f3460;
@@ -57,10 +61,10 @@
 .table-row-cell {
     -fx-background-color: #16213e;
     -fx-text-fill: #e0e0e0;
-    -fx-border-color: #2a2a4a;
+    -fx-border-color: #1a2a3a;
 }
 .table-row-cell:odd {
-    -fx-background-color: #1a1a2e;
+    -fx-background-color: #0d1b2a;
 }
 .table-row-cell:selected {
     -fx-background-color: #185FA5;
@@ -69,17 +73,10 @@
     -fx-text-fill: #e0e0e0;
 }
 
-/* ── ScrollPane ── */
-.scroll-pane, .scroll-pane > .viewport {
-    -fx-background-color: #1a1a2e;
-    -fx-background: #1a1a2e;
-}
-
-/* ── ComboBox ── */
+/* ComboBox */
 .combo-box {
     -fx-background-color: #16213e;
-    -fx-text-fill: #e0e0e0;
-    -fx-border-color: #2a3a5a;
+    -fx-border-color: #1a3a5a;
 }
 .combo-box .list-cell {
     -fx-background-color: #16213e;
@@ -89,7 +86,18 @@
     -fx-background-color: #16213e;
 }
 
-/* ── Dialog ── */
+/* ScrollPane */
+.scroll-pane, .scroll-pane > .viewport {
+    -fx-background-color: #0d1b2a;
+    -fx-background: #0d1b2a;
+}
+
+/* Chart */
+.chart-legend-item { -fx-text-fill: #e0e0e0; }
+.chart-pie-label   { -fx-fill: #e0e0e0; }
+.chart-legend      { -fx-background-color: transparent; }
+
+/* Dialog */
 .dialog-pane {
     -fx-background-color: #16213e;
 }
@@ -97,43 +105,20 @@
     -fx-text-fill: #e0e0e0;
 }
 
-/* ── PieChart ── */
-.chart {
-    -fx-background-color: transparent;
-}
-.chart-legend {
-    -fx-background-color: transparent;
-}
-.chart-legend-item {
-    -fx-text-fill: #e0e0e0;
-}
-.chart-pie-label {
-    -fx-fill: #e0e0e0;
-}
-
-/* ── FlowPane ── */
-.flow-pane {
-    -fx-background-color: #1a1a2e;
-}
-
-/* ── TextArea (CAPTCHA) ── */
+/* TextArea CAPTCHA */
 .text-area .scroll-bar:vertical,
 .text-area .scroll-bar:horizontal {
-    -fx-pref-width: 0;
-    -fx-pref-height: 0;
-    -fx-max-width: 0;
-    -fx-max-height: 0;
+    -fx-pref-width: 0; -fx-max-width: 0;
+    -fx-pref-height: 0; -fx-max-height: 0;
     visibility: hidden;
 }
-.text-area .scroll-pane {
-    -fx-background-color: transparent;
-    -fx-background: transparent;
-}
 .text-area .content {
-    -fx-background-color: #e8f0ff;
+    -fx-background-color: #162540;
     -fx-background-radius: 8;
 }
 .text-area {
     -fx-background-color: transparent;
-    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
