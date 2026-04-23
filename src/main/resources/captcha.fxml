@@ -69,13 +69,11 @@
     <VBox fx:id="questionBox" spacing="8" visible="false" managed="false">
         <Label fx:id="questionLabel" text=""
                wrapText="true"
-               prefWidth="248" maxWidth="248" minWidth="248"
                style="-fx-font-size: 13px; -fx-font-weight: bold;
-                      -fx-text-fill: #0d1b2a;
-                      -fx-background-color: #e8f0ff;
-                      -fx-background-radius: 8;
-                      -fx-padding: 12 14;
-                      -fx-line-spacing: 4;"/>
+              -fx-text-fill: #0d1b2a;
+              -fx-background-color: #e8f0ff;
+              -fx-background-radius: 8;
+              -fx-padding: 12 14;"/>
 
         <TextField fx:id="answerField" promptText="Type your answer here"
                    prefHeight="36" prefWidth="252"
