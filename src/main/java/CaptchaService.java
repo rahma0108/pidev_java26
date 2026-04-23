@@ -1,91 +1,107 @@
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.http.*;
 import java.time.Duration;
+import java.util.Base64;
+import java.util.Random;
 
 public class CaptchaService {
 
-    // TextCaptcha API — free, no key needed
-    private static final String API_URL = "http://api.textcaptcha.com/medilinkcareapp.json";
+    // We use api.yagura.net — free image CAPTCHA API, no key needed
+    private static final String API_URL = "https://api.yagura.net/captcha/v1/image";
 
-    private static String currentToken = "";
-    private static String[] currentAnswerHashes = {};
+    private static String sessionId = "";
+    private static byte[] lastImageBytes = null;
+    private static final Random rand = new Random();
+
+    // Fallback math captcha
+    private static int mathAnswer = -1;
+    private static boolean usingFallback = false;
 
     /**
-     * Fetch a new CAPTCHA question from the API
-     * Returns the question string, or a fallback if API is down
+     * Fetch a CAPTCHA image from the API
+     * Returns the image bytes, or null if API fails
      */
-    public static String fetchQuestion() {
+    public static byte[] fetchCaptchaImage() {
         try {
             HttpClient client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(5))
-                .build();
+                    .connectTimeout(Duration.ofSeconds(6))
+                    .build();
 
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_URL))
-                .header("Accept", "application/json")
-                .GET()
-                .build();
+                    .uri(URI.create(API_URL))
+                    .header("Accept", "application/json")
+                    .GET()
+                    .build();
 
             HttpResponse<String> response = client.send(request,
-                HttpResponse.BodyHandlers.ofString());
+                    HttpResponse.BodyHandlers.ofString());
 
-            JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+            com.google.gson.JsonObject json =
+                    com.google.gson.JsonParser.parseString(response.body()).getAsJsonObject();
 
-            // Extract question and answer hashes
-            String question = json.get("q").getAsString();
-            currentToken    = json.get("t").getAsString();
+            sessionId = json.get("session_id").getAsString();
+            String base64Image = json.get("image").getAsString();
 
-            // Answers are MD5 hashes
-            var answersArray = json.getAsJsonArray("a");
-            currentAnswerHashes = new String[answersArray.size()];
-            for (int i = 0; i < answersArray.size(); i++) {
-                currentAnswerHashes[i] = answersArray.get(i).getAsString();
+            // Remove data:image/png;base64, prefix if present
+            if (base64Image.contains(",")) {
+                base64Image = base64Image.split(",")[1];
             }
 
-            return question;
+            lastImageBytes = Base64.getDecoder().decode(base64Image);
+            usingFallback = false;
+            return lastImageBytes;
 
         } catch (Exception e) {
             System.err.println("CAPTCHA API error: " + e.getMessage());
-            // Fallback to simple math if API is down
+            usingFallback = true;
             return null;
         }
     }
 
-    /**
-     * Validate user's answer by MD5 hashing it and comparing
-     */
-    public static boolean validateAnswer(String userAnswer) {
-        if (currentAnswerHashes.length == 0) return false;
+    public static boolean validate(String userAnswer) {
+        if (usingFallback) {
+            try {
+                return Integer.parseInt(userAnswer.trim()) == mathAnswer;
+            } catch (Exception e) { return false; }
+        }
+
         try {
-            String hashed = md5(userAnswer.trim().toLowerCase());
-            for (String validHash : currentAnswerHashes) {
-                if (validHash.equalsIgnoreCase(hashed)) return true;
-            }
-            return false;
+            String body = "session_id=" + sessionId + "&answer=" + userAnswer.trim();
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(6))
+                    .build();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.yagura.net/captcha/v1/verify"))
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+            HttpResponse<String> response = client.send(request,
+                    HttpResponse.BodyHandlers.ofString());
+            return response.body().contains("\"success\":true");
         } catch (Exception e) {
+            System.err.println("CAPTCHA validate error: " + e.getMessage());
             return false;
         }
     }
 
-    public static String getToken() {
-        return currentToken;
+    // Generate math fallback
+    public static String generateMathFallback() {
+        usingFallback = true;
+        int a = 1 + rand.nextInt(9);
+        int b = 1 + rand.nextInt(9);
+        int op = rand.nextInt(2);
+        if (op == 0) {
+            mathAnswer = a + b;
+            return a + " + " + b + " = ?";
+        } else {
+            if (a < b) { int t = a; a = b; b = t; }
+            mathAnswer = a - b;
+            return a + " - " + b + " = ?";
+        }
     }
 
-    /**
-     * MD5 hash a string
-     */
-    private static String md5(String input) throws Exception {
-        java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
-        byte[] hash = md.digest(input.getBytes("UTF-8"));
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hash) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
+    public static boolean isUsingFallback() { return usingFallback; }
 }

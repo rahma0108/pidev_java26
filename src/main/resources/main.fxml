@@ -6,25 +6,22 @@
 
 <HBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="LoginController"
-      prefWidth="900" prefHeight="580"
+      prefWidth="900" prefHeight="600"
       style="-fx-background-color: #f0f4f8;">
 
     <!-- LEFT PANEL -->
-    <VBox prefWidth="420" prefHeight="580" alignment="CENTER" spacing="16"
+    <VBox prefWidth="420" prefHeight="600" alignment="CENTER" spacing="16"
           style="-fx-background-color: #185FA5; -fx-padding: 50 40;">
-
         <ImageView fitWidth="160" fitHeight="70" preserveRatio="true"
                    onMouseClicked="#goToLanding" style="-fx-cursor: hand;">
             <image><Image url="@/logo.png"/></image>
         </ImageView>
-
         <Label text="Your Health, Our Priority"
                style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;
                       -fx-wrap-text: true; -fx-text-alignment: center;"/>
         <Label text="Connect with doctors, manage appointments and medications all in one place."
                style="-fx-font-size: 13px; -fx-text-fill: #aad4f5;
                       -fx-wrap-text: true; -fx-text-alignment: center;"/>
-
         <HBox spacing="12" alignment="CENTER" style="-fx-padding: 20 0 0 0;">
             <VBox alignment="CENTER" prefWidth="110" prefHeight="80"
                   style="-fx-background-color: rgba(255,255,255,0.15); -fx-background-radius: 12; -fx-padding: 12;">
@@ -46,14 +43,13 @@
 
     <!-- RIGHT PANEL -->
     <VBox HBox.hgrow="ALWAYS" alignment="CENTER"
-          style="-fx-background-color: #f0f4f8; -fx-padding: 40;">
+          style="-fx-background-color: #f0f4f8; -fx-padding: 30 40;">
 
-        <VBox spacing="14" maxWidth="340"
-              style="-fx-background-color: white; -fx-padding: 36 32;
+        <VBox spacing="12" maxWidth="340"
+              style="-fx-background-color: white; -fx-padding: 28 32;
                      -fx-background-radius: 16; -fx-border-radius: 16;
                      -fx-border-color: #e0e0e0; -fx-border-width: 0.5;">
 
-            <!-- Theme toggle -->
             <HBox alignment="CENTER_RIGHT">
                 <Button fx:id="themeToggleBtn" text="🌙" onAction="#toggleTheme"
                         style="-fx-background-color: transparent; -fx-font-size: 18px;
@@ -65,17 +61,14 @@
             <Label text="Sign in to your MediLink account"
                    style="-fx-font-size: 13px; -fx-text-fill: #888;"/>
 
-            <!-- GOOGLE SIGN IN -->
             <Button fx:id="googleBtn" text="G  Continue with Google"
-                    onAction="#handleGoogleSignIn"
-                    prefWidth="276" prefHeight="42"
+                    onAction="#handleGoogleSignIn" prefWidth="276" prefHeight="40"
                     style="-fx-background-color: white; -fx-text-fill: #444444;
                            -fx-font-size: 13px; -fx-font-weight: bold;
                            -fx-background-radius: 10; -fx-cursor: hand;
                            -fx-border-color: #dddddd; -fx-border-width: 1.5;
                            -fx-border-radius: 10;"/>
 
-            <!-- Divider -->
             <HBox alignment="CENTER" spacing="10">
                 <Separator HBox.hgrow="ALWAYS"/>
                 <Label text="or sign in with email"
@@ -86,7 +79,7 @@
             <VBox spacing="5">
                 <Label text="Email" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
                 <TextField fx:id="emailField" promptText="you@example.com"
-                           prefHeight="40" prefWidth="276"
+                           prefHeight="38" prefWidth="276"
                            style="-fx-background-radius: 8; -fx-border-radius: 8;
                                   -fx-border-color: #ddd; -fx-font-size: 13px;"/>
             </VBox>
@@ -94,12 +87,11 @@
             <VBox spacing="5">
                 <Label text="Password" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
                 <PasswordField fx:id="passwordField" promptText="••••••••"
-                               prefHeight="40" prefWidth="276"
+                               prefHeight="38" prefWidth="276"
                                style="-fx-background-radius: 8; -fx-border-radius: 8;
                                       -fx-border-color: #ddd; -fx-font-size: 13px;"/>
             </VBox>
 
-            <!-- Remember me + Forgot -->
             <HBox alignment="CENTER_LEFT" prefWidth="276">
                 <CheckBox fx:id="rememberMeBox" text="Remember me"
                           style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
@@ -108,28 +100,51 @@
                        style="-fx-font-size: 12px; -fx-text-fill: #185FA5; -fx-cursor: hand;"/>
             </HBox>
 
-            <!-- Cloudflare badge -->
-            <HBox alignment="CENTER" spacing="8"
-                  style="-fx-background-color: #f0f4ff;
-             -fx-background-radius: 8;
-             -fx-border-color: #c8d8f8;
-             -fx-border-radius: 8;
-             -fx-border-width: 1;
-             -fx-padding: 8 12;">
-                <Label text="CF"
-                       style="-fx-font-size: 11px; -fx-font-weight: bold;
-                  -fx-text-fill: white;
-                  -fx-background-color: #F6821F;
-                  -fx-background-radius: 4;
-                  -fx-padding: 2 5;"/>
-                <VBox spacing="1">
-                    <Label text="Protected by Cloudflare Turnstile"
-                           style="-fx-font-size: 11px; -fx-font-weight: bold;
-                      -fx-text-fill: #185FA5;"/>
-                    <Label text="Verification popup opens on Sign In"
-                           style="-fx-font-size: 10px; -fx-text-fill: #888;"/>
+            <!-- CAPTCHA BOX -->
+            <VBox spacing="8"
+                  style="-fx-background-color: #f8f9ff; -fx-background-radius: 10;
+                         -fx-border-color: #c8d8f0; -fx-border-radius: 10;
+                         -fx-border-width: 1; -fx-padding: 10 12;">
+
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Label text="Security Check"
+                           style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #185FA5;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="refreshCaptchaBtn" text="New" onAction="#refreshCaptcha"
+                            prefHeight="24"
+                            style="-fx-background-color: #185FA5; -fx-text-fill: white;
+                                   -fx-font-size: 11px; -fx-background-radius: 6;
+                                   -fx-cursor: hand; -fx-border-color: transparent;
+                                   -fx-padding: 2 8;"/>
+                </HBox>
+
+                <!-- Image CAPTCHA -->
+                <VBox fx:id="captchaImageBox" alignment="CENTER"
+                      style="-fx-background-color: #0d1b2a; -fx-background-radius: 8; -fx-padding: 8;">
+                    <ImageView fx:id="captchaImage" fitWidth="240" fitHeight="70"
+                               preserveRatio="true"/>
                 </VBox>
-            </HBox>
+
+                <!-- Fallback math CAPTCHA -->
+                <Label fx:id="captchaFallbackLabel" text=""
+                       visible="false" managed="false"
+                       style="-fx-font-size: 18px; -fx-font-weight: bold;
+                              -fx-text-fill: #185FA5; -fx-font-family: 'Courier New';
+                              -fx-background-color: #0d1b2a; -fx-text-fill: #7fc4fd;
+                              -fx-background-radius: 8; -fx-padding: 10 16;"/>
+
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Answer:" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+                    <TextField fx:id="captchaField" promptText="Type here"
+                               prefWidth="160" prefHeight="34"
+                               style="-fx-background-radius: 8; -fx-border-radius: 8;
+                                      -fx-border-color: #c8d8f0; -fx-font-size: 13px;"/>
+                </HBox>
+
+                <Label fx:id="captchaErrorLabel" text=""
+                       style="-fx-font-size: 11px; -fx-text-fill: #E24B4A;"/>
+            </VBox>
+
             <Label fx:id="errorLabel" text="" wrapText="true"
                    style="-fx-font-size: 12px;"/>
 
