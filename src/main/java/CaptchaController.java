@@ -167,7 +167,59 @@ public class CaptchaController {
         // Random question types
         int qType = rand.nextInt(4);
         switch (qType) {
+            case 0: // Word count
+                String[] sentences = {
+                        "The sky is blue today",
+                        "I love coding in Java",
+                        "MediLink is a health platform",
+                        "Doctors help patients recover"
+                };
+                String sentence = sentences[rand.nextInt(sentences.length)];
+                correctAnswer = sentence.split(" ").length;
+                questionLabel.setText("How many words are in:\n\"" + sentence + "\"?");
+                break;
 
+            case 1: // Which is biggest
+                int a = 10 + rand.nextInt(50);
+                int b = 10 + rand.nextInt(50);
+                int c = 10 + rand.nextInt(50);
+                correctAnswer = Math.max(a, Math.max(b, c));
+                questionLabel.setText("Which is the largest?\n" + a + ",  " + b + ",  " + c);
+                break;
+
+            case 2: // Missing letter
+                String[][] wordPairs = {
+                        {"H_alth", "e"},
+                        {"D_ctor", "o"},
+                        {"Hosp_tal", "i"},
+                        {"Medic_ne", "i"},
+                        {"Pati_nt", "e"},
+                        {"Nur_e", "s"},
+                        {"Cli_ic", "n"}
+                };
+                int idx = rand.nextInt(wordPairs.length);
+                String word    = wordPairs[idx][0];
+                String letter  = wordPairs[idx][1];
+                questionLabel.setText("What letter is missing?\n" + word);
+                instructionLabel.setText("Type the missing letter");
+                correctAnswer = -1;
+                answerField.textProperty().addListener((obs, old, val) -> {
+                    if (val.trim().equalsIgnoreCase(letter)) verifyQuestion(true);
+                });
+                return;
+
+            case 3: // Even or odd
+                int num = 2 + rand.nextInt(98);
+                boolean isEven = num % 2 == 0;
+                questionLabel.setText("Is the number " + num + " even or odd?\nType:  even  or  odd");
+                instructionLabel.setText("Type your answer");
+                correctAnswer = -2;
+                answerField.textProperty().addListener((obs, old, val) -> {
+                    String v = val.trim().toLowerCase();
+                    if ((isEven && v.equals("even")) || (!isEven && v.equals("odd")))
+                        verifyQuestion(true);
+                });
+                return;
         }
 
         instructionLabel.setText("Type the correct answer");
