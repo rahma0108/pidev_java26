@@ -1,4 +1,4 @@
-/* Hide scrollbars in CAPTCHA TextArea */
+/* ── Hide TextArea scrollbars for CAPTCHA ── */
 .text-area .scroll-bar:vertical,
 .text-area .scroll-bar:horizontal {
     -fx-pref-width: 0;
@@ -19,4 +19,7 @@
 .text-area {
     -fx-background-color: transparent;
     -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }

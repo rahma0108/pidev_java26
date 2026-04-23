@@ -1,6 +1,13 @@
+/* ═══════════════════════════════════════
+   MediLink Dark Theme
+   ═══════════════════════════════════════ */
+
 /* ── Root ── */
 .root {
-    -fx-background-color: #0f1626;
+    -fx-base: #1a1a2e;
+    -fx-background: #1a1a2e;
+    -fx-control-inner-background: #16213e;
+    -fx-text-fill: #e0e0e0;
 }
 
 /* ── Labels ── */
@@ -8,20 +15,30 @@
     -fx-text-fill: #e0e0e0;
 }
 
-/* ── TextFields & PasswordFields ── */
+/* ── TextFields ── */
 .text-field, .password-field {
     -fx-background-color: #16213e;
     -fx-text-fill: #e0e0e0;
     -fx-prompt-text-fill: #556677;
     -fx-border-color: #2a3a5a;
-    -fx-border-radius: 6;
-    -fx-background-radius: 6;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
 }
 
-/* ── Buttons ── */
+/* ── Buttons — keep colored ones as-is ── */
 .button {
-    -fx-background-color: #1a2540;
+    -fx-background-color: #16213e;
     -fx-text-fill: #e0e0e0;
+    -fx-border-color: #2a3a5a;
+}
+
+/* ── CheckBox ── */
+.check-box .label {
+    -fx-text-fill: #aabbcc;
+}
+
+/* ── Separator ── */
+.separator .line {
     -fx-border-color: #2a3a5a;
 }
 
@@ -29,7 +46,6 @@
 .table-view {
     -fx-background-color: #16213e;
     -fx-control-inner-background: #16213e;
-    -fx-control-inner-background-alt: #1a2540;
 }
 .table-view .column-header {
     -fx-background-color: #0f3460;
@@ -41,10 +57,10 @@
 .table-row-cell {
     -fx-background-color: #16213e;
     -fx-text-fill: #e0e0e0;
-    -fx-border-color: #2a3a5a;
+    -fx-border-color: #2a2a4a;
 }
 .table-row-cell:odd {
-    -fx-background-color: #1a2540;
+    -fx-background-color: #1a1a2e;
 }
 .table-row-cell:selected {
     -fx-background-color: #185FA5;
@@ -54,24 +70,15 @@
 }
 
 /* ── ScrollPane ── */
-.scroll-pane {
-    -fx-background-color: #0f1626;
-    -fx-background: #0f1626;
-}
-.scroll-pane > .viewport {
-    -fx-background-color: #0f1626;
-}
-.scroll-bar {
-    -fx-background-color: #16213e;
-}
-.scroll-bar .thumb {
-    -fx-background-color: #2a3a5a;
-    -fx-background-radius: 4;
+.scroll-pane, .scroll-pane > .viewport {
+    -fx-background-color: #1a1a2e;
+    -fx-background: #1a1a2e;
 }
 
 /* ── ComboBox ── */
 .combo-box {
     -fx-background-color: #16213e;
+    -fx-text-fill: #e0e0e0;
     -fx-border-color: #2a3a5a;
 }
 .combo-box .list-cell {
@@ -80,15 +87,6 @@
 }
 .combo-box-popup .list-view {
     -fx-background-color: #16213e;
-    -fx-border-color: #2a3a5a;
-}
-.combo-box-popup .list-view .list-cell:hover {
-    -fx-background-color: #1a2540;
-}
-
-/* ── Separator ── */
-.separator .line {
-    -fx-border-color: #2a3a5a;
 }
 
 /* ── Dialog ── */
@@ -98,17 +96,9 @@
 .dialog-pane .label {
     -fx-text-fill: #e0e0e0;
 }
-.dialog-pane .button-bar .button {
-    -fx-background-color: #1a2540;
-    -fx-text-fill: #e0e0e0;
-    -fx-border-color: #2a3a5a;
-}
 
 /* ── PieChart ── */
 .chart {
-    -fx-background-color: transparent;
-}
-.chart-content {
     -fx-background-color: transparent;
 }
 .chart-legend {
@@ -120,16 +110,30 @@
 .chart-pie-label {
     -fx-fill: #e0e0e0;
 }
-.chart-pie-label-line {
-    -fx-stroke: #556677;
-}
 
 /* ── FlowPane ── */
 .flow-pane {
-    -fx-background-color: #0f1626;
+    -fx-background-color: #1a1a2e;
 }
 
-/* ── BorderPane ── */
-.border-pane {
-    -fx-background-color: #0f1626;
+/* ── TextArea (CAPTCHA) ── */
+.text-area .scroll-bar:vertical,
+.text-area .scroll-bar:horizontal {
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-max-width: 0;
+    -fx-max-height: 0;
+    visibility: hidden;
+}
+.text-area .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+.text-area .content {
+    -fx-background-color: #e8f0ff;
+    -fx-background-radius: 8;
+}
+.text-area {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8;
 }

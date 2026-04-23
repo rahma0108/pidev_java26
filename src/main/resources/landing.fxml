@@ -20,7 +20,7 @@
         <!-- TOP BAR -->
         <HBox alignment="CENTER_LEFT" prefWidth="1000"
               style="-fx-padding: 20 32; -fx-background-color: transparent;">
-            <ImageView fx:id="logoImage" fitWidth="130" fitHeight="55" preserveRatio="true">
+            <ImageView fitWidth="130" fitHeight="55" preserveRatio="true">
                 <image><Image url="@/logo.png"/></image>
             </ImageView>
             <Region HBox.hgrow="ALWAYS"/>
@@ -66,7 +66,7 @@
                    style="-fx-font-size: 20px; -fx-text-fill: #7fc4fd;
                           -fx-text-alignment: center;"/>
 
-            <Label text="Experience healthcare reimagined. Manage appointments,\nprescriptions and your health journey — all in one place."
+            <Label text="Experience healthcare reimagined. Manage appointments, prescriptions and your health journey all in one place."
                    style="-fx-font-size: 14px; -fx-text-fill: #8899aa;
                           -fx-text-alignment: center; -fx-wrap-text: true;"
                    maxWidth="500"/>

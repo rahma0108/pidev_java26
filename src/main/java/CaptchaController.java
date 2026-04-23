@@ -106,8 +106,8 @@ public class CaptchaController {
 
         double progress = (sliderCurrentX - SLIDER_MIN) / (SLIDER_MAX - SLIDER_MIN);
         sliderBtn.setStyle("-fx-background-color: " +
-                (progress > 0.5 ? "#0F6E56" : "#185FA5") +
-                "; -fx-background-radius: 10; -fx-cursor: hand;");
+            (progress > 0.5 ? "#0F6E56" : "#185FA5") +
+            "; -fx-background-radius: 10; -fx-cursor: hand;");
 
         if (sliderCurrentX >= SLIDER_MAX - 15) verifySlider();
         e.consume();
@@ -157,11 +157,11 @@ public class CaptchaController {
             case 0: {
                 // Word count
                 String[][] options = {
-                        {"The sky is blue today", "5"},
-                        {"I love coding in Java", "5"},
-                        {"MediLink is a health platform", "5"},
-                        {"Doctors help patients recover quickly", "5"},
-                        {"Java is a programming language", "5"}
+                    {"The sky is blue today", "5"},
+                    {"I love coding in Java", "5"},
+                    {"MediLink is a health platform", "5"},
+                    {"Doctors help patients recover quickly", "5"},
+                    {"Java is a programming language", "5"}
                 };
                 String[] pick = options[rand.nextInt(options.length)];
                 String sentence = pick[0];
@@ -187,14 +187,14 @@ public class CaptchaController {
             case 2: {
                 // Missing letter
                 String[][] pairs = {
-                        {"H_alth", "e"},
-                        {"D_ctor", "o"},
-                        {"Hosp_tal", "i"},
-                        {"Medic_ne", "i"},
-                        {"Pati_nt", "e"},
-                        {"Nur_e", "s"},
-                        {"Cli_ic", "n"},
-                        {"_ospital", "h"}
+                    {"H_alth", "e"},
+                    {"D_ctor", "o"},
+                    {"Hosp_tal", "i"},
+                    {"Medic_ne", "i"},
+                    {"Pati_nt", "e"},
+                    {"Nur_e", "s"},
+                    {"Cli_ic", "n"},
+                    {"_ospital", "h"}
                 };
                 String[] pair = pairs[rand.nextInt(pairs.length)];
                 expectedTextAnswer = pair[1].toLowerCase();
