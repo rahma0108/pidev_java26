@@ -151,7 +151,7 @@ public class CaptchaController {
                 String sentence = pick[0];
                 int count = sentence.split(" ").length;
                 expectedNumberAnswer = count;
-                questionLabel.setText("How many words are in this sentence?\n\n\"" + sentence + "\"");
+                questionLabel.setText("Count the words:\n\"" + sentence + "\"");
                 instructionLabel.setText("Type the number of words");
                 break;
             }
@@ -164,7 +164,7 @@ public class CaptchaController {
                 while (b == a) b = 10 + rand.nextInt(80);
                 while (c == a || c == b) c = 10 + rand.nextInt(80);
                 expectedNumberAnswer = Math.max(a, Math.max(b, c));
-                questionLabel.setText("Which is the largest number?\n\n" + a + "     " + b + "     " + c);
+                questionLabel.setText("Largest number?\n\n" + a + "     " + b + "     " + c);
                 instructionLabel.setText("Type the largest number");
                 break;
             }
@@ -182,7 +182,7 @@ public class CaptchaController {
                 };
                 String[] pair = pairs[rand.nextInt(pairs.length)];
                 expectedTextAnswer = pair[1].toLowerCase();
-                questionLabel.setText("What letter is missing?\n\n" + pair[0]);
+                questionLabel.setText("Missing letter?\n\n" + pair[0]);
                 instructionLabel.setText("Type the missing letter");
                 break;
             }
@@ -190,7 +190,7 @@ public class CaptchaController {
                 // Even or odd
                 int num = 2 + rand.nextInt(97);
                 expectedTextAnswer = (num % 2 == 0) ? "even" : "odd";
-                questionLabel.setText("Is this number even or odd?\n\n" + num);
+                questionLabel.setText("Even or odd?\n\n" + num);
                 instructionLabel.setText("Type:  even  or  odd");
                 break;
             }

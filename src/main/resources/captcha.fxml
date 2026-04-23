@@ -7,6 +7,7 @@
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="CaptchaController"
       spacing="8"
+      prefWidth="276" maxWidth="276"
       style="-fx-background-color: #f0f4ff;
              -fx-background-radius: 10;
              -fx-border-color: #c8d8f0;
@@ -68,7 +69,7 @@
     <VBox fx:id="questionBox" spacing="8" visible="false" managed="false">
         <Label fx:id="questionLabel" text=""
                wrapText="true"
-               prefWidth="252" maxWidth="252"
+               prefWidth="248" maxWidth="248" minWidth="248"
                style="-fx-font-size: 13px; -fx-font-weight: bold;
                       -fx-text-fill: #0d1b2a;
                       -fx-background-color: #e8f0ff;
