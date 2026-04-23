@@ -3,10 +3,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.image.*;
-import javafx.scene.layout.VBox;
-
-import java.io.ByteArrayInputStream;
 
 public class LoginController {
 
@@ -17,13 +13,9 @@ public class LoginController {
     @FXML private Button googleBtn;
     @FXML private CheckBox rememberMeBox;
 
-    // CAPTCHA
-    @FXML private ImageView captchaImage;
-    @FXML private TextField captchaField;
-    @FXML private Label captchaErrorLabel;
-    @FXML private Label captchaFallbackLabel;
-    @FXML private Button refreshCaptchaBtn;
-    @FXML private VBox captchaImageBox;
+    // Captcha controller injected via fx:id
+    @FXML private javafx.scene.layout.VBox captchaContainer;
+    private CaptchaController captchaCtrl;
 
     @FXML
     public void initialize() {
@@ -36,63 +28,30 @@ public class LoginController {
             rememberMeBox.setSelected(true);
         }
 
-        loadCaptcha();
+        // Load captcha component
+        loadCaptchaComponent();
     }
 
-    private void loadCaptcha() {
-        captchaField.clear();
-        captchaErrorLabel.setText("");
-        captchaFallbackLabel.setText("Loading...");
-        captchaImage.setImage(null);
-        refreshCaptchaBtn.setDisable(true);
-
-        new Thread(() -> {
-            byte[] imageBytes = CaptchaService.fetchCaptchaImage();
-            Platform.runLater(() -> {
-                refreshCaptchaBtn.setDisable(false);
-                if (imageBytes != null) {
-                    // Show image CAPTCHA
-                    Image img = new Image(new ByteArrayInputStream(imageBytes));
-                    captchaImage.setImage(img);
-                    captchaImageBox.setVisible(true);
-                    captchaImageBox.setManaged(true);
-                    captchaFallbackLabel.setText("");
-                    captchaFallbackLabel.setVisible(false);
-                    captchaFallbackLabel.setManaged(false);
-                } else {
-                    // Fallback math CAPTCHA
-                    String question = CaptchaService.generateMathFallback();
-                    captchaImageBox.setVisible(false);
-                    captchaImageBox.setManaged(false);
-                    captchaFallbackLabel.setText(question);
-                    captchaFallbackLabel.setVisible(true);
-                    captchaFallbackLabel.setManaged(true);
-                }
-            });
-        }).start();
+    private void loadCaptchaComponent() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/captcha.fxml"));
+            javafx.scene.Node captchaNode = loader.load();
+            captchaCtrl = loader.getController();
+            captchaContainer.getChildren().clear();
+            captchaContainer.getChildren().add(captchaNode);
+        } catch (Exception e) {
+            System.err.println("Could not load captcha: " + e.getMessage());
+        }
     }
 
-    @FXML
-    public void refreshCaptcha() {
-        javafx.animation.RotateTransition rt = new javafx.animation.RotateTransition(
-                javafx.util.Duration.millis(500), refreshCaptchaBtn);
-        rt.setByAngle(360);
-        rt.play();
-        loadCaptcha();
-    }
-
-    private boolean validateCaptcha() {
-        String input = captchaField.getText().trim();
-        if (input.isEmpty()) {
-            captchaErrorLabel.setText("Please answer the security check.");
+    private boolean isCaptchaVerified() {
+        if (captchaCtrl == null) return true; // skip if failed to load
+        if (!captchaCtrl.isVerified()) {
+            errorLabel.setStyle("-fx-text-fill: #E24B4A;");
+            errorLabel.setText("Please complete the security check first.");
             return false;
         }
-        boolean valid = CaptchaService.validate(input);
-        if (!valid) {
-            captchaErrorLabel.setText("Wrong answer! Try again.");
-            loadCaptcha();
-        }
-        return valid;
+        return true;
     }
 
     @FXML
@@ -112,7 +71,7 @@ public class LoginController {
         if (!email.contains("@")) {
             showMessage("Please enter a valid email.", "red"); return;
         }
-        if (!validateCaptcha()) return;
+        if (!isCaptchaVerified()) return;
 
         UserService us = new UserService();
         User user = us.login(email, password);
@@ -123,13 +82,13 @@ public class LoginController {
             routeUser(user);
         } else {
             showMessage("Invalid email or password.", "red");
-            loadCaptcha();
+            loadCaptchaComponent(); // reset captcha
         }
     }
 
     @FXML
     public void handleGoogleSignIn() {
-        if (!validateCaptcha()) return;
+        if (!isCaptchaVerified()) return;
 
         showMessage("Opening Google Sign In...", "#185FA5");
         googleBtn.setDisable(true);
@@ -142,7 +101,7 @@ public class LoginController {
             Platform.runLater(() -> {
                 googleBtn.setDisable(false);
                 googleBtn.setText("G  Continue with Google");
-                loadCaptcha();
+                loadCaptchaComponent();
 
                 if (googleUser == null) {
                     showMessage("Google Sign In cancelled.", "red"); return;

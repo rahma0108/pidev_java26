@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.shape.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="CaptchaController"
+      spacing="8"
+      style="-fx-background-color: #f0f4ff;
+             -fx-background-radius: 10;
+             -fx-border-color: #c8d8f0;
+             -fx-border-radius: 10;
+             -fx-border-width: 1;
+             -fx-padding: 12 14;">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="8">
+        <Label text="Security Check"
+               style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #185FA5;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="New" onAction="#refreshCaptcha"
+                prefHeight="22"
+                style="-fx-background-color: #185FA5; -fx-text-fill: white;
+                       -fx-font-size: 10px; -fx-background-radius: 6;
+                       -fx-cursor: hand; -fx-border-color: transparent;
+                       -fx-padding: 2 8;"/>
+    </HBox>
+
+    <!-- ── SLIDER CAPTCHA ── -->
+    <VBox fx:id="sliderBox" spacing="8">
+        <!-- Track + slider area -->
+        <Pane fx:id="puzzlePane" prefWidth="276" prefHeight="60"
+              style="-fx-background-color: #050d1a; -fx-background-radius: 8;">
+
+            <!-- Track line -->
+            <Line startX="10" startY="30" endX="266" endY="30"
+                  style="-fx-stroke: rgba(24,95,165,0.3); -fx-stroke-width: 3;"/>
+
+            <!-- Target zone -->
+            <Pane fx:id="targetZone"
+                  layoutX="222" layoutY="10"
+                  prefWidth="44" prefHeight="40"
+                  style="-fx-border-color: rgba(24,95,165,0.4);
+                         -fx-border-style: dashed;
+                         -fx-border-width: 2;
+                         -fx-border-radius: 8;">
+                <Label fx:id="targetIcon" text="🔒"
+                       layoutX="8" layoutY="8"
+                       style="-fx-font-size: 18px;"/>
+            </Pane>
+
+            <!-- Slider button -->
+            <StackPane fx:id="sliderBtn"
+                       layoutX="10" layoutY="10"
+                       prefWidth="40" prefHeight="40"
+                       style="-fx-background-color: #185FA5;
+                              -fx-background-radius: 10;
+                              -fx-cursor: hand;">
+                <Label fx:id="sliderIcon" text="→"
+                       style="-fx-font-size: 18px; -fx-font-weight: bold;
+                              -fx-text-fill: white;"/>
+            </StackPane>
+        </Pane>
+    </VBox>
+
+    <!-- ── QUESTION CAPTCHA ── -->
+    <VBox fx:id="questionBox" spacing="8" visible="false" managed="false">
+        <Label fx:id="questionLabel" text=""
+               wrapText="true" prefWidth="252"
+               style="-fx-font-size: 13px; -fx-font-weight: bold;
+                      -fx-text-fill: #0d1b2a;
+                      -fx-background-color: #e8f0ff;
+                      -fx-background-radius: 8; -fx-padding: 10 12;"/>
+
+        <TextField fx:id="answerField" promptText="Type your answer here"
+                   prefHeight="36" prefWidth="252"
+                   style="-fx-background-radius: 8; -fx-border-radius: 8;
+                          -fx-border-color: #c8d8f0; -fx-font-size: 13px;"/>
+        <Button text="Submit" onAction="#checkAnswer"
+                prefWidth="252" prefHeight="34"
+                style="-fx-background-color: #185FA5; -fx-text-fill: white;
+                       -fx-font-size: 12px; -fx-background-radius: 8;
+                       -fx-cursor: hand; -fx-border-color: transparent;"/>
+    </VBox>
+
+    <!-- Instruction + status -->
+    <Label fx:id="instructionLabel" text="Drag the arrow to the lock icon to verify"
+           style="-fx-font-size: 11px; -fx-text-fill: #667788;"/>
+    <Label fx:id="statusLabel" text=""
+           style="-fx-font-size: 11px; -fx-text-fill: #667788;"/>
+
+</VBox>

@@ -100,50 +100,8 @@
                        style="-fx-font-size: 12px; -fx-text-fill: #185FA5; -fx-cursor: hand;"/>
             </HBox>
 
-            <!-- CAPTCHA BOX -->
-            <VBox spacing="8"
-                  style="-fx-background-color: #f8f9ff; -fx-background-radius: 10;
-                         -fx-border-color: #c8d8f0; -fx-border-radius: 10;
-                         -fx-border-width: 1; -fx-padding: 10 12;">
-
-                <HBox alignment="CENTER_LEFT" spacing="8">
-                    <Label text="Security Check"
-                           style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #185FA5;"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Button fx:id="refreshCaptchaBtn" text="New" onAction="#refreshCaptcha"
-                            prefHeight="24"
-                            style="-fx-background-color: #185FA5; -fx-text-fill: white;
-                                   -fx-font-size: 11px; -fx-background-radius: 6;
-                                   -fx-cursor: hand; -fx-border-color: transparent;
-                                   -fx-padding: 2 8;"/>
-                </HBox>
-
-                <!-- Image CAPTCHA -->
-                <VBox fx:id="captchaImageBox" alignment="CENTER"
-                      style="-fx-background-color: #0d1b2a; -fx-background-radius: 8; -fx-padding: 8;">
-                    <ImageView fx:id="captchaImage" fitWidth="240" fitHeight="70"
-                               preserveRatio="true"/>
-                </VBox>
-
-                <!-- Fallback math CAPTCHA -->
-                <Label fx:id="captchaFallbackLabel" text=""
-                       visible="false" managed="false"
-                       style="-fx-font-size: 18px; -fx-font-weight: bold;
-                              -fx-text-fill: #185FA5; -fx-font-family: 'Courier New';
-                              -fx-background-color: #0d1b2a; -fx-text-fill: #7fc4fd;
-                              -fx-background-radius: 8; -fx-padding: 10 16;"/>
-
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label text="Answer:" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
-                    <TextField fx:id="captchaField" promptText="Type here"
-                               prefWidth="160" prefHeight="34"
-                               style="-fx-background-radius: 8; -fx-border-radius: 8;
-                                      -fx-border-color: #c8d8f0; -fx-font-size: 13px;"/>
-                </HBox>
-
-                <Label fx:id="captchaErrorLabel" text=""
-                       style="-fx-font-size: 11px; -fx-text-fill: #E24B4A;"/>
-            </VBox>
+            <!-- CAPTCHA COMPONENT — loaded dynamically -->
+            <VBox fx:id="captchaContainer" prefWidth="276"/>
 
             <Label fx:id="errorLabel" text="" wrapText="true"
                    style="-fx-font-size: 12px;"/>
