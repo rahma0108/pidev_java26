@@ -1,3 +1,4 @@
+import com.sun.net.httpserver.HttpServer;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
@@ -7,6 +8,9 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.URL;
 
 public class TurnstileController {
@@ -18,6 +22,8 @@ public class TurnstileController {
     private boolean verified = false;
     private Runnable onSuccess;
     private Runnable onCancel;
+    private HttpServer localServer;
+    private static final int PORT = 7654;
 
     public void setCallbacks(Runnable onSuccess, Runnable onCancel) {
         this.onSuccess = onSuccess;
@@ -29,8 +35,9 @@ public class TurnstileController {
     // ── Java bridge exposed to JavaScript ──
     public class JavaBridge {
         public void onTokenReceived(String token) {
-            System.out.println("Token received: " + token.substring(0, 20) + "...");
-            statusLabel.setText("Verifying with Cloudflare...");
+            System.out.println("Turnstile token received!");
+            Platform.runLater(() ->
+                    statusLabel.setText("Verifying with Cloudflare..."));
 
             new Thread(() -> {
                 boolean ok = TurnstileService.verify(token);
@@ -42,6 +49,7 @@ public class TurnstileController {
                         new Thread(() -> {
                             try { Thread.sleep(700); } catch (Exception ignored) {}
                             Platform.runLater(() -> {
+                                stopServer();
                                 closeStage();
                                 if (onSuccess != null) onSuccess.run();
                             });
@@ -77,37 +85,73 @@ public class TurnstileController {
     public void initialize() {
         WebEngine engine = webView.getEngine();
         engine.setJavaScriptEnabled(true);
+        // Allow WebView to load all content
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
 
-        // Inject Java bridge into JavaScript when page loads
+// Disable SSL check for WebView (dev only)
+        engine.setUserAgent(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                        "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                        "Chrome/120.0.0.0 Safari/537.36"
+        );
+
+        // Start local HTTP server to serve the HTML
+        try {
+            startLocalServer();
+        } catch (Exception e) {
+            System.err.println("Could not start local server: " + e.getMessage());
+            statusLabel.setText("Error starting verification server.");
+            return;
+        }
+
+        // Inject Java bridge when page loads
         engine.getLoadWorker().stateProperty().addListener((obs, old, state) -> {
             if (state == Worker.State.SUCCEEDED) {
-                // Inject the Java object into JS as 'javaBridge'
                 JSObject window = (JSObject) engine.executeScript("window");
                 window.setMember("javaBridge", bridge);
-                System.out.println("JavaBridge injected successfully");
+                System.out.println("JavaBridge injected!");
             }
             if (state == Worker.State.FAILED) {
                 Platform.runLater(() ->
-                        statusLabel.setText("Failed to load. Check internet connection."));
+                        statusLabel.setText("Failed to load. Check internet."));
             }
         });
 
-        // Load HTML
-        try {
-            URL url = getClass().getResource("/turnstile.html");
-            if (url != null) {
-                engine.load(url.toExternalForm());
-            } else {
-                statusLabel.setText("Could not load verification page.");
-            }
-        } catch (Exception e) {
-            statusLabel.setText("Error: " + e.getMessage());
+        // Load from local HTTP server (not file://)
+        engine.load("http://localhost:" + PORT + "/turnstile");
+    }
+
+    private void startLocalServer() throws Exception {
+        localServer = HttpServer.create(new InetSocketAddress(PORT), 0);
+
+        localServer.createContext("/turnstile", exchange -> {
+            // Read HTML from resources
+            InputStream is = getClass().getResourceAsStream("/turnstile.html");
+            byte[] bytes = is != null ? is.readAllBytes() : "<h1>Not found</h1>".getBytes();
+
+            exchange.getResponseHeaders().add("Content-Type", "text/html; charset=UTF-8");
+            exchange.sendResponseHeaders(200, bytes.length);
+            OutputStream os = exchange.getResponseBody();
+            os.write(bytes);
+            os.close();
+        });
+
+        localServer.setExecutor(null);
+        localServer.start();
+        System.out.println("Local Turnstile server started on port " + PORT);
+    }
+
+    private void stopServer() {
+        if (localServer != null) {
+            localServer.stop(0);
+            System.out.println("Local server stopped.");
         }
     }
 
     @FXML
     public void handleCancel() {
         verified = false;
+        stopServer();
         closeStage();
         if (onCancel != null) onCancel.run();
     }
