@@ -12,12 +12,13 @@
             justify-content: center;
             height: 100vh;
             font-family: Arial, sans-serif;
+            overflow: hidden;
         }
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
         }
         .label {
             color: #7fc4fd;
@@ -29,39 +30,67 @@
             color: #5DCAA5;
             font-size: 12px;
             min-height: 18px;
+            text-align: center;
+        }
+        .hint {
+            color: #445566;
+            font-size: 11px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <p class="label">🔐 Security Verification</p>
-        <div id="turnstile-widget"></div>
-        <p class="status" id="status">Please complete the verification</p>
-    </div>
+<div class="container">
+    <p class="label">Security Verification</p>
+    <div id="turnstile-container"></div>
+    <p class="status" id="status">Please complete the checkbox below</p>
+    <p class="hint">Click the checkbox to verify you are human</p>
+</div>
 
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <script>
-        window.onload = function() {
-            turnstile.render('#turnstile-widget', {
-                sitekey: '0x4AAAAAADBxKaQ8USAMMwhZ',
-                theme: 'dark',
-                callback: function(token) {
-                    document.getElementById('status').textContent = '✓ Verified!';
-                    document.getElementById('status').style.color = '#5DCAA5';
-                    // Send token to JavaFX
-                    window.location.href = 'javafx://turnstile-success?token=' + token;
-                },
-                'error-callback': function() {
-                    document.getElementById('status').textContent = '✗ Verification failed. Retry.';
-                    document.getElementById('status').style.color = '#E24B4A';
-                    window.location.href = 'javafx://turnstile-error';
-                },
-                'expired-callback': function() {
-                    document.getElementById('status').textContent = 'Expired. Please verify again.';
-                    window.location.href = 'javafx://turnstile-expired';
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wait a bit for Turnstile to load
+        setTimeout(function() {
+            try {
+                if (typeof turnstile !== 'undefined') {
+                    turnstile.render('#turnstile-container', {
+                        sitekey: '0x4AAAAAADBxKaQ8USAMMwhZ',
+                        theme: 'dark',
+                        callback: function(token) {
+                            document.getElementById('status').textContent = 'Verified! Please wait...';
+                            document.getElementById('status').style.color = '#5DCAA5';
+                            // Call Java bridge
+                            if (window.javaBridge) {
+                                window.javaBridge.onTokenReceived(token);
+                            }
+                        },
+                        'error-callback': function() {
+                            document.getElementById('status').textContent = 'Error. Please retry.';
+                            document.getElementById('status').style.color = '#E24B4A';
+                            if (window.javaBridge) {
+                                window.javaBridge.onError();
+                            }
+                        },
+                        'expired-callback': function() {
+                            document.getElementById('status').textContent = 'Expired. Refreshing...';
+                            document.getElementById('status').style.color = '#EF9F27';
+                            if (window.javaBridge) {
+                                window.javaBridge.onExpired();
+                            }
+                        }
+                    });
+                } else {
+                    document.getElementById('status').textContent = 'Loading Turnstile...';
+                    // Retry after 2 seconds
+                    setTimeout(arguments.callee, 2000);
                 }
-            });
-        };
-    </script>
+            } catch(e) {
+                document.getElementById('status').textContent = 'Error: ' + e.message;
+                document.getElementById('status').style.color = '#E24B4A';
+            }
+        }, 1000);
+    });
+</script>
 </body>
 </html>

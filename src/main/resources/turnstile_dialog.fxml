@@ -26,7 +26,7 @@
     </HBox>
 
     <!-- WebView for Turnstile widget -->
-    <WebView fx:id="webView" prefWidth="420" prefHeight="220"
+    <WebView fx:id="webView" prefWidth="420" prefHeight="260"
              style="-fx-background-color: #0d1b2a;"/>
 
     <!-- Status + Cancel -->

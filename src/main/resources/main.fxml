@@ -109,23 +109,27 @@
             </HBox>
 
             <!-- Cloudflare badge -->
-            <HBox alignment="CENTER" spacing="6"
-                  style="-fx-background-color: #f8f9ff;
-                         -fx-background-radius: 8;
-                         -fx-border-color: #e0e8f8;
-                         -fx-border-radius: 8;
-                         -fx-border-width: 1;
-                         -fx-padding: 8 12;">
-                <Label text="🛡️" style="-fx-font-size: 16px;"/>
+            <HBox alignment="CENTER" spacing="8"
+                  style="-fx-background-color: #f0f4ff;
+             -fx-background-radius: 8;
+             -fx-border-color: #c8d8f8;
+             -fx-border-radius: 8;
+             -fx-border-width: 1;
+             -fx-padding: 8 12;">
+                <Label text="CF"
+                       style="-fx-font-size: 11px; -fx-font-weight: bold;
+                  -fx-text-fill: white;
+                  -fx-background-color: #F6821F;
+                  -fx-background-radius: 4;
+                  -fx-padding: 2 5;"/>
                 <VBox spacing="1">
                     <Label text="Protected by Cloudflare Turnstile"
                            style="-fx-font-size: 11px; -fx-font-weight: bold;
-                                  -fx-text-fill: #185FA5;"/>
-                    <Label text="Verification required on Sign In"
+                      -fx-text-fill: #185FA5;"/>
+                    <Label text="Verification popup opens on Sign In"
                            style="-fx-font-size: 10px; -fx-text-fill: #888;"/>
                 </VBox>
             </HBox>
-
             <Label fx:id="errorLabel" text="" wrapText="true"
                    style="-fx-font-size: 12px;"/>
 
