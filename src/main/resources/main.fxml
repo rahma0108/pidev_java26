@@ -6,11 +6,11 @@
 
 <HBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="LoginController"
-      prefWidth="900" prefHeight="620"
+      prefWidth="900" prefHeight="580"
       style="-fx-background-color: #f0f4f8;">
 
     <!-- LEFT PANEL -->
-    <VBox prefWidth="420" prefHeight="620" alignment="CENTER" spacing="16"
+    <VBox prefWidth="420" prefHeight="580" alignment="CENTER" spacing="16"
           style="-fx-background-color: #185FA5; -fx-padding: 50 40;">
 
         <ImageView fitWidth="160" fitHeight="70" preserveRatio="true"
@@ -46,10 +46,10 @@
 
     <!-- RIGHT PANEL -->
     <VBox HBox.hgrow="ALWAYS" alignment="CENTER"
-          style="-fx-background-color: #f0f4f8; -fx-padding: 30 40;">
+          style="-fx-background-color: #f0f4f8; -fx-padding: 40;">
 
-        <VBox spacing="12" maxWidth="340"
-              style="-fx-background-color: white; -fx-padding: 28 32;
+        <VBox spacing="14" maxWidth="340"
+              style="-fx-background-color: white; -fx-padding: 36 32;
                      -fx-background-radius: 16; -fx-border-radius: 16;
                      -fx-border-color: #e0e0e0; -fx-border-width: 0.5;">
 
@@ -68,7 +68,7 @@
             <!-- GOOGLE SIGN IN -->
             <Button fx:id="googleBtn" text="G  Continue with Google"
                     onAction="#handleGoogleSignIn"
-                    prefWidth="276" prefHeight="40"
+                    prefWidth="276" prefHeight="42"
                     style="-fx-background-color: white; -fx-text-fill: #444444;
                            -fx-font-size: 13px; -fx-font-weight: bold;
                            -fx-background-radius: 10; -fx-cursor: hand;
@@ -86,7 +86,7 @@
             <VBox spacing="5">
                 <Label text="Email" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
                 <TextField fx:id="emailField" promptText="you@example.com"
-                           prefHeight="38" prefWidth="276"
+                           prefHeight="40" prefWidth="276"
                            style="-fx-background-radius: 8; -fx-border-radius: 8;
                                   -fx-border-color: #ddd; -fx-font-size: 13px;"/>
             </VBox>
@@ -94,7 +94,7 @@
             <VBox spacing="5">
                 <Label text="Password" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
                 <PasswordField fx:id="passwordField" promptText="••••••••"
-                               prefHeight="38" prefWidth="276"
+                               prefHeight="40" prefWidth="276"
                                style="-fx-background-radius: 8; -fx-border-radius: 8;
                                       -fx-border-color: #ddd; -fx-font-size: 13px;"/>
             </VBox>
@@ -108,54 +108,23 @@
                        style="-fx-font-size: 12px; -fx-text-fill: #185FA5; -fx-cursor: hand;"/>
             </HBox>
 
-            <!-- CAPTCHA BOX — fixed layout -->
-            <VBox spacing="8"
+            <!-- Cloudflare badge -->
+            <HBox alignment="CENTER" spacing="6"
                   style="-fx-background-color: #f8f9ff;
-                         -fx-background-radius: 10;
-                         -fx-border-color: #c8d8f0;
-                         -fx-border-radius: 10;
+                         -fx-background-radius: 8;
+                         -fx-border-color: #e0e8f8;
+                         -fx-border-radius: 8;
                          -fx-border-width: 1;
-                         -fx-padding: 12 14;">
-
-                <!-- Header -->
-                <HBox alignment="CENTER_LEFT" spacing="8">
-                    <Label text="🔐" style="-fx-font-size: 14px;"/>
-                    <Label text="Security Check"
-                           style="-fx-font-size: 12px; -fx-font-weight: bold;
+                         -fx-padding: 8 12;">
+                <Label text="🛡️" style="-fx-font-size: 16px;"/>
+                <VBox spacing="1">
+                    <Label text="Protected by Cloudflare Turnstile"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold;
                                   -fx-text-fill: #185FA5;"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Button fx:id="refreshCaptchaBtn" text="↻" onAction="#refreshCaptcha"
-                            prefWidth="30" prefHeight="26"
-                            style="-fx-background-color: #185FA5; -fx-text-fill: white;
-                                   -fx-font-size: 14px; -fx-background-radius: 6;
-                                   -fx-cursor: hand; -fx-border-color: transparent;"/>
-                </HBox>
-
-                <!-- Question — full width dark box -->
-                <VBox prefHeight="52" prefWidth="248"
-                      style="-fx-background-color: #0d1b2a;
-                             -fx-background-radius: 8;
-                             -fx-padding: 10 12;">
-                    <Label fx:id="captchaLabel"
-                           text="Loading..."
-                           wrapText="true"
-                           prefWidth="224"
-                           style="-fx-font-size: 12px; -fx-font-weight: bold;
-                                  -fx-text-fill: #7fc4fd;"/>
+                    <Label text="Verification required on Sign In"
+                           style="-fx-font-size: 10px; -fx-text-fill: #888;"/>
                 </VBox>
-
-                <!-- Answer row -->
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label text="Answer:" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
-                    <TextField fx:id="captchaField" promptText="Type here"
-                               prefWidth="180" prefHeight="36"
-                               style="-fx-background-radius: 8; -fx-border-radius: 8;
-                                      -fx-border-color: #c8d8f0; -fx-font-size: 13px;"/>
-                </HBox>
-
-                <Label fx:id="captchaErrorLabel" text=""
-                       style="-fx-font-size: 11px; -fx-text-fill: #E24B4A;"/>
-            </VBox>
+            </HBox>
 
             <Label fx:id="errorLabel" text="" wrapText="true"
                    style="-fx-font-size: 12px;"/>

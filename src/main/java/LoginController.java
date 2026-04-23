@@ -2,7 +2,11 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class LoginController {
 
@@ -13,16 +17,7 @@ public class LoginController {
     @FXML private Button googleBtn;
     @FXML private CheckBox rememberMeBox;
 
-    // CAPTCHA fields
-    @FXML private Label captchaLabel;
-    @FXML private TextField captchaField;
-    @FXML private Label captchaErrorLabel;
-    @FXML private Button refreshCaptchaBtn;
-
-    // Fallback math captcha
-    private int mathAnswer = -1;
-    private boolean usingFallback = false;
-    private final java.util.Random rand = new java.util.Random();
+    private boolean turnstileVerified = false;
 
     @FXML
     public void initialize() {
@@ -34,88 +29,6 @@ public class LoginController {
             emailField.setText(savedEmail);
             rememberMeBox.setSelected(true);
         }
-
-        // Load CAPTCHA from API on background thread
-        loadCaptcha();
-    }
-
-    private void loadCaptcha() {
-        captchaLabel.setText("Loading...");
-        captchaField.setDisable(true);
-        refreshCaptchaBtn.setDisable(true);
-
-        new Thread(() -> {
-            String question = CaptchaService.fetchQuestion();
-            Platform.runLater(() -> {
-                captchaField.setDisable(false);
-                refreshCaptchaBtn.setDisable(false);
-                captchaField.clear();
-                captchaErrorLabel.setText("");
-
-                if (question != null) {
-                    // ✅ API question loaded
-                    usingFallback = false;
-                    captchaLabel.setText(question);
-                } else {
-                    // ❌ API down — use math fallback
-                    usingFallback = true;
-                    loadMathFallback();
-                }
-            });
-        }).start();
-    }
-
-    private void loadMathFallback() {
-        int a = 1 + rand.nextInt(9);
-        int b = 1 + rand.nextInt(9);
-        int op = rand.nextInt(2);
-        if (op == 0) {
-            mathAnswer = a + b;
-            captchaLabel.setText(a + "  +  " + b + "  =  ?");
-        } else {
-            if (a < b) { int t = a; a = b; b = t; }
-            mathAnswer = a - b;
-            captchaLabel.setText(a + "  -  " + b + "  =  ?");
-        }
-    }
-
-    @FXML
-    public void refreshCaptcha() {
-        // Rotate animation on button
-        javafx.animation.RotateTransition rt = new javafx.animation.RotateTransition(
-                javafx.util.Duration.millis(500), refreshCaptchaBtn);
-        rt.setByAngle(360);
-        rt.play();
-        loadCaptcha();
-    }
-
-    private boolean validateCaptcha() {
-        String input = captchaField.getText().trim();
-        if (input.isEmpty()) {
-            captchaErrorLabel.setText("Please answer the security check.");
-            return false;
-        }
-
-        boolean valid;
-        if (usingFallback) {
-            try {
-                valid = Integer.parseInt(input) == mathAnswer;
-            } catch (NumberFormatException e) {
-                captchaErrorLabel.setText("Please enter a number.");
-                return false;
-            }
-        } else {
-            valid = CaptchaService.validateAnswer(input);
-        }
-
-        if (valid) {
-            captchaErrorLabel.setText("");
-            return true;
-        } else {
-            captchaErrorLabel.setText("Wrong answer! Try again.");
-            loadCaptcha();
-            return false;
-        }
     }
 
     @FXML
@@ -124,6 +37,45 @@ public class LoginController {
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
     }
 
+    // ── Show Turnstile popup then proceed ──
+    private void showTurnstile(Runnable onVerified) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/turnstile_dialog.fxml"));
+            Parent root = loader.load();
+            TurnstileController ctrl = loader.getController();
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initStyle(StageStyle.UNDECORATED);
+            stage.setTitle("Security Verification");
+
+            Scene scene = new Scene(root);
+            scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+            stage.setScene(scene);
+            stage.initStyle(StageStyle.TRANSPARENT);
+
+            ctrl.setCallbacks(
+                () -> { // onSuccess
+                    turnstileVerified = true;
+                    onVerified.run();
+                },
+                () -> { // onCancel
+                    turnstileVerified = false;
+                    showMessage("Verification cancelled.", "red");
+                }
+            );
+
+            stage.showAndWait();
+
+        } catch (Exception e) {
+            System.err.println("Turnstile error: " + e.getMessage());
+            // If WebView fails, skip captcha and proceed
+            onVerified.run();
+        }
+    }
+
+    // ── Normal Login ──
     @FXML
     public void handleLogin() {
         String email    = emailField.getText().trim();
@@ -135,64 +87,68 @@ public class LoginController {
         if (!email.contains("@")) {
             showMessage("Please enter a valid email.", "red"); return;
         }
-        if (!validateCaptcha()) return;
 
-        UserService us = new UserService();
-        User user = us.login(email, password);
-
-        if (user != null) {
-            if (rememberMeBox.isSelected()) RememberMeHelper.save(email);
-            else RememberMeHelper.clear();
-            routeUser(user);
-        } else {
-            showMessage("Invalid email or password.", "red");
-            loadCaptcha();
-        }
+        // Show Turnstile first, then login
+        showTurnstile(() -> {
+            UserService us = new UserService();
+            User user = us.login(email, password);
+            if (user != null) {
+                if (rememberMeBox.isSelected()) RememberMeHelper.save(email);
+                else RememberMeHelper.clear();
+                routeUser(user);
+            } else {
+                showMessage("Invalid email or password.", "red");
+                turnstileVerified = false;
+            }
+        });
     }
 
+    // ── Google Sign In ──
     @FXML
     public void handleGoogleSignIn() {
-        if (!validateCaptcha()) return;
+        // Show Turnstile first, then Google
+        showTurnstile(() -> {
+            showMessage("Opening Google Sign In...", "#185FA5");
+            googleBtn.setDisable(true);
+            googleBtn.setText("⏳ Signing in...");
 
-        showMessage("Opening Google Sign In...", "#185FA5");
-        googleBtn.setDisable(true);
-        googleBtn.setText("⏳ Signing in...");
+            new Thread(() -> {
+                com.google.api.services.oauth2.model.Userinfo googleUser =
+                    GoogleAuthService.signIn();
 
-        new Thread(() -> {
-            com.google.api.services.oauth2.model.Userinfo googleUser = GoogleAuthService.signIn();
-            Platform.runLater(() -> {
-                googleBtn.setDisable(false);
-                googleBtn.setText("G  Continue with Google");
-                loadCaptcha();
+                Platform.runLater(() -> {
+                    googleBtn.setDisable(false);
+                    googleBtn.setText("G  Continue with Google");
 
-                if (googleUser == null) {
-                    showMessage("Google Sign In cancelled or failed.", "red");
-                    return;
-                }
+                    if (googleUser == null) {
+                        showMessage("Google Sign In cancelled.", "red");
+                        return;
+                    }
 
-                String email = googleUser.getEmail();
-                String name  = googleUser.getName();
-                UserService us = new UserService();
+                    String email = googleUser.getEmail();
+                    String name  = googleUser.getName();
+                    UserService us = new UserService();
 
-                User existing = us.getAll().stream()
+                    User existing = us.getAll().stream()
                         .filter(u -> u.getEmail().equalsIgnoreCase(email))
                         .findFirst().orElse(null);
 
-                if (existing != null) {
-                    if (rememberMeBox.isSelected()) RememberMeHelper.save(email);
-                    routeUser(existing);
-                } else {
-                    User newUser = new User(email,
+                    if (existing != null) {
+                        if (rememberMeBox.isSelected()) RememberMeHelper.save(email);
+                        routeUser(existing);
+                    } else {
+                        User newUser = new User(email,
                             "GOOGLE_AUTH_" + System.currentTimeMillis(),
                             name, "[\"ROLE_USER\"]", "ACTIVE");
-                    us.insert(newUser);
-                    User created = us.getAll().stream()
+                        us.insert(newUser);
+                        User created = us.getAll().stream()
                             .filter(u -> u.getEmail().equalsIgnoreCase(email))
                             .findFirst().orElse(newUser);
-                    routeUser(created);
-                }
-            });
-        }).start();
+                        routeUser(created);
+                    }
+                });
+            }).start();
+        });
     }
 
     private void routeUser(User user) {
@@ -217,8 +173,8 @@ public class LoginController {
 
     private void navigateTo(String fxml) {
         boolean skipLoading = fxml.contains("landing") ||
-                fxml.contains("register") ||
-                fxml.contains("forgot");
+                              fxml.contains("register") ||
+                              fxml.contains("forgot");
         if (skipLoading) {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource(fxml));

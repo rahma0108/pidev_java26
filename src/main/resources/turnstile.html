@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0d1b2a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .label {
+            color: #7fc4fd;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+        }
+        .status {
+            color: #5DCAA5;
+            font-size: 12px;
+            min-height: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p class="label">🔐 Security Verification</p>
+        <div id="turnstile-widget"></div>
+        <p class="status" id="status">Please complete the verification</p>
+    </div>
+
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script>
+        window.onload = function() {
+            turnstile.render('#turnstile-widget', {
+                sitekey: '0x4AAAAAADBxKaQ8USAMMwhZ',
+                theme: 'dark',
+                callback: function(token) {
+                    document.getElementById('status').textContent = '✓ Verified!';
+                    document.getElementById('status').style.color = '#5DCAA5';
+                    // Send token to JavaFX
+                    window.location.href = 'javafx://turnstile-success?token=' + token;
+                },
+                'error-callback': function() {
+                    document.getElementById('status').textContent = '✗ Verification failed. Retry.';
+                    document.getElementById('status').style.color = '#E24B4A';
+                    window.location.href = 'javafx://turnstile-error';
+                },
+                'expired-callback': function() {
+                    document.getElementById('status').textContent = 'Expired. Please verify again.';
+                    window.location.href = 'javafx://turnstile-expired';
+                }
+            });
+        };
+    </script>
+</body>
+</html>
