@@ -1,21 +1,14 @@
 import javafx.animation.*;
 import javafx.fxml.FXML;
-import javafx.geometry.Bounds;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.*;
 import javafx.util.Duration;
 
 import java.util.Random;
-import java.util.function.Consumer;
 
 public class CaptchaController {
 
-    @FXML private Pane puzzlePane;
-    @FXML private Label instructionLabel;
-    @FXML private Label statusLabel;
     @FXML private Label questionLabel;
     @FXML private TextField answerField;
     @FXML private VBox sliderBox;
@@ -24,23 +17,19 @@ public class CaptchaController {
     @FXML private Pane targetZone;
     @FXML private Label targetIcon;
     @FXML private Label sliderIcon;
+    @FXML private Label instructionLabel;
+    @FXML private Label statusLabel;
 
     private boolean verified = false;
     private double dragStartX;
     private double sliderCurrentX = 10;
     private static final double SLIDER_MIN = 10;
     private static final double SLIDER_MAX = 222;
-    private Consumer<Boolean> onVerified;
     private final Random rand = new Random();
 
-    // Captcha types
-    private enum CaptchaType { SLIDER, QUESTION }
-    private CaptchaType currentType;
-    private int correctAnswer;
-
-    public void setOnVerified(Consumer<Boolean> callback) {
-        this.onVerified = callback;
-    }
+    // For text-based answer matching
+    private String expectedTextAnswer = null;
+    private int expectedNumberAnswer = Integer.MIN_VALUE;
 
     public boolean isVerified() { return verified; }
 
@@ -49,41 +38,40 @@ public class CaptchaController {
         loadRandomCaptcha();
     }
 
+    @FXML
+    public void refreshCaptcha() {
+        loadRandomCaptcha();
+    }
+
     public void loadRandomCaptcha() {
         verified = false;
         statusLabel.setText("");
-        statusLabel.setStyle("-fx-text-fill: #667788;");
+        expectedTextAnswer = null;
+        expectedNumberAnswer = Integer.MIN_VALUE;
 
-        // Pick random type
-        int type = rand.nextInt(2);
-        if (type == 0) {
+        // Remove old listener by replacing field
+        answerField.setText("");
+
+        if (rand.nextInt(2) == 0) {
             showSlider();
         } else {
             showQuestion();
         }
     }
 
-    // ── SLIDER CAPTCHA ──
+    // ── SLIDER ──
     private void showSlider() {
-        currentType = CaptchaType.SLIDER;
         sliderBox.setVisible(true);  sliderBox.setManaged(true);
         questionBox.setVisible(false); questionBox.setManaged(false);
 
-        // Reset slider position
         sliderCurrentX = SLIDER_MIN;
         sliderBtn.setLayoutX(sliderCurrentX);
-        sliderBtn.setStyle(
-            "-fx-background-color: #185FA5; -fx-background-radius: 10; " +
-            "-fx-cursor: hand;");
+        sliderBtn.setStyle("-fx-background-color: #185FA5; -fx-background-radius: 10; -fx-cursor: hand;");
         sliderIcon.setText("→");
         targetIcon.setText("🔒");
-        targetZone.setStyle(
-            "-fx-border-color: rgba(24,95,165,0.4); -fx-border-style: dashed;" +
-            "-fx-border-width: 2; -fx-border-radius: 8;");
+        targetZone.setStyle("-fx-border-color: rgba(24,95,165,0.4); -fx-border-style: dashed; -fx-border-width: 2; -fx-border-radius: 8;");
+        instructionLabel.setText("Drag the arrow all the way to the lock to verify");
 
-        instructionLabel.setText("Drag the arrow to the lock icon to verify");
-
-        // Mouse events
         sliderBtn.setOnMousePressed(this::onSliderPressed);
         sliderBtn.setOnMouseDragged(this::onSliderDragged);
         sliderBtn.setOnMouseReleased(this::onSliderReleased);
@@ -100,34 +88,24 @@ public class CaptchaController {
         sliderCurrentX = newX;
         sliderBtn.setLayoutX(sliderCurrentX);
 
-        // Change color as user drags
         double progress = (sliderCurrentX - SLIDER_MIN) / (SLIDER_MAX - SLIDER_MIN);
-        if (progress > 0.5) {
-            sliderBtn.setStyle(
-                "-fx-background-color: #0F6E56; -fx-background-radius: 10; -fx-cursor: hand;");
-        } else {
-            sliderBtn.setStyle(
-                "-fx-background-color: #185FA5; -fx-background-radius: 10; -fx-cursor: hand;");
-        }
+        sliderBtn.setStyle("-fx-background-color: " +
+                (progress > 0.5 ? "#0F6E56" : "#185FA5") +
+                "; -fx-background-radius: 10; -fx-cursor: hand;");
 
-        // Check if reached target
-        if (sliderCurrentX >= SLIDER_MAX - 15) {
-            verifySlider();
-        }
+        if (sliderCurrentX >= SLIDER_MAX - 15) verifySlider();
         e.consume();
     }
 
     private void onSliderReleased(MouseEvent e) {
         if (!verified) {
-            // Snap back with animation
             TranslateTransition snap = new TranslateTransition(Duration.millis(300), sliderBtn);
             snap.setToX(SLIDER_MIN - sliderBtn.getLayoutX());
             snap.setOnFinished(ev -> {
                 sliderCurrentX = SLIDER_MIN;
                 sliderBtn.setLayoutX(SLIDER_MIN);
                 sliderBtn.setTranslateX(0);
-                sliderBtn.setStyle(
-                    "-fx-background-color: #185FA5; -fx-background-radius: 10; -fx-cursor: hand;");
+                sliderBtn.setStyle("-fx-background-color: #185FA5; -fx-background-radius: 10; -fx-cursor: hand;");
             });
             snap.play();
         }
@@ -137,134 +115,126 @@ public class CaptchaController {
     private void verifySlider() {
         verified = true;
         sliderBtn.setLayoutX(SLIDER_MAX);
-        sliderBtn.setStyle(
-            "-fx-background-color: #0F6E56; -fx-background-radius: 10;");
+        sliderBtn.setStyle("-fx-background-color: #0F6E56; -fx-background-radius: 10;");
         sliderIcon.setText("✓");
         targetIcon.setText("🔓");
-        targetZone.setStyle(
-            "-fx-border-color: #5DCAA5; -fx-border-style: solid;" +
-            "-fx-border-width: 2; -fx-border-radius: 8;");
+        targetZone.setStyle("-fx-border-color: #5DCAA5; -fx-border-style: solid; -fx-border-width: 2; -fx-border-radius: 8;");
         statusLabel.setStyle("-fx-text-fill: #5DCAA5;");
         statusLabel.setText("Human verified!");
 
-        // Bounce animation
         ScaleTransition st = new ScaleTransition(Duration.millis(200), sliderBtn);
         st.setFromX(1); st.setFromY(1);
         st.setToX(1.2); st.setToY(1.2);
         st.setAutoReverse(true); st.setCycleCount(2);
         st.play();
-
-        if (onVerified != null) onVerified.accept(true);
     }
 
-    // ── QUESTION CAPTCHA ──
+    // ── QUESTION ──
     private void showQuestion() {
-        currentType = CaptchaType.QUESTION;
         sliderBox.setVisible(false); sliderBox.setManaged(false);
         questionBox.setVisible(true); questionBox.setManaged(true);
         answerField.clear();
 
-        // Random question types
         int qType = rand.nextInt(4);
+
         switch (qType) {
-            case 0: // Word count
-                String[] sentences = {
-                        "The sky is blue today",
-                        "I love coding in Java",
-                        "MediLink is a health platform",
-                        "Doctors help patients recover"
+            case 0: {
+                // Word count
+                String[][] options = {
+                        {"The sky is blue today", "5"},
+                        {"I love coding in Java", "5"},
+                        {"MediLink is a health platform", "5"},
+                        {"Doctors help patients recover quickly", "5"},
+                        {"Java is a programming language", "5"}
                 };
-                String sentence = sentences[rand.nextInt(sentences.length)];
-                correctAnswer = sentence.split(" ").length;
-                questionLabel.setText("How many words are in:\n\"" + sentence + "\"?");
+                String[] pick = options[rand.nextInt(options.length)];
+                String sentence = pick[0];
+                int count = sentence.split(" ").length;
+                expectedNumberAnswer = count;
+                questionLabel.setText("How many words are in this sentence?\n\n\"" + sentence + "\"");
+                instructionLabel.setText("Type the number of words");
                 break;
-
-            case 1: // Which is biggest
-                int a = 10 + rand.nextInt(50);
-                int b = 10 + rand.nextInt(50);
-                int c = 10 + rand.nextInt(50);
-                correctAnswer = Math.max(a, Math.max(b, c));
-                questionLabel.setText("Which is the largest?\n" + a + ",  " + b + ",  " + c);
+            }
+            case 1: {
+                // Biggest number
+                int a = 10 + rand.nextInt(80);
+                int b = 10 + rand.nextInt(80);
+                int c = 10 + rand.nextInt(80);
+                // Make sure all different
+                while (b == a) b = 10 + rand.nextInt(80);
+                while (c == a || c == b) c = 10 + rand.nextInt(80);
+                expectedNumberAnswer = Math.max(a, Math.max(b, c));
+                questionLabel.setText("Which is the largest number?\n\n" + a + "     " + b + "     " + c);
+                instructionLabel.setText("Type the largest number");
                 break;
-
-            case 2: // Missing letter
-                String[][] wordPairs = {
+            }
+            case 2: {
+                // Missing letter
+                String[][] pairs = {
                         {"H_alth", "e"},
                         {"D_ctor", "o"},
                         {"Hosp_tal", "i"},
                         {"Medic_ne", "i"},
                         {"Pati_nt", "e"},
                         {"Nur_e", "s"},
-                        {"Cli_ic", "n"}
+                        {"Cli_ic", "n"},
+                        {"_ospital", "h"}
                 };
-                int idx = rand.nextInt(wordPairs.length);
-                String word    = wordPairs[idx][0];
-                String letter  = wordPairs[idx][1];
-                questionLabel.setText("What letter is missing?\n" + word);
+                String[] pair = pairs[rand.nextInt(pairs.length)];
+                expectedTextAnswer = pair[1].toLowerCase();
+                questionLabel.setText("What letter is missing?\n\n" + pair[0]);
                 instructionLabel.setText("Type the missing letter");
-                correctAnswer = -1;
-                answerField.textProperty().addListener((obs, old, val) -> {
-                    if (val.trim().equalsIgnoreCase(letter)) verifyQuestion(true);
-                });
-                return;
-
-            case 3: // Even or odd
-                int num = 2 + rand.nextInt(98);
-                boolean isEven = num % 2 == 0;
-                questionLabel.setText("Is the number " + num + " even or odd?\nType:  even  or  odd");
-                instructionLabel.setText("Type your answer");
-                correctAnswer = -2;
-                answerField.textProperty().addListener((obs, old, val) -> {
-                    String v = val.trim().toLowerCase();
-                    if ((isEven && v.equals("even")) || (!isEven && v.equals("odd")))
-                        verifyQuestion(true);
-                });
-                return;
+                break;
+            }
+            case 3: {
+                // Even or odd
+                int num = 2 + rand.nextInt(97);
+                expectedTextAnswer = (num % 2 == 0) ? "even" : "odd";
+                questionLabel.setText("Is this number even or odd?\n\n" + num);
+                instructionLabel.setText("Type:  even  or  odd");
+                break;
+            }
         }
-
-        instructionLabel.setText("Type the correct answer");
-        answerField.setOnAction(e -> checkAnswer());
     }
 
     @FXML
     public void checkAnswer() {
-        String input = answerField.getText().trim();
+        String input = answerField.getText().trim().toLowerCase();
         if (input.isEmpty()) {
             statusLabel.setStyle("-fx-text-fill: #E24B4A;");
             statusLabel.setText("Please type your answer.");
             return;
         }
-        try {
-            int ans = Integer.parseInt(input);
-            verifyQuestion(ans == correctAnswer);
-        } catch (NumberFormatException e) {
-            statusLabel.setStyle("-fx-text-fill: #E24B4A;");
-            statusLabel.setText("Please type a number.");
-        }
-    }
 
-    private void verifyQuestion(boolean correct) {
+        boolean correct = false;
+
+        if (expectedTextAnswer != null) {
+            correct = input.equals(expectedTextAnswer);
+        } else if (expectedNumberAnswer != Integer.MIN_VALUE) {
+            try {
+                correct = Integer.parseInt(input) == expectedNumberAnswer;
+            } catch (NumberFormatException e) {
+                statusLabel.setStyle("-fx-text-fill: #E24B4A;");
+                statusLabel.setText("Please type a valid answer.");
+                return;
+            }
+        }
+
         if (correct) {
             verified = true;
             statusLabel.setStyle("-fx-text-fill: #5DCAA5;");
-            statusLabel.setText("Correct! Human verified!");
-            answerField.setStyle(
-                "-fx-background-radius: 8; -fx-border-radius: 8;" +
-                "-fx-border-color: #5DCAA5; -fx-font-size: 13px;");
-            if (onVerified != null) onVerified.accept(true);
+            statusLabel.setText("Correct! Verified!");
+            answerField.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #5DCAA5; -fx-font-size: 13px;");
         } else {
             statusLabel.setStyle("-fx-text-fill: #E24B4A;");
             statusLabel.setText("Wrong! Try again.");
             answerField.clear();
-            // Shake animation
-            TranslateTransition shake = new TranslateTransition(Duration.millis(80), answerField);
+            // Shake
+            TranslateTransition shake = new TranslateTransition(Duration.millis(70), answerField);
             shake.setByX(8); shake.setAutoReverse(true); shake.setCycleCount(4);
             shake.play();
+            // Load new question
+            showQuestion();
         }
-    }
-
-    @FXML
-    public void refreshCaptcha() {
-        loadRandomCaptcha();
     }
 }
