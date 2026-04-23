@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="AIChatController"
+      prefWidth="380" prefHeight="500"
+      style="-fx-background-color: white;
+             -fx-background-radius: 16;
+             -fx-border-color: #e0e0e0;
+             -fx-border-radius: 16;
+             -fx-border-width: 0.5;
+             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 20, 0, 0, 4);">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="10"
+          style="-fx-padding: 14 16;
+                 -fx-background-color: #185FA5;
+                 -fx-background-radius: 16 16 0 0;">
+        <Label text="🤖" style="-fx-font-size: 18px;"/>
+        <VBox spacing="1">
+            <Label text="MediLink AI Assistant"
+                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Label text="Powered by OpenAI"
+                   style="-fx-font-size: 10px; -fx-text-fill: #aad4f5;"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Clear" onAction="#handleClearChat"
+                style="-fx-background-color: rgba(255,255,255,0.15);
+                       -fx-text-fill: white; -fx-font-size: 11px;
+                       -fx-background-radius: 8; -fx-cursor: hand;
+                       -fx-border-color: transparent; -fx-padding: 4 10;"/>
+    </HBox>
+
+    <!-- Messages area -->
+    <ScrollPane fx:id="scrollPane" VBox.vgrow="ALWAYS"
+                fitToWidth="true"
+                style="-fx-background-color: transparent;
+                       -fx-background: transparent;
+                       -fx-border-color: transparent;">
+        <VBox fx:id="messagesBox" spacing="6"
+              style="-fx-padding: 14; -fx-background-color: #fafbfc;"/>
+    </ScrollPane>
+
+    <!-- Typing indicator -->
+    <HBox style="-fx-padding: 0 14 4 14;">
+        <Label fx:id="typingLabel" text="AI is typing..."
+               visible="false" managed="false"
+               style="-fx-font-size: 11px; -fx-text-fill: #888; -fx-font-style: italic;"/>
+    </HBox>
+
+    <!-- Input area -->
+    <HBox spacing="8" alignment="CENTER"
+          style="-fx-padding: 10 14 14 14;
+                 -fx-border-color: #e0e0e0;
+                 -fx-border-width: 1 0 0 0;">
+        <TextField fx:id="inputField"
+                   promptText="Ask me anything..."
+                   HBox.hgrow="ALWAYS" prefHeight="36"
+                   style="-fx-background-radius: 18; -fx-border-radius: 18;
+                          -fx-border-color: #ddd; -fx-font-size: 13px;
+                          -fx-padding: 0 14;"/>
+        <Button fx:id="sendBtn" text="Send" onAction="#handleSend"
+                prefHeight="36"
+                style="-fx-background-color: #185FA5; -fx-text-fill: white;
+                       -fx-font-size: 13px; -fx-background-radius: 18;
+                       -fx-cursor: hand; -fx-border-color: transparent;
+                       -fx-padding: 0 16;"/>
+    </HBox>
+</VBox>

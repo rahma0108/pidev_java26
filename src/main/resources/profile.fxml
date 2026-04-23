@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.shape.*?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="ProfileController"
+           prefWidth="1000" prefHeight="660"
+           style="-fx-background-color: #050d1a;">
+
+    <javafx.scene.canvas.Canvas fx:id="animCanvas" width="1000" height="660"/>
+
+    <VBox spacing="0">
+
+        <!-- TOP NAV -->
+        <HBox alignment="CENTER_LEFT" prefWidth="1000"
+              style="-fx-padding: 18 32;
+                     -fx-background-color: rgba(5,13,26,0.85);
+                     -fx-border-color: rgba(24,95,165,0.2);
+                     -fx-border-width: 0 0 1 0;">
+            <Label text="← Back" onMouseClicked="#goBack"
+                   style="-fx-text-fill: #7fc4fd; -fx-font-size: 13px; -fx-cursor: hand;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="My Profile"
+                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="themeToggleBtn" text="🌙" onAction="#toggleTheme"
+                    style="-fx-background-color: rgba(255,255,255,0.08);
+                           -fx-font-size: 15px; -fx-cursor: hand;
+                           -fx-border-color: transparent; -fx-background-radius: 20;
+                           -fx-padding: 5 10;"/>
+        </HBox>
+
+        <!-- CONTENT -->
+        <HBox spacing="24" style="-fx-padding: 40 60;" VBox.vgrow="ALWAYS">
+
+            <!-- LEFT — Avatar card -->
+            <VBox spacing="16" prefWidth="260" alignment="CENTER"
+                  style="-fx-background-color: rgba(13,27,42,0.9);
+                         -fx-background-radius: 20;
+                         -fx-border-color: rgba(24,95,165,0.25);
+                         -fx-border-radius: 20; -fx-border-width: 1;
+                         -fx-padding: 36 24;">
+
+                <!-- Big avatar circle -->
+                <StackPane>
+                    <Circle radius="55"
+                            style="-fx-fill: rgba(24,95,165,0.3);
+                                   -fx-stroke: #185FA5; -fx-stroke-width: 2;"/>
+                    <Label fx:id="bigAvatarLabel" text="?"
+                           style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                </StackPane>
+
+                <Label fx:id="profileNameLabel" text="Loading..."
+                       style="-fx-font-size: 18px; -fx-font-weight: bold;
+                              -fx-text-fill: white; -fx-text-alignment: center;"
+                       wrapText="true" maxWidth="220"/>
+
+                <Label fx:id="profileRoleLabel" text=""
+                       style="-fx-font-size: 12px; -fx-text-fill: #7fc4fd;
+                              -fx-background-color: rgba(24,95,165,0.2);
+                              -fx-background-radius: 10; -fx-padding: 4 12;"/>
+
+                <Label fx:id="profileStatusLabel" text=""
+                       style="-fx-font-size: 12px; -fx-text-fill: #5DCAA5;
+                              -fx-background-color: rgba(29,158,117,0.15);
+                              -fx-background-radius: 10; -fx-padding: 4 12;"/>
+
+                <Separator style="-fx-background-color: rgba(255,255,255,0.08);"/>
+
+                <!-- AI summary -->
+                <Label text="🤖 AI Profile"
+                       style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #7fc4fd;"/>
+                <Label fx:id="aiSummaryLabel"
+                       text="Generating your profile summary..."
+                       wrapText="true" maxWidth="212"
+                       style="-fx-font-size: 12px; -fx-text-fill: #8899aa;
+                              -fx-text-alignment: center;"/>
+            </VBox>
+
+            <!-- RIGHT — Edit form -->
+            <VBox spacing="16" HBox.hgrow="ALWAYS"
+                  style="-fx-background-color: rgba(13,27,42,0.9);
+                         -fx-background-radius: 20;
+                         -fx-border-color: rgba(24,95,165,0.25);
+                         -fx-border-radius: 20; -fx-border-width: 1;
+                         -fx-padding: 36 32;">
+
+                <Label text="Edit Your Information"
+                       style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+
+                <Separator style="-fx-background-color: rgba(255,255,255,0.08);"/>
+
+                <HBox spacing="16">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Full Name" style="-fx-font-size: 12px; -fx-text-fill: #7fc4fd;"/>
+                        <TextField fx:id="nameField" prefHeight="40"
+                                   style="-fx-background-color: rgba(255,255,255,0.06);
+                                          -fx-text-fill: white; -fx-prompt-text-fill: #445566;
+                                          -fx-background-radius: 10; -fx-border-radius: 10;
+                                          -fx-border-color: rgba(24,95,165,0.3);
+                                          -fx-border-width: 1; -fx-font-size: 13px;"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Phone" style="-fx-font-size: 12px; -fx-text-fill: #7fc4fd;"/>
+                        <TextField fx:id="phoneField" prefHeight="40"
+                                   style="-fx-background-color: rgba(255,255,255,0.06);
+                                          -fx-text-fill: white; -fx-prompt-text-fill: #445566;
+                                          -fx-background-radius: 10; -fx-border-radius: 10;
+                                          -fx-border-color: rgba(24,95,165,0.3);
+                                          -fx-border-width: 1; -fx-font-size: 13px;"/>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="6">
+                    <Label text="Email" style="-fx-font-size: 12px; -fx-text-fill: #7fc4fd;"/>
+                    <TextField fx:id="emailField" prefHeight="40"
+                               style="-fx-background-color: rgba(255,255,255,0.06);
+                                      -fx-text-fill: white; -fx-prompt-text-fill: #445566;
+                                      -fx-background-radius: 10; -fx-border-radius: 10;
+                                      -fx-border-color: rgba(24,95,165,0.3);
+                                      -fx-border-width: 1; -fx-font-size: 13px;"/>
+                </VBox>
+
+                <Separator style="-fx-background-color: rgba(255,255,255,0.08);"/>
+
+                <Label text="Change Password"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+
+                <HBox spacing="16">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="New Password" style="-fx-font-size: 12px; -fx-text-fill: #7fc4fd;"/>
+                        <PasswordField fx:id="newPassField"
+                                       promptText="Leave empty to keep current"
+                                       prefHeight="40"
+                                       style="-fx-background-color: rgba(255,255,255,0.06);
+                                              -fx-text-fill: white; -fx-prompt-text-fill: #445566;
+                                              -fx-background-radius: 10; -fx-border-radius: 10;
+                                              -fx-border-color: rgba(24,95,165,0.3);
+                                              -fx-border-width: 1; -fx-font-size: 13px;"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="Confirm Password" style="-fx-font-size: 12px; -fx-text-fill: #7fc4fd;"/>
+                        <PasswordField fx:id="confirmPassField"
+                                       promptText="Confirm new password"
+                                       prefHeight="40"
+                                       style="-fx-background-color: rgba(255,255,255,0.06);
+                                              -fx-text-fill: white; -fx-prompt-text-fill: #445566;
+                                              -fx-background-radius: 10; -fx-border-radius: 10;
+                                              -fx-border-color: rgba(24,95,165,0.3);
+                                              -fx-border-width: 1; -fx-font-size: 13px;"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Password strength bars -->
+                <VBox spacing="4">
+                    <HBox spacing="6">
+                        <Region fx:id="sBar1" prefHeight="4" HBox.hgrow="ALWAYS"
+                                style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 4;"/>
+                        <Region fx:id="sBar2" prefHeight="4" HBox.hgrow="ALWAYS"
+                                style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 4;"/>
+                        <Region fx:id="sBar3" prefHeight="4" HBox.hgrow="ALWAYS"
+                                style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 4;"/>
+                        <Region fx:id="sBar4" prefHeight="4" HBox.hgrow="ALWAYS"
+                                style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 4;"/>
+                    </HBox>
+                    <Label fx:id="passStrengthLabel" text=""
+                           style="-fx-font-size: 11px; -fx-text-fill: #667788;"/>
+                </VBox>
+
+                <Region VBox.vgrow="ALWAYS"/>
+
+                <Label fx:id="msgLabel" text="" wrapText="true"
+                       style="-fx-font-size: 12px;"/>
+
+                <!-- Save button with spinner -->
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Button text="Save Changes" onAction="#handleSave"
+                            prefWidth="180" prefHeight="42"
+                            style="-fx-background-color: #185FA5; -fx-text-fill: white;
+                                   -fx-font-size: 14px; -fx-font-weight: bold;
+                                   -fx-background-radius: 10; -fx-cursor: hand;
+                                   -fx-border-color: transparent;"/>
+                    <ProgressIndicator fx:id="saveSpinner"
+                                       prefWidth="22" prefHeight="22"
+                                       visible="false" managed="false"/>
+                    <Label fx:id="savingLabel" text="Saving..."
+                           visible="false" managed="false"
+                           style="-fx-font-size: 12px; -fx-text-fill: #7fc4fd;"/>
+                </HBox>
+            </VBox>
+        </HBox>
+    </VBox>
+</StackPane>

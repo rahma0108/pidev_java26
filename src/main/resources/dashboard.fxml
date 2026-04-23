@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.chart.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="DashboardController"
+            prefWidth="960" prefHeight="640"
+            style="-fx-background-color: #f0f4f8;">
+
+    <left>
+        <VBox prefWidth="220" prefHeight="640"
+              style="-fx-background-color: #185FA5;">
+
+            <VBox alignment="CENTER" style="-fx-padding: 24 16 16 16;">
+                <ImageView fitWidth="140" fitHeight="60" preserveRatio="true">
+                    <image><Image url="@/logo.png"/></image>
+                </ImageView>
+            </VBox>
+
+            <Separator style="-fx-background-color: rgba(255,255,255,0.2);"/>
+
+            <VBox spacing="4" style="-fx-padding: 16 12;">
+                <Button text="  Dashboard" onAction="#showDashboard"
+                        prefWidth="196" prefHeight="42"
+                        style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white;
+                               -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
+                               -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
+                <Button text="  Users" onAction="#showUsers"
+                        prefWidth="196" prefHeight="42"
+                        style="-fx-background-color: transparent; -fx-text-fill: white;
+                               -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
+                               -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
+                <Button text="  Appointments" onAction="#showAppointments"
+                        prefWidth="196" prefHeight="42"
+                        style="-fx-background-color: transparent; -fx-text-fill: white;
+                               -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
+                               -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
+                <Button text="  Medications" onAction="#showMedications"
+                        prefWidth="196" prefHeight="42"
+                        style="-fx-background-color: transparent; -fx-text-fill: white;
+                               -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
+                               -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
+                <Button text="  Events" onAction="#showEvents"
+                        prefWidth="196" prefHeight="42"
+                        style="-fx-background-color: transparent; -fx-text-fill: white;
+                               -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
+                               -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
+            </VBox>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <VBox style="-fx-padding: 12;" spacing="8">
+                <VBox style="-fx-background-color: rgba(255,255,255,0.15);
+                             -fx-background-radius: 12; -fx-padding: 12 14;">
+                    <Label fx:id="welcomeLabel" text="Welcome!"
+                           style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                    <Label fx:id="roleLabel" text=""
+                           style="-fx-font-size: 11px; -fx-text-fill: #aad4f5;"/>
+                </VBox>
+                <VBox style="-fx-background-color: rgba(255,255,255,0.1);
+                             -fx-background-radius: 10; -fx-padding: 10;">
+                    <Label fx:id="aiWelcomeLabel" text="Loading..."
+                           wrapText="true" maxWidth="190"
+                           style="-fx-font-size: 11px; -fx-text-fill: #cce4f7;"/>
+                </VBox>
+                <Button text="Logout" onAction="#handleLogout"
+                        prefWidth="196" prefHeight="36"
+                        style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white;
+                               -fx-font-size: 12px; -fx-background-radius: 10;
+                               -fx-cursor: hand; -fx-border-color: transparent;"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <center>
+        <ScrollPane fitToWidth="true"
+                    style="-fx-background-color: transparent; -fx-background: transparent;">
+            <VBox spacing="20" style="-fx-padding: 28;">
+
+                <!-- TOP BAR with title + theme toggle -->
+                <HBox alignment="CENTER_LEFT">
+                    <Label fx:id="pageTitle" text="Dashboard"
+                           style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <!-- Theme toggle icon -->
+                    <Button fx:id="themeToggleBtn" text="🌙"
+                            onAction="#toggleTheme"
+                            style="-fx-background-color: transparent; -fx-font-size: 20px;
+                                   -fx-cursor: hand; -fx-border-color: transparent;
+                                   -fx-padding: 4 8;"/>
+                </HBox>
+
+                <!-- STAT CARDS -->
+                <HBox spacing="14">
+                    <VBox HBox.hgrow="ALWAYS" prefHeight="90" alignment="CENTER" spacing="4"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-color: #e0e0e0; -fx-border-radius: 14; -fx-border-width: 0.5;">
+                        <Label text="Total Users" style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
+                        <Label fx:id="totalUsersLabel" text="—"
+                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #185FA5;"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" prefHeight="90" alignment="CENTER" spacing="4"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-color: #e0e0e0; -fx-border-radius: 14; -fx-border-width: 0.5;">
+                        <Label text="Appointments" style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
+                        <Label fx:id="totalAppointmentsLabel" text="—"
+                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0F6E56;"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" prefHeight="90" alignment="CENTER" spacing="4"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-color: #e0e0e0; -fx-border-radius: 14; -fx-border-width: 0.5;">
+                        <Label text="Medications" style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
+                        <Label fx:id="totalMedsLabel" text="—"
+                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #993C1D;"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" prefHeight="90" alignment="CENTER" spacing="4"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-color: #e0e0e0; -fx-border-radius: 14; -fx-border-width: 0.5;">
+                        <Label text="Events" style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
+                        <Label fx:id="totalEventsLabel" text="—"
+                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #534AB7;"/>
+                    </VBox>
+                </HBox>
+
+                <!-- TWO CHARTS + QUICK ACTIONS -->
+                <HBox spacing="14">
+                    <VBox HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-color: #e0e0e0; -fx-border-radius: 14;
+                                 -fx-border-width: 0.5; -fx-padding: 16;">
+                        <Label text="Users by Role"
+                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333; -fx-padding: 0 0 8 0;"/>
+                        <PieChart fx:id="rolesPieChart" prefHeight="240"
+                                  legendVisible="true" labelsVisible="true"
+                                  style="-fx-background-color: transparent;"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-color: #e0e0e0; -fx-border-radius: 14;
+                                 -fx-border-width: 0.5; -fx-padding: 16;">
+                        <Label text="Users by Status"
+                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333; -fx-padding: 0 0 8 0;"/>
+                        <PieChart fx:id="statusPieChart" prefHeight="240"
+                                  legendVisible="true" labelsVisible="true"
+                                  style="-fx-background-color: transparent;"/>
+                    </VBox>
+                    <VBox spacing="10" prefWidth="240">
+                        <Label text="Quick Actions"
+                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                        <VBox prefHeight="66" alignment="CENTER" spacing="4" onMouseClicked="#showUsers"
+                              style="-fx-background-color: #E6F1FB; -fx-background-radius: 12;
+                                     -fx-border-color: #B5D4F4; -fx-border-radius: 12;
+                                     -fx-border-width: 0.5; -fx-cursor: hand; -fx-padding: 10;">
+                            <Label text="Manage Users" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0C447C;"/>
+                            <Label text="Add, edit, delete users" style="-fx-font-size: 11px; -fx-text-fill: #185FA5;"/>
+                        </VBox>
+                        <VBox prefHeight="66" alignment="CENTER" spacing="4" onMouseClicked="#showAppointments"
+                              style="-fx-background-color: #E1F5EE; -fx-background-radius: 12;
+                                     -fx-border-color: #9FE1CB; -fx-border-radius: 12;
+                                     -fx-border-width: 0.5; -fx-cursor: hand; -fx-padding: 10;">
+                            <Label text="Appointments" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #085041;"/>
+                            <Label text="View and manage schedule" style="-fx-font-size: 11px; -fx-text-fill: #0F6E56;"/>
+                        </VBox>
+                        <VBox prefHeight="66" alignment="CENTER" spacing="4" onMouseClicked="#showMedications"
+                              style="-fx-background-color: #FAECE7; -fx-background-radius: 12;
+                                     -fx-border-color: #F5C4B3; -fx-border-radius: 12;
+                                     -fx-border-width: 0.5; -fx-cursor: hand; -fx-padding: 10;">
+                            <Label text="Medications" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #712B13;"/>
+                            <Label text="Stock and prescriptions" style="-fx-font-size: 11px; -fx-text-fill: #993C1D;"/>
+                        </VBox>
+                        <VBox prefHeight="66" alignment="CENTER" spacing="4" onMouseClicked="#showEvents"
+                              style="-fx-background-color: #EEEDFE; -fx-background-radius: 12;
+                                     -fx-border-color: #CECBF6; -fx-border-radius: 12;
+                                     -fx-border-width: 0.5; -fx-cursor: hand; -fx-padding: 10;">
+                            <Label text="Events" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #26215C;"/>
+                            <Label text="Upcoming events" style="-fx-font-size: 11px; -fx-text-fill: #534AB7;"/>
+                        </VBox>
+                    </VBox>
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- Floating AI Chat Button -->
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" style="-fx-padding: 0 24 24 0;">
+            <Button text="🤖 AI Chat" onAction="#toggleChat"
+                    style="-fx-background-color: #185FA5; -fx-text-fill: white;
+                           -fx-font-size: 13px; -fx-font-weight: bold;
+                           -fx-background-radius: 24; -fx-cursor: hand;
+                           -fx-border-color: transparent; -fx-padding: 12 20;
+                           -fx-effect: dropshadow(gaussian, rgba(24,95,165,0.4), 12, 0, 0, 4);"/>
+        </HBox>
+    </bottom>
+</BorderPane>
