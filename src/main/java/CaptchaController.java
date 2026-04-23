@@ -37,6 +37,21 @@ public class CaptchaController {
     @FXML
     public void initialize() {
         loadRandomCaptcha();
+
+        // Hide scrollbars from TextArea
+        questionLabel.setScrollTop(Double.MAX_VALUE);
+        questionLabel.skinProperty().addListener((obs, oldSkin, newSkin) -> {
+            if (newSkin != null) {
+                // Find and hide scrollbars
+                questionLabel.lookupAll(".scroll-bar").forEach(node -> {
+                    node.setVisible(false);
+                    node.setManaged(false);
+                });
+                questionLabel.lookupAll(".scroll-pane").forEach(node -> {
+                    node.setStyle("-fx-background-color: transparent;");
+                });
+            }
+        });
     }
 
     @FXML

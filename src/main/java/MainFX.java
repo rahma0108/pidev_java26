@@ -15,6 +15,7 @@ public class MainFX extends Application {
         // Open landing page first
         Parent root = FXMLLoader.load(getClass().getResource("/landing.fxml"));
         Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("/captcha_style.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle("MediLink Care");
         stage.setResizable(false);

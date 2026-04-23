@@ -60,19 +60,23 @@
     <!-- QUESTION CAPTCHA -->
     <VBox fx:id="questionBox" spacing="8" visible="false" managed="false">
 
-        <!-- Question label — NO fixed width, full wrap -->
+        <!-- Question label — TextArea styled as label, no scroll -->
         <TextArea fx:id="questionLabel"
                   editable="false"
                   wrapText="true"
-                  prefHeight="80"
+                  prefHeight="90"
+                  prefWidth="248"
                   style="-fx-font-size: 13px; -fx-font-weight: bold;
                          -fx-text-fill: #0d1b2a;
                          -fx-background-color: #e8f0ff;
                          -fx-background-radius: 8;
                          -fx-border-color: transparent;
+                         -fx-border-width: 0;
                          -fx-focus-color: transparent;
                          -fx-faint-focus-color: transparent;
-                         -fx-padding: 10 12;"/>
+                         -fx-highlight-fill: transparent;
+                         -fx-padding: 10 12;
+                         -fx-scroll-bar-policy: never;"/>
 
         <TextField fx:id="answerField" promptText="Type your answer here"
                    prefHeight="36"
