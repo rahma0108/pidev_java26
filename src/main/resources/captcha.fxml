@@ -7,7 +7,6 @@
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="CaptchaController"
       spacing="8"
-      prefWidth="276" maxWidth="276"
       style="-fx-background-color: #f0f4ff;
              -fx-background-radius: 10;
              -fx-border-color: #c8d8f0;
@@ -28,17 +27,12 @@
                        -fx-padding: 2 8;"/>
     </HBox>
 
-    <!-- ── SLIDER CAPTCHA ── -->
+    <!-- SLIDER CAPTCHA -->
     <VBox fx:id="sliderBox" spacing="8">
-        <!-- Track + slider area -->
-        <Pane fx:id="puzzlePane" prefWidth="276" prefHeight="60"
+        <Pane prefWidth="276" prefHeight="60"
               style="-fx-background-color: #050d1a; -fx-background-radius: 8;">
-
-            <!-- Track line -->
             <Line startX="10" startY="30" endX="266" endY="30"
                   style="-fx-stroke: rgba(24,95,165,0.3); -fx-stroke-width: 3;"/>
-
-            <!-- Target zone -->
             <Pane fx:id="targetZone"
                   layoutX="222" layoutY="10"
                   prefWidth="44" prefHeight="40"
@@ -50,8 +44,6 @@
                        layoutX="8" layoutY="8"
                        style="-fx-font-size: 18px;"/>
             </Pane>
-
-            <!-- Slider button -->
             <StackPane fx:id="sliderBtn"
                        layoutX="10" layoutY="10"
                        prefWidth="40" prefHeight="40"
@@ -65,29 +57,36 @@
         </Pane>
     </VBox>
 
-    <!-- ── QUESTION CAPTCHA ── -->
+    <!-- QUESTION CAPTCHA -->
     <VBox fx:id="questionBox" spacing="8" visible="false" managed="false">
-        <Label fx:id="questionLabel" text=""
-               wrapText="true"
-               style="-fx-font-size: 13px; -fx-font-weight: bold;
-              -fx-text-fill: #0d1b2a;
-              -fx-background-color: #e8f0ff;
-              -fx-background-radius: 8;
-              -fx-padding: 12 14;"/>
+
+        <!-- Question label — NO fixed width, full wrap -->
+        <TextArea fx:id="questionLabel"
+                  editable="false"
+                  wrapText="true"
+                  prefHeight="80"
+                  style="-fx-font-size: 13px; -fx-font-weight: bold;
+                         -fx-text-fill: #0d1b2a;
+                         -fx-background-color: #e8f0ff;
+                         -fx-background-radius: 8;
+                         -fx-border-color: transparent;
+                         -fx-focus-color: transparent;
+                         -fx-faint-focus-color: transparent;
+                         -fx-padding: 10 12;"/>
 
         <TextField fx:id="answerField" promptText="Type your answer here"
-                   prefHeight="36" prefWidth="252"
+                   prefHeight="36"
                    style="-fx-background-radius: 8; -fx-border-radius: 8;
                           -fx-border-color: #c8d8f0; -fx-font-size: 13px;"/>
+
         <Button text="Submit" onAction="#checkAnswer"
-                prefWidth="252" prefHeight="34"
+                prefHeight="36"
                 style="-fx-background-color: #185FA5; -fx-text-fill: white;
-                       -fx-font-size: 12px; -fx-background-radius: 8;
+                       -fx-font-size: 13px; -fx-background-radius: 8;
                        -fx-cursor: hand; -fx-border-color: transparent;"/>
     </VBox>
 
-    <!-- Instruction + status -->
-    <Label fx:id="instructionLabel" text="Drag the arrow to the lock icon to verify"
+    <Label fx:id="instructionLabel" text="Drag the arrow to verify"
            style="-fx-font-size: 11px; -fx-text-fill: #667788;"/>
     <Label fx:id="statusLabel" text=""
            style="-fx-font-size: 11px; -fx-text-fill: #667788;"/>

@@ -1,6 +1,7 @@
 import javafx.animation.*;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.util.Duration;
@@ -9,7 +10,7 @@ import java.util.Random;
 
 public class CaptchaController {
 
-    @FXML private Label questionLabel;
+    @FXML private TextArea questionLabel;
     @FXML private TextField answerField;
     @FXML private VBox sliderBox;
     @FXML private VBox questionBox;
@@ -139,31 +140,37 @@ public class CaptchaController {
 
         switch (qType) {
             case 0: {
+                // Word count
                 String[][] options = {
                         {"The sky is blue today", "5"},
                         {"I love coding in Java", "5"},
-                        {"MediLink is a health app", "5"},
-                        {"Doctors help patients recover", "5"}
+                        {"MediLink is a health platform", "5"},
+                        {"Doctors help patients recover quickly", "5"},
+                        {"Java is a programming language", "5"}
                 };
-                String[] picked = options[rand.nextInt(options.length)];
-                String sent = picked[0];
-                expectedNumberAnswer = sent.split(" ").length;
-                questionLabel.setText("Count the words:\n" + sent);
+                String[] pick = options[rand.nextInt(options.length)];
+                String sentence = pick[0];
+                int count = sentence.split(" ").length;
+                expectedNumberAnswer = count;
+                questionLabel.setText("Count the words:\n\"" + sentence + "\"");
                 instructionLabel.setText("Type the number of words");
                 break;
             }
             case 1: {
+                // Biggest number
                 int a = 10 + rand.nextInt(80);
                 int b = 10 + rand.nextInt(80);
                 int c = 10 + rand.nextInt(80);
+                // Make sure all different
                 while (b == a) b = 10 + rand.nextInt(80);
                 while (c == a || c == b) c = 10 + rand.nextInt(80);
                 expectedNumberAnswer = Math.max(a, Math.max(b, c));
-                questionLabel.setText("Largest number?\n" + a + "   " + b + "   " + c);
+                questionLabel.setText("Largest number?\n\n" + a + "     " + b + "     " + c);
                 instructionLabel.setText("Type the largest number");
                 break;
             }
             case 2: {
+                // Missing letter
                 String[][] pairs = {
                         {"H_alth", "e"},
                         {"D_ctor", "o"},
@@ -171,18 +178,20 @@ public class CaptchaController {
                         {"Medic_ne", "i"},
                         {"Pati_nt", "e"},
                         {"Nur_e", "s"},
-                        {"Cli_ic", "n"}
+                        {"Cli_ic", "n"},
+                        {"_ospital", "h"}
                 };
-                String[] picked2 = pairs[rand.nextInt(pairs.length)];
-                expectedTextAnswer = picked2[1].toLowerCase();
-                questionLabel.setText("Missing letter?\n" + picked2[0]);
+                String[] pair = pairs[rand.nextInt(pairs.length)];
+                expectedTextAnswer = pair[1].toLowerCase();
+                questionLabel.setText("Missing letter?\n\n" + pair[0]);
                 instructionLabel.setText("Type the missing letter");
                 break;
             }
             case 3: {
+                // Even or odd
                 int num = 2 + rand.nextInt(97);
                 expectedTextAnswer = (num % 2 == 0) ? "even" : "odd";
-                questionLabel.setText("Even or odd?\n" + num);
+                questionLabel.setText("Even or odd?\n\n" + num);
                 instructionLabel.setText("Type:  even  or  odd");
                 break;
             }
