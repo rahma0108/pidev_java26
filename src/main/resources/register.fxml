@@ -6,11 +6,11 @@
 
 <HBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="RegisterController"
-      prefWidth="900" prefHeight="600"
+      minWidth="800" minHeight="580"
       style="-fx-background-color: #f0f4f8;">
 
     <!-- LEFT PANEL -->
-    <VBox prefWidth="380" prefHeight="600" alignment="CENTER" spacing="20"
+    <VBox prefWidth="380" alignment="CENTER" spacing="20"
           style="-fx-background-color: #0F6E56; -fx-padding: 50 36;">
 
         <ImageView fitWidth="150" fitHeight="65" preserveRatio="true"

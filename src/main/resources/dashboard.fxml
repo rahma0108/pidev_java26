@@ -7,7 +7,7 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="DashboardController"
-            prefWidth="960" prefHeight="640"
+            minWidth="900" minHeight="600"
             style="-fx-background-color: #f0f4f8;">
 
     <left>
@@ -76,7 +76,7 @@
     </left>
 
     <center>
-        <ScrollPane fitToWidth="true"
+        <ScrollPane fitToWidth="true" fitToHeight="true"
                     style="-fx-background-color: transparent; -fx-background: transparent;">
             <VBox spacing="20" style="-fx-padding: 28;">
 
@@ -94,7 +94,7 @@
                 </HBox>
 
                 <!-- STAT CARDS -->
-                <HBox spacing="14">
+                <HBox spacing="14" fillHeight="true">
                     <VBox HBox.hgrow="ALWAYS" prefHeight="90" alignment="CENTER" spacing="4"
                           style="-fx-background-color: white; -fx-background-radius: 14;
                                  -fx-border-color: #e0e0e0; -fx-border-radius: 14; -fx-border-width: 0.5;">
@@ -147,7 +147,7 @@
                                   legendVisible="true" labelsVisible="true"
                                   style="-fx-background-color: transparent;"/>
                     </VBox>
-                    <VBox spacing="10" prefWidth="240">
+                    <VBox spacing="10" prefWidth="220" HBox.hgrow="ALWAYS">
                         <Label text="Quick Actions"
                                style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
                         <VBox prefHeight="66" alignment="CENTER" spacing="4" onMouseClicked="#showUsers"
