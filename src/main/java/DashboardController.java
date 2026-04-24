@@ -113,13 +113,21 @@ public class DashboardController {
             navigateTo("/main.fxml");
         }
     }
-
     private void navigateTo(String fxml) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxml));
+            System.out.println("Dashboard navigating to: " + fxml);
+            var url = getClass().getResource(fxml);
+            if (url == null) {
+                System.err.println("FXML not found: " + fxml);
+                PopupHelper.showError("Page not found: " + fxml);
+                return;
+            }
+            Parent root = FXMLLoader.load(url);
             ThemeManager.applyWithFade(pageTitle.getScene(), root, null);
         } catch (Exception e) {
-            System.err.println("Navigation error: " + e.getMessage());
+            System.err.println("Nav error: " + e.getMessage());
+            e.printStackTrace();
+            PopupHelper.showError(e.getMessage());
         }
     }
 
