@@ -24,64 +24,36 @@ public class UserListController {
     @FXML private Label activeUsersStatLabel;
     @FXML private Label adminStatLabel;
     @FXML private Label medecinStatLabel;
-    @FXML private VBox topBar;
-    @FXML private VBox sidePanel;
-    @FXML private VBox aiBox;
-    @FXML private VBox statsBox;
-    @FXML private TextField filterField;
+
+    // NOT @FXML — these don't have fx:id in userlist.fxml
+    private VBox topBar;
+    private VBox sidePanel;
+    private VBox aiBox;
+    private VBox statsBox;
+    private TextField filterField;
+
     private UserService userService = new UserService();
+    private User selectedUser = null;
 
     @FXML
     public void initialize() {
-        applyTheme();
         loadCards(null);
-        // Real-time filter — no AI, instant
-        filterField.textProperty().addListener((obs, old, val) -> {
-            loadCards(val.trim());
-        });
-    }
-
-    private void applyTheme() {
-        boolean dark = ThemeManager.isDark();
-        String panelBg    = dark ? "#1a2540" : "white";
-        String panelBorder = dark ? "#2a3a5a" : "#e0e0e0";
-
-        if (topBar != null)
-            topBar.setStyle("-fx-background-color: " + panelBg + "; " +
-                    "-fx-border-color: " + panelBorder + "; -fx-border-width: 0 0 1 0;");
-
-        if (sidePanel != null)
-            sidePanel.setStyle("-fx-background-color: " + panelBg + "; -fx-padding: 24; " +
-                    "-fx-border-color: " + panelBorder + "; -fx-border-width: 0 0 0 1;");
-
-        if (aiBox != null)
-            aiBox.setStyle(dark
-                ? "-fx-background-color: rgba(83,74,183,0.2); -fx-background-radius: 10; " +
-                  "-fx-border-color: rgba(83,74,183,0.4); -fx-border-radius: 10; -fx-border-width: 0.5; -fx-padding: 14;"
-                : "-fx-background-color: #EEEDFE; -fx-background-radius: 10; " +
-                  "-fx-border-color: #CECBF6; -fx-border-radius: 10; -fx-border-width: 0.5; -fx-padding: 14;");
-
-        if (statsBox != null)
-            statsBox.setStyle(dark
-                ? "-fx-background-color: #16213e; -fx-background-radius: 10; " +
-                  "-fx-padding: 14; -fx-border-color: #2a3a5a; -fx-border-radius: 10; -fx-border-width: 0.5;"
-                : "-fx-background-color: #f8f8f8; -fx-background-radius: 10; " +
-                  "-fx-padding: 14; -fx-border-color: #e0e0e0; -fx-border-radius: 10; -fx-border-width: 0.5;");
+        // filterField is not in FXML — skip listener
     }
 
     private void loadCards(String filter) {
         cardsContainer.getChildren().clear();
         List<User> users = userService.getAll();
 
-        int total = users.size();
+        int total    = users.size();
         long active  = users.stream().filter(u -> "ACTIVE".equalsIgnoreCase(u.getStatus())).count();
         long admins  = users.stream().filter(u -> u.getRoles() != null && u.getRoles().contains("ROLE_ADMIN")).count();
         long medecins= users.stream().filter(u -> u.getRoles() != null && u.getRoles().contains("ROLE_MEDECIN")).count();
 
-        totalUsersStatLabel.setText("Total users: " + total);
-        activeUsersStatLabel.setText("Active: " + active);
-        adminStatLabel.setText("Admins: " + admins);
-        medecinStatLabel.setText("Doctors: " + medecins);
+        if (totalUsersStatLabel  != null) totalUsersStatLabel.setText("Total users: " + total);
+        if (activeUsersStatLabel != null) activeUsersStatLabel.setText("Active: " + active);
+        if (adminStatLabel       != null) adminStatLabel.setText("Admins: " + admins);
+        if (medecinStatLabel     != null) medecinStatLabel.setText("Doctors: " + medecins);
 
         for (User user : users) {
             if (filter != null && !filter.isEmpty()) {
@@ -144,24 +116,23 @@ public class UserListController {
         content.getChildren().addAll(
                 title, sep,
                 fieldLabel("Full Name"), nameField,
-                fieldLabel("Email"), emailField,
-                fieldLabel("Password"), passField,
-                fieldLabel("Phone"), phoneField,
-                fieldLabel("Role"), roleBox,
+                fieldLabel("Email"),     emailField,
+                fieldLabel("Password"),  passField,
+                fieldLabel("Phone"),     phoneField,
+                fieldLabel("Role"),      roleBox,
                 errorLabel
         );
 
         pane.setContent(content);
 
         ButtonType saveBtn   = new ButtonType("Add User", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType cancelBtn = new ButtonType("Cancel",   ButtonBar.ButtonData.CANCEL_CLOSE);
         pane.getButtonTypes().addAll(saveBtn, cancelBtn);
 
         Button saveButton = (Button) pane.lookupButton(saveBtn);
         saveButton.setStyle("-fx-background-color: #0F6E56; -fx-text-fill: white; " +
                 "-fx-background-radius: 8; -fx-font-size: 13px; -fx-border-color: transparent;");
 
-        // Prevent dialog from closing if fields are empty
         saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             if (nameField.getText().trim().isEmpty() ||
                     emailField.getText().trim().isEmpty() ||
@@ -206,15 +177,14 @@ public class UserListController {
         VBox content = new VBox(12);
         content.setPadding(new Insets(24));
 
-        // Header with avatar
         HBox header = new HBox(12);
         header.setAlignment(Pos.CENTER_LEFT);
         VBox titleBox = new VBox(2);
-        Label title    = new Label("Edit User");
-        title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;");
+        Label titleLbl  = new Label("Edit User");
+        titleLbl.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;");
         Label subtitle = new Label(user.getEmail());
         subtitle.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
-        titleBox.getChildren().addAll(title, subtitle);
+        titleBox.getChildren().addAll(titleLbl, subtitle);
         header.getChildren().addAll(makeAvatar(user, 22), titleBox);
 
         Separator sep = new Separator();
@@ -250,18 +220,18 @@ public class UserListController {
 
         content.getChildren().addAll(
                 header, sep,
-                fieldLabel("Full Name"),  nameEdit,
-                fieldLabel("Email"),      emailEdit,
-                fieldLabel("Phone"),      phoneEdit,
+                fieldLabel("Full Name"),               nameEdit,
+                fieldLabel("Email"),                   emailEdit,
+                fieldLabel("Phone"),                   phoneEdit,
                 fieldLabel("New Password (optional)"), passEdit,
-                fieldLabel("Role"),       roleBox,
-                fieldLabel("Status"),     statusBox
+                fieldLabel("Role"),                    roleBox,
+                fieldLabel("Status"),                  statusBox
         );
 
         pane.setContent(content);
 
         ButtonType saveBtn   = new ButtonType("Save Changes", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType cancelBtn = new ButtonType("Cancel",       ButtonBar.ButtonData.CANCEL_CLOSE);
         pane.getButtonTypes().addAll(saveBtn, cancelBtn);
 
         Button saveButton = (Button) pane.lookupButton(saveBtn);
@@ -305,29 +275,29 @@ public class UserListController {
 
     // ── AI PROFILE ──
     private void showAIProfile(User user) {
-        aiNameLabel.setText(user.getFullName());
-        aiProfileLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #534AB7;");
-        aiProfileLabel.setText("Generating summary...");
+        if (aiNameLabel    != null) aiNameLabel.setText(user.getFullName());
+        if (aiProfileLabel != null) {
+            aiProfileLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #534AB7;");
+            aiProfileLabel.setText("Generating summary...");
+        }
         new Thread(() -> {
-            String system = "Write a 2-sentence professional profile for a medical platform user. Be concise and professional.";
-            String prompt  = "Name: " + user.getFullName() + "\nRole: " + user.getRoles() +
+            String system = "Write a 2-sentence professional profile for a medical platform user. Be concise.";
+            String prompt = "Name: " + user.getFullName() + "\nRole: " + user.getRoles() +
                     "\nStatus: " + user.getStatus() + "\nEmail: " + user.getEmail();
             String summary = ClaudeAI.ask(system, prompt);
-            Platform.runLater(() -> aiProfileLabel.setText(summary));
+            Platform.runLater(() -> {
+                if (aiProfileLabel != null) aiProfileLabel.setText(summary);
+            });
         }).start();
     }
 
     // ── CREATE CARD ──
     private VBox createCard(User user) {
-        boolean dark = ThemeManager.isDark();
         VBox card = new VBox(10);
         card.setPrefWidth(240);
         card.setPadding(new Insets(16));
-        card.setStyle(dark
-            ? "-fx-background-color: #1a2540; -fx-border-color: #2a3a5a; " +
-              "-fx-border-width: 0.5; -fx-border-radius: 12; -fx-background-radius: 12;"
-            : "-fx-background-color: white; -fx-border-color: #e0e0e0; " +
-              "-fx-border-width: 0.5; -fx-border-radius: 12; -fx-background-radius: 12;");
+        card.setStyle("-fx-background-color: white; -fx-border-color: #e0e0e0; " +
+                "-fx-border-width: 0.5; -fx-border-radius: 12; -fx-background-radius: 12;");
 
         HBox header = new HBox(12);
         header.setAlignment(Pos.CENTER_LEFT);
@@ -342,13 +312,12 @@ public class UserListController {
         HBox buttons = new HBox(6);
         buttons.setAlignment(Pos.CENTER);
 
-        Button aiBtn = makeBtn("AI Summary", "#534AB7");
-        aiBtn.setOnAction(e -> showAIProfile(user));
+        Button aiBtn     = makeBtn("AI Summary", "#534AB7");
+        Button editBtn   = makeBtn("Edit",        "#185FA5");
+        Button deleteBtn = makeBtn("Delete",      "#c0392b");
 
-        Button editBtn = makeBtn("Edit", "#185FA5");
-        editBtn.setOnAction(e -> showEditPopup(user));
-
-        Button deleteBtn = makeBtn("Delete", "#c0392b");
+        aiBtn.setOnAction(e     -> showAIProfile(user));
+        editBtn.setOnAction(e   -> showEditPopup(user));
         deleteBtn.setOnAction(e -> handleDelete(user));
 
         buttons.getChildren().addAll(aiBtn, editBtn, deleteBtn);
@@ -357,10 +326,6 @@ public class UserListController {
     }
 
     private void handleDelete(User user) {
-
-
-
-
         if (PopupHelper.confirmDelete(user.getFullName())) {
             userService.delete(user.getId());
             showMessage("User deleted.", "green");
@@ -368,14 +333,21 @@ public class UserListController {
         }
     }
 
-@FXML
-public void handleClear() {
-    if (searchField != null) searchField.clear();
-    messageLabel.setText("");
-    aiNameLabel.setText("");
-    aiProfileLabel.setText("No user selected yet.");
-    loadCards(null);
-}
+    @FXML
+    public void handleClear() {
+        if (searchField    != null) searchField.clear();
+        if (messageLabel   != null) messageLabel.setText("");
+        if (aiNameLabel    != null) aiNameLabel.setText("");
+        if (aiProfileLabel != null) aiProfileLabel.setText("No user selected yet.");
+        loadCards(null);
+    }
+
+    @FXML
+    public void handleExport() {
+        List<User> users = userService.getAll();
+        Stage stage = (Stage) cardsContainer.getScene().getWindow();
+        ExportHelper.exportUsers(users, stage);
+    }
 
     @FXML
     public void goToDashboard() {
@@ -387,93 +359,88 @@ public void handleClear() {
         }
     }
 
-// ── HELPERS ──
-private StackPane makeAvatar(User user, double radius) {
-    StackPane avatar = new StackPane();
-    Circle circle = new Circle(radius);
-    String[] bgs = {"#E6F1FB","#E1F5EE","#F1EFE8","#FBEAF0","#FAEEDA"};
-    String[] fgs = {"#0C447C","#085041","#444441","#72243E","#633806"};
-    int idx = Math.abs(user.getFullName().hashCode()) % bgs.length;
-    circle.setFill(Color.web(bgs[idx]));
-    Text initials = new Text(getInitials(user.getFullName()));
-    initials.setStyle("-fx-font-size: " + (int)(radius * 0.65) + "px; -fx-font-weight: bold;");
-    initials.setFill(Color.web(fgs[idx]));
-    avatar.getChildren().addAll(circle, initials);
-    return avatar;
-}
-
-private VBox makeNameBox(User user) {
-    VBox box = new VBox(2);
-    Label name = new Label(user.getFullName());
-    name.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: "
-            + (ThemeManager.isDark() ? "#e0e0e0" : "#1a1a2e") + ";");
-    Label email = new Label(user.getEmail());
-    email.setStyle("-fx-font-size: 11px; -fx-text-fill: #888;");
-    email.setMaxWidth(160);
-    box.getChildren().addAll(name, email);
-    return box;
-}
-
-private Button makeBtn(String text, String color) {
-    Button btn = new Button(text);
-    btn.setPrefHeight(30);
-    btn.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; " +
-            "-fx-background-radius: 8; -fx-font-size: 11px; " +
-            "-fx-cursor: hand; -fx-border-color: transparent;");
-    return btn;
-}
-
-private Label fieldLabel(String text) {
-    Label l = new Label(text);
-    l.setStyle("-fx-font-size: 12px; -fx-text-fill: #555; -fx-padding: 4 0 0 0;");
-    return l;
-}
-
-private TextField styledField(String value, String placeholder) {
-    TextField tf = new TextField(value);
-    tf.setPromptText(placeholder);
-    tf.setPrefHeight(38);
-    tf.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; " +
-            "-fx-border-color: #ddd; -fx-font-size: 13px;");
-    return tf;
-}
-
-private Label makeRoleBadge(String roles) {
-    String role = "USER"; String bg = "#F1EFE8"; String fg = "#444441";
-    if (roles != null) {
-        if (roles.contains("ROLE_ADMIN"))        { role = "ADMIN";   bg = "#E6F1FB"; fg = "#0C447C"; }
-        else if (roles.contains("ROLE_MEDECIN")) { role = "MEDECIN"; bg = "#E1F5EE"; fg = "#085041"; }
+    // ── HELPERS ──
+    private StackPane makeAvatar(User user, double radius) {
+        StackPane avatar = new StackPane();
+        Circle circle = new Circle(radius);
+        String[] bgs = {"#E6F1FB","#E1F5EE","#F1EFE8","#FBEAF0","#FAEEDA"};
+        String[] fgs = {"#0C447C","#085041","#444441","#72243E","#633806"};
+        int idx = Math.abs(user.getFullName().hashCode()) % bgs.length;
+        circle.setFill(Color.web(bgs[idx]));
+        Text initials = new Text(getInitials(user.getFullName()));
+        initials.setStyle("-fx-font-size: " + (int)(radius * 0.65) + "px; -fx-font-weight: bold;");
+        initials.setFill(Color.web(fgs[idx]));
+        avatar.getChildren().addAll(circle, initials);
+        return avatar;
     }
-    Label b = new Label(role);
-    b.setStyle("-fx-background-color:" + bg + ";-fx-text-fill:" + fg + ";" +
-            "-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:3 8;-fx-background-radius:10;");
-    return b;
-}
 
-private Label makeStatusBadge(String status) {
-    String bg = "#EAF3DE"; String fg = "#27500A";
-    if ("INACTIVE".equalsIgnoreCase(status)) { bg = "#FCEBEB"; fg = "#791F1F"; }
-    Label b = new Label(status != null ? status : "ACTIVE");
-    b.setStyle("-fx-background-color:" + bg + ";-fx-text-fill:" + fg + ";" +
-            "-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:3 8;-fx-background-radius:10;");
-    return b;
-}
+    private VBox makeNameBox(User user) {
+        VBox box = new VBox(2);
+        Label name = new Label(user.getFullName());
+        name.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;");
+        Label email = new Label(user.getEmail());
+        email.setStyle("-fx-font-size: 11px; -fx-text-fill: #888;");
+        email.setMaxWidth(160);
+        box.getChildren().addAll(name, email);
+        return box;
+    }
 
-private String getInitials(String name) {
-    if (name == null || name.isEmpty()) return "?";
-    String[] p = name.trim().split(" ");
-    return p.length == 1 ? p[0].substring(0,1).toUpperCase()
-            : (p[0].substring(0,1) + p[1].substring(0,1)).toUpperCase();
-}
+    private Button makeBtn(String text, String color) {
+        Button btn = new Button(text);
+        btn.setPrefHeight(30);
+        btn.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; " +
+                "-fx-background-radius: 8; -fx-font-size: 11px; " +
+                "-fx-cursor: hand; -fx-border-color: transparent;");
+        return btn;
+    }
 
-private void showMessage(String msg, String color) {
-    messageLabel.setStyle("-fx-text-fill: " + color + ";");
-    messageLabel.setText(msg);
-}
-    @FXML
-    public void handleExport() {
-        List<User> users = userService.getAll();
-        Stage stage = (Stage) cardsContainer.getScene().getWindow();
-        ExportHelper.exportUsers(users, stage);
+    private Label fieldLabel(String text) {
+        Label l = new Label(text);
+        l.setStyle("-fx-font-size: 12px; -fx-text-fill: #555; -fx-padding: 4 0 0 0;");
+        return l;
+    }
+
+    private TextField styledField(String value, String placeholder) {
+        TextField tf = new TextField(value);
+        tf.setPromptText(placeholder);
+        tf.setPrefHeight(38);
+        tf.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; " +
+                "-fx-border-color: #ddd; -fx-font-size: 13px;");
+        return tf;
+    }
+
+    private Label makeRoleBadge(String roles) {
+        String role = "USER"; String bg = "#F1EFE8"; String fg = "#444441";
+        if (roles != null) {
+            if (roles.contains("ROLE_ADMIN"))        { role = "ADMIN";   bg = "#E6F1FB"; fg = "#0C447C"; }
+            else if (roles.contains("ROLE_MEDECIN")) { role = "MEDECIN"; bg = "#E1F5EE"; fg = "#085041"; }
+        }
+        Label b = new Label(role);
+        b.setStyle("-fx-background-color:" + bg + ";-fx-text-fill:" + fg + ";" +
+                "-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:3 8;-fx-background-radius:10;");
+        return b;
+    }
+
+    private Label makeStatusBadge(String status) {
+        String bg = "#EAF3DE"; String fg = "#27500A";
+        if ("INACTIVE".equalsIgnoreCase(status)) { bg = "#FCEBEB"; fg = "#791F1F"; }
+        Label b = new Label(status != null ? status : "ACTIVE");
+        b.setStyle("-fx-background-color:" + bg + ";-fx-text-fill:" + fg + ";" +
+                "-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:3 8;-fx-background-radius:10;");
+        return b;
+    }
+
+    private String getInitials(String name) {
+        if (name == null || name.isEmpty()) return "?";
+        String[] p = name.trim().split(" ");
+        return p.length == 1 ? p[0].substring(0,1).toUpperCase()
+                : (p[0].substring(0,1) + p[1].substring(0,1)).toUpperCase();
+    }
+
+    private void showMessage(String msg, String color) {
+        if (messageLabel != null) {
+            messageLabel.setStyle("-fx-text-fill: " + color + ";");
+            messageLabel.setText(msg);
+        }
     }
 }
