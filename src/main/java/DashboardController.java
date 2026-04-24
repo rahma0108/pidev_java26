@@ -48,6 +48,7 @@ public class DashboardController {
                 Platform.runLater(() -> aiWelcomeLabel.setText(reply));
             }).start();
         }
+
         // Set correct icon on load
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
         loadStats();
@@ -114,7 +115,12 @@ public class DashboardController {
     }
 
     private void navigateTo(String fxml) {
-        ThemeManager.navigateWithLoading(pageTitle.getScene(), fxml);
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxml));
+            ThemeManager.applyWithFade(pageTitle.getScene(), root, null);
+        } catch (Exception e) {
+            System.err.println("Navigation error: " + e.getMessage());
+        }
     }
 
     private Popup chatPopup;

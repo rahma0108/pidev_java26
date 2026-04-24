@@ -24,42 +24,59 @@ public class LoadingController {
     @FXML private Circle dot1, dot2, dot3;
     @FXML private Circle outerRing, middleRing;
 
-    private static String targetFxml;
+    // Use instance variable instead of static to avoid null issues
+    private String myTargetFxml;
+    private static String pendingTarget;
 
     private final Random rand = new Random();
     private final List<LandingController.Particle> particles = new ArrayList<>();
     private AnimationTimer particleTimer;
 
     private static final String[][] MESSAGES = {
-        {"Initializing systems...",     "Preparing your workspace"},
-        {"Connecting to database...",   "Fetching your data"},
-        {"Loading AI modules...",       "Warming up intelligence"},
-        {"Syncing health records...",   "Almost there"},
-        {"Calibrating interface...",    "Fine-tuning the experience"},
-        {"Securing connection...",      "Encrypting your session"},
-        {"Booting MediLink core...",    "Starting services"},
-        {"Analyzing user profile...",   "Personalizing your view"},
-        {"Loading dashboard...",        "Setting up your workspace"},
-        {"Preparing charts...",         "Crunching the numbers"},
+            {"Initializing systems...",     "Preparing your workspace"},
+            {"Connecting to database...",   "Fetching your data"},
+            {"Loading AI modules...",       "Warming up intelligence"},
+            {"Syncing health records...",   "Almost there"},
+            {"Calibrating interface...",    "Fine-tuning the experience"},
+            {"Securing connection...",      "Encrypting your session"},
+            {"Booting MediLink core...",    "Starting services"},
+            {"Analyzing user profile...",   "Personalizing your view"},
+            {"Loading dashboard...",        "Setting up your workspace"},
+            {"Preparing charts...",         "Crunching the numbers"},
     };
 
     public static void navigateTo(String fxml, javafx.scene.Scene scene) {
-        targetFxml = fxml;
+        // Set target before loading
+        pendingTarget = fxml;
         try {
             Parent loadingRoot = FXMLLoader.load(
-                LoadingController.class.getResource("/loading.fxml"));
+                    LoadingController.class.getResource("/loading.fxml"));
             ThemeManager.applyWithFade(scene, loadingRoot, null);
         } catch (Exception e) {
-            // Fallback: navigate directly
+            System.err.println("Loading screen error: " + e.getMessage());
+            // Fallback: navigate directly without loading screen
             try {
-                Parent root = FXMLLoader.load(LoadingController.class.getResource(fxml));
+                Parent root = FXMLLoader.load(
+                        LoadingController.class.getResource(fxml));
                 ThemeManager.applyWithFade(scene, root, null);
-            } catch (Exception ex) { ex.printStackTrace(); }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
     @FXML
     public void initialize() {
+        // Capture target immediately
+        myTargetFxml = pendingTarget;
+
+        if (myTargetFxml == null || myTargetFxml.isEmpty()) {
+            System.err.println("LoadingController: no target fxml set!");
+            return;
+        }
+
+        System.out.println("Loading screen → " + myTargetFxml);
+
         // Start particles
         double w = animCanvas.getWidth();
         double h = animCanvas.getHeight();
@@ -76,16 +93,11 @@ public class LoadingController {
         loadingLabel.setText(msg[0]);
         subLabel.setText(msg[1]);
 
-        // Random duration 1–5 seconds
-        int durationMs = 1000 + rand.nextInt(4000);
+        // Random duration 1–3 seconds (shorter for better UX)
+        int durationMs = 1000 + rand.nextInt(2000);
 
-        // Animate dots
         animateDots();
-
-        // Animate rings
         animateRings();
-
-        // Animate progress
         animateProgress(durationMs);
 
         // Navigate after duration
@@ -94,9 +106,13 @@ public class LoadingController {
             Platform.runLater(() -> {
                 stopAnimation();
                 try {
-                    Parent root = FXMLLoader.load(getClass().getResource(targetFxml));
+                    Parent root = FXMLLoader.load(
+                            getClass().getResource(myTargetFxml));
                     ThemeManager.applyWithFade(progressBar.getScene(), root, null);
-                } catch (Exception e) { e.printStackTrace(); }
+                } catch (Exception e) {
+                    System.err.println("Navigation error: " + e.getMessage());
+                    e.printStackTrace();
+                }
             });
         }).start();
     }
@@ -111,11 +127,9 @@ public class LoadingController {
                 if (startTime[0] < 0) startTime[0] = now;
                 double elapsed  = (now - startTime[0]) / 1_000_000.0;
                 double progress = Math.min(elapsed / durationMs, 1.0);
-
                 progressBar.setProgress(progress);
                 int pct = (int)(progress * 100);
                 percentLabel.setText(pct + "%");
-
                 if (pct == 50) {
                     loadingLabel.setText(midMessages[0]);
                     subLabel.setText(midMessages[1]);
@@ -169,7 +183,6 @@ public class LoadingController {
         GraphicsContext gc = animCanvas.getGraphicsContext2D();
         gc.setFill(Color.web("#050d1a"));
         gc.fillRect(0, 0, w, h);
-
         for (int i = 0; i < particles.size(); i++) {
             LandingController.Particle a = particles.get(i);
             for (int j = i+1; j < particles.size(); j++) {
