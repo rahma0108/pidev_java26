@@ -156,6 +156,15 @@ public class HomeController {
             }
         }).start();
     }
+    @FXML
+    public void goToProfile() {
+        stopAnimation();
+        ProfileController.setUser(loggedInUser);
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/profile.fxml"));
+            ThemeManager.applyWithFade(heroLabel.getScene(), root, null);
+        } catch (Exception e) { e.printStackTrace(); }
+    }
 
     private int getCount(java.sql.Connection conn, String sql) throws Exception {
         java.sql.ResultSet rs = conn.createStatement().executeQuery(sql);
