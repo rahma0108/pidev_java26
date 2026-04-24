@@ -4,8 +4,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.canvas.*;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
@@ -23,30 +21,29 @@ public class LandingController {
     @FXML private Label counter3;
     @FXML private Label counter4;
     @FXML private Button themeToggleBtn;
-    @FXML private ImageView logoImage;
 
     private final Random rand = new Random();
     private final List<Particle> particles = new ArrayList<>();
     private AnimationTimer particleTimer;
     private boolean isDarkBg = true;
 
-    // ── Particle class ──
-    static class Particle {
-        double x, y, vx, vy, radius, opacity;
-        String color;
+    // ── Particle class — public so HomeController can reuse ──
+    public static class Particle {
+        public double x, y, vx, vy, radius, opacity;
+        public String color;
 
-        Particle(double canvasW, double canvasH, Random r) {
+        public Particle(double canvasW, double canvasH, Random r) {
             x = r.nextDouble() * canvasW;
             y = r.nextDouble() * canvasH;
             vx = (r.nextDouble() - 0.5) * 0.6;
             vy = (r.nextDouble() - 0.5) * 0.6;
             radius = 1.5 + r.nextDouble() * 2.5;
             opacity = 0.2 + r.nextDouble() * 0.5;
-            String[] colors = {"#185FA5", "#7fc4fd", "#0F6E56", "#534AB7", "#1D9E75"};
+            String[] colors = {"#185FA5","#7fc4fd","#0F6E56","#534AB7","#1D9E75"};
             color = colors[r.nextInt(colors.length)];
         }
 
-        void update(double w, double h) {
+        public void update(double w, double h) {
             x += vx; y += vy;
             if (x < 0 || x > w) vx *= -1;
             if (y < 0 || y > h) vy *= -1;
@@ -55,80 +52,61 @@ public class LandingController {
 
     @FXML
     public void initialize() {
-        themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
-        applyLogo();
+        themeToggleBtn.setText("🌙");
 
         double w = animCanvas.getWidth();
         double h = animCanvas.getHeight();
 
-        // Create particles
-        for (int i = 0; i < 80; i++) {
+        for (int i = 0; i < 80; i++)
             particles.add(new Particle(w, h, rand));
-        }
 
-        // Start particle animation
         particleTimer = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                drawFrame(w, h);
-            }
+            public void handle(long now) { drawFrame(w, h); }
         };
         particleTimer.start();
 
-        // Animate title fade in
+        // Fade in title
         titleLabel.setOpacity(0);
         subtitleLabel.setOpacity(0);
         FadeTransition ft1 = new FadeTransition(Duration.millis(1200), titleLabel);
         ft1.setFromValue(0); ft1.setToValue(1);
         ft1.setDelay(Duration.millis(300));
-
         FadeTransition ft2 = new FadeTransition(Duration.millis(1200), subtitleLabel);
         ft2.setFromValue(0); ft2.setToValue(1);
         ft2.setDelay(Duration.millis(700));
-
         ft1.play(); ft2.play();
 
-        // Animate subtitle text cycling
+        // Animate subtitle cycling
         animateSubtitle();
 
         // Animate counters
-        animateCounter(counter1, 0, 500, "500+");
-        animateCounter(counter2, 0, 50,  "50+");
-        animateCounter(counter3, 0, 1200, "1.2K+");
-        animateCounter(counter4, 0, 300, "300+");
+        animateCounter(counter1, 500, "500+");
+        animateCounter(counter2, 50,  "50+");
+        animateCounter(counter3, 1200, "1.2K+");
+        animateCounter(counter4, 300, "300+");
     }
 
     private void drawFrame(double w, double h) {
         GraphicsContext gc = animCanvas.getGraphicsContext2D();
-
-        // Background
-        if (isDarkBg) {
-            gc.setFill(Color.web("#050d1a"));
-        } else {
-            gc.setFill(Color.web("#e8f0f8"));
-        }
+        gc.setFill(isDarkBg ? Color.web("#050d1a") : Color.web("#e8f0f8"));
         gc.fillRect(0, 0, w, h);
 
-        // Draw connection lines between nearby particles
         for (int i = 0; i < particles.size(); i++) {
             Particle a = particles.get(i);
             for (int j = i + 1; j < particles.size(); j++) {
                 Particle b = particles.get(j);
                 double dist = Math.hypot(a.x - b.x, a.y - b.y);
                 if (dist < 100) {
-                    double alpha = (1 - dist / 100) * 0.15;
-                    gc.setStroke(Color.web(isDarkBg ? "#185FA5" : "#185FA5", alpha));
+                    gc.setStroke(Color.web("#185FA5", (1 - dist/100) * 0.15));
                     gc.setLineWidth(0.5);
                     gc.strokeLine(a.x, a.y, b.x, b.y);
                 }
             }
         }
-
-        // Draw and update particles
         for (Particle p : particles) {
             p.update(w, h);
             gc.setFill(Color.web(p.color, p.opacity));
-            gc.fillOval(p.x - p.radius, p.y - p.radius, p.radius * 2, p.radius * 2);
+            gc.fillOval(p.x - p.radius, p.y - p.radius, p.radius*2, p.radius*2);
         }
     }
 
@@ -140,7 +118,6 @@ public class LandingController {
             "Your health, our priority"
         };
         final int[] idx = {0};
-
         Timeline tl = new Timeline(new KeyFrame(Duration.seconds(3), e -> {
             idx[0] = (idx[0] + 1) % texts.length;
             FadeTransition ft = new FadeTransition(Duration.millis(600), subtitleLabel);
@@ -157,15 +134,14 @@ public class LandingController {
         tl.play();
     }
 
-    private void animateCounter(Label label, int from, int to, String finalText) {
-        final int[] current = {from};
+    private void animateCounter(Label label, int target, String finalText) {
+        final int[] current = {0};
         int steps = 60;
-        int increment = Math.max(1, (to - from) / steps);
-
+        int increment = Math.max(1, target / steps);
         Timeline tl = new Timeline(new KeyFrame(Duration.millis(30), e -> {
-            current[0] = Math.min(current[0] + increment, to);
+            current[0] = Math.min(current[0] + increment, target);
             label.setText(String.valueOf(current[0]));
-            if (current[0] >= to) label.setText(finalText);
+            if (current[0] >= target) label.setText(finalText);
         }));
         tl.setCycleCount(steps + 5);
         tl.setDelay(Duration.millis(800));
@@ -175,16 +151,8 @@ public class LandingController {
     @FXML
     public void toggleTheme() {
         isDarkBg = !isDarkBg;
-        ThemeManager.toggle(themeToggleBtn.getScene());
-        themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
-        applyLogo();
-    }
-
-    private void applyLogo() {
-        if (logoImage == null) return;
-        String res = ThemeManager.isDark() ? "/logo2.png" : "/logo.png";
-        var url = getClass().getResource(res);
-        if (url != null) logoImage.setImage(new Image(url.toExternalForm()));
+        // Landing has its own dark bg — don't apply ThemeManager
+        themeToggleBtn.setText(isDarkBg ? "☀️" : "🌙");
     }
 
     @FXML
@@ -192,8 +160,7 @@ public class LandingController {
         stopAnimation();
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
-            titleLabel.getScene().setRoot(root);
-            ThemeManager.apply(titleLabel.getScene());
+            ThemeManager.applyWithFade(titleLabel.getScene(), root, null);
         } catch (Exception e) { e.printStackTrace(); }
     }
 
@@ -202,8 +169,7 @@ public class LandingController {
         stopAnimation();
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/register.fxml"));
-            titleLabel.getScene().setRoot(root);
-            ThemeManager.apply(titleLabel.getScene());
+            ThemeManager.applyWithFade(titleLabel.getScene(), root, null);
         } catch (Exception e) { e.printStackTrace(); }
     }
 

@@ -48,7 +48,6 @@ public class DashboardController {
                 Platform.runLater(() -> aiWelcomeLabel.setText(reply));
             }).start();
         }
-
         // Set correct icon on load
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
         loadStats();

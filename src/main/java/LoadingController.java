@@ -25,13 +25,11 @@ public class LoadingController {
     @FXML private Circle outerRing, middleRing;
 
     private static String targetFxml;
-    private static Runnable onLoaded;
 
     private final Random rand = new Random();
     private final List<LandingController.Particle> particles = new ArrayList<>();
     private AnimationTimer particleTimer;
 
-    // ── Futuristic loading messages ──
     private static final String[][] MESSAGES = {
         {"Initializing systems...",     "Preparing your workspace"},
         {"Connecting to database...",   "Fetching your data"},
@@ -67,6 +65,7 @@ public class LoadingController {
         double h = animCanvas.getHeight();
         for (int i = 0; i < 50; i++)
             particles.add(new LandingController.Particle(w, h, rand));
+
         particleTimer = new AnimationTimer() {
             public void handle(long now) { drawFrame(w, h); }
         };
@@ -83,10 +82,10 @@ public class LoadingController {
         // Animate dots
         animateDots();
 
-        // Animate rings pulsing
+        // Animate rings
         animateRings();
 
-        // Animate progress bar
+        // Animate progress
         animateProgress(durationMs);
 
         // Navigate after duration
@@ -97,9 +96,7 @@ public class LoadingController {
                 try {
                     Parent root = FXMLLoader.load(getClass().getResource(targetFxml));
                     ThemeManager.applyWithFade(progressBar.getScene(), root, null);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                } catch (Exception e) { e.printStackTrace(); }
             });
         }).start();
     }
@@ -112,19 +109,17 @@ public class LoadingController {
         AnimationTimer progressTimer = new AnimationTimer() {
             public void handle(long now) {
                 if (startTime[0] < 0) startTime[0] = now;
-                double elapsed = (now - startTime[0]) / 1_000_000.0;
+                double elapsed  = (now - startTime[0]) / 1_000_000.0;
                 double progress = Math.min(elapsed / durationMs, 1.0);
 
                 progressBar.setProgress(progress);
                 int pct = (int)(progress * 100);
                 percentLabel.setText(pct + "%");
 
-                // Change message at 50%
                 if (pct == 50) {
                     loadingLabel.setText(midMessages[0]);
                     subLabel.setText(midMessages[1]);
                 }
-
                 if (progress >= 1.0) stop();
             }
         };
@@ -132,17 +127,14 @@ public class LoadingController {
     }
 
     private void animateDots() {
-        Circle[] dots = {dot1, dot2, dot3};
-        String[] colors = {"#185FA5", "rgba(24,95,165,0.5)", "rgba(24,95,165,0.2)"};
-
+        String[] colors = {"#185FA5","rgba(24,95,165,0.5)","rgba(24,95,165,0.2)"};
         Timeline tl = new Timeline();
         for (int i = 0; i < 3; i++) {
             final int idx = i;
             tl.getKeyFrames().add(new KeyFrame(Duration.millis(300 * i), e -> {
-                // Rotate colors
-                dot1.setStyle("-fx-fill: " + colors[(0 + idx) % 3] + ";");
-                dot2.setStyle("-fx-fill: " + colors[(1 + idx) % 3] + ";");
-                dot3.setStyle("-fx-fill: " + colors[(2 + idx) % 3] + ";");
+                dot1.setStyle("-fx-fill: " + colors[(0+idx)%3] + ";");
+                dot2.setStyle("-fx-fill: " + colors[(1+idx)%3] + ";");
+                dot3.setStyle("-fx-fill: " + colors[(2+idx)%3] + ";");
             }));
         }
         tl.setCycleCount(Timeline.INDEFINITE);
@@ -150,7 +142,6 @@ public class LoadingController {
     }
 
     private void animateRings() {
-        // Outer ring pulsing scale
         ScaleTransition st1 = new ScaleTransition(Duration.millis(1500), outerRing);
         st1.setFromX(1.0); st1.setToX(1.15);
         st1.setFromY(1.0); st1.setToY(1.15);
@@ -159,7 +150,6 @@ public class LoadingController {
         st1.setInterpolator(Interpolator.EASE_BOTH);
         st1.play();
 
-        // Middle ring opposite pulse
         ScaleTransition st2 = new ScaleTransition(Duration.millis(1500), middleRing);
         st2.setFromX(1.1); st2.setToX(0.95);
         st2.setFromY(1.1); st2.setToY(0.95);
@@ -168,7 +158,6 @@ public class LoadingController {
         st2.setInterpolator(Interpolator.EASE_BOTH);
         st2.play();
 
-        // Spinner label fade in/out
         FadeTransition ft = new FadeTransition(Duration.millis(800), loadingLabel);
         ft.setFromValue(0.5); ft.setToValue(1.0);
         ft.setAutoReverse(true);

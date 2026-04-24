@@ -5,6 +5,7 @@
 <?import javafx.scene.image.*?>
 
 <HBox xmlns:fx="http://javafx.com/fxml"
+      fx:id="rootPane"
       fx:controller="LoginController"
       prefWidth="900" prefHeight="600"
       style="-fx-background-color: #f0f4f8;">
@@ -45,7 +46,7 @@
     <VBox HBox.hgrow="ALWAYS" alignment="CENTER"
           style="-fx-background-color: #f0f4f8; -fx-padding: 30 40;">
 
-        <VBox spacing="12" maxWidth="340"
+        <VBox fx:id="loginCard" spacing="12" maxWidth="340"
               style="-fx-background-color: white; -fx-padding: 28 32;
                      -fx-background-radius: 16; -fx-border-radius: 16;
                      -fx-border-color: #e0e0e0; -fx-border-width: 0.5;">
