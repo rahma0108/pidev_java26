@@ -12,13 +12,26 @@ public class MainFX extends Application {
         java.sql.Connection conn = MyConnection.getInstance().getConnection();
         if (conn != null) System.out.println("Database connected!");
 
-        // Open landing page first
+        // Load landing page
         Parent root = FXMLLoader.load(getClass().getResource("/landing.fxml"));
         Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/captcha_style.css").toExternalForm());
+
+        // Load stylesheets
+        var captchaUrl = getClass().getResource("/captcha_style.css");
+        if (captchaUrl != null)
+            scene.getStylesheets().add(captchaUrl.toExternalForm());
+
         stage.setScene(scene);
         stage.setTitle("MediLink Care");
-        stage.setResizable(false);
+
+        // ── Resizable + minimum size ──
+        stage.setResizable(true);
+        stage.setMinWidth(900);
+        stage.setMinHeight(600);
+
+        // Start maximized
+        stage.setMaximized(true);
+
         stage.show();
     }
 

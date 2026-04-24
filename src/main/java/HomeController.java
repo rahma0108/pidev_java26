@@ -5,8 +5,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.canvas.*;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
@@ -29,21 +27,11 @@ public class HomeController {
     @FXML private Label ordCount;
     @FXML private Label eventCount;
     @FXML private Button themeToggleBtn;
-    @FXML private ImageView logoImage;
 
     @FXML private VBox cardRdv;
     @FXML private VBox cardMed;
     @FXML private VBox cardOrd;
     @FXML private VBox cardEvent;
-
-    @FXML private javafx.scene.layout.StackPane badgeRdv;
-    @FXML private javafx.scene.layout.StackPane badgeMed;
-    @FXML private javafx.scene.layout.StackPane badgeOrd;
-    @FXML private javafx.scene.layout.StackPane badgeEvent;
-    @FXML private Label badgeRdvLabel;
-    @FXML private Label badgeMedLabel;
-    @FXML private Label badgeOrdLabel;
-    @FXML private Label badgeEventLabel;
 
     private static User loggedInUser;
     private final Random rand = new Random();
@@ -57,30 +45,38 @@ public class HomeController {
     @FXML
     public void initialize() {
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
-        applyLogo();
 
         if (loggedInUser != null) {
             greetingLabel.setText("Hello, " + loggedInUser.getFullName().split(" ")[0] + "!");
             String role = loggedInUser.getRoles() != null
-                    ? loggedInUser.getRoles().replace("[","").replace("]","")
+                ? loggedInUser.getRoles().replace("[","").replace("]","")
                     .replace("\"","").replace("ROLE_","")
-                    : "USER";
+                : "USER";
             roleChipLabel.setText(role);
 
             String[] parts = loggedInUser.getFullName().trim().split(" ");
             String initials = parts[0].substring(0,1).toUpperCase() +
-                    (parts.length > 1 ? String.valueOf(parts[1].charAt(0)).toUpperCase() : "");
+                (parts.length > 1 ? String.valueOf(parts[1].charAt(0)).toUpperCase() : "");
             avatarLabel.setText(initials);
         }
 
-        // Particles
+        // Bind canvas to window size
+        animCanvas.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                animCanvas.widthProperty().bind(newScene.widthProperty());
+                animCanvas.heightProperty().bind(newScene.heightProperty());
+            }
+        });
+
         double w = animCanvas.getWidth();
         double h = animCanvas.getHeight();
         for (int i = 0; i < 70; i++)
             particles.add(new LandingController.Particle(w, h, rand));
 
         particleTimer = new AnimationTimer() {
-            public void handle(long now) { drawFrame(w, h); }
+            public void handle(long now) {
+                drawFrame(animCanvas.getWidth(), animCanvas.getHeight());
+            }
         };
         particleTimer.start();
 
@@ -149,39 +145,16 @@ public class HomeController {
                 int meds   = getCount(conn, "SELECT COUNT(*) FROM medicaments");
                 int ords   = getCount(conn, "SELECT COUNT(*) FROM ordonnances");
                 int events = getCount(conn, "SELECT COUNT(*) FROM evenements");
-
                 Platform.runLater(() -> {
                     rdvCount.setText(rdv + " upcoming");
                     medCount.setText(meds + " items");
                     ordCount.setText(ords + " prescriptions");
                     eventCount.setText(events + " upcoming");
-
-                    // Update badges
-                    updateBadge(badgeRdvLabel, rdv);
-                    updateBadge(badgeMedLabel, meds);
-                    updateBadge(badgeOrdLabel, ords);
-                    updateBadge(badgeEventLabel, events);
                 });
             } catch (Exception e) {
                 System.err.println("Count error: " + e.getMessage());
             }
         }).start();
-    }
-
-    private void updateBadge(Label badge, int count) {
-        if (count > 0) {
-            badge.setText(count > 99 ? "99+" : String.valueOf(count));
-            badge.setVisible(true);
-            badge.setManaged(true);
-            ScaleTransition st = new ScaleTransition(Duration.millis(300), badge);
-            st.setFromX(0); st.setFromY(0);
-            st.setToX(1);   st.setToY(1);
-            st.setDelay(Duration.millis(800));
-            st.play();
-        } else {
-            badge.setVisible(false);
-            badge.setManaged(false);
-        }
     }
 
     private int getCount(java.sql.Connection conn, String sql) throws Exception {
@@ -196,8 +169,8 @@ public class HomeController {
         new Thread(() -> {
             String name = loggedInUser != null ? loggedInUser.getFullName().split(" ")[0] : "User";
             String tip  = ClaudeAI.ask(
-                    "You are a friendly medical assistant. Give ONE short practical health tip (max 2 sentences). Be encouraging. Always reply in English.",
-                    "Health tip for patient named " + name
+                "You are a friendly medical assistant. Give ONE short practical health tip (max 2 sentences). Be encouraging. Always reply in English.",
+                "Health tip for patient named " + name
             );
             Platform.runLater(() -> {
                 aiTipLabel.setText(tip);
@@ -225,22 +198,13 @@ public class HomeController {
     @FXML public void goToEvents()      { PopupHelper.showComingSoon("Events"); }
 
     @FXML
-    public void goToProfile() {
-        stopAnimation();
-        ProfileController.setUser(loggedInUser);
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/profile.fxml"));
-            ThemeManager.applyWithFade(heroLabel.getScene(), root, null);
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    @FXML
     public void handleLogout() {
         if (PopupHelper.confirmLogout()) {
             stopAnimation();
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
-                ThemeManager.applyWithFade(heroLabel.getScene(), root, null);
+                heroLabel.getScene().setRoot(root);
+                ThemeManager.apply(heroLabel.getScene());
             } catch (Exception e) { e.printStackTrace(); }
         }
     }
@@ -249,14 +213,6 @@ public class HomeController {
     public void toggleTheme() {
         ThemeManager.toggle(themeToggleBtn.getScene());
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
-        applyLogo();
-    }
-
-    private void applyLogo() {
-        if (logoImage == null) return;
-        String res = ThemeManager.isDark() ? "/logo2.png" : "/logo.png";
-        var url = getClass().getResource(res);
-        if (url != null) logoImage.setImage(new Image(url.toExternalForm()));
     }
 
     private void stopAnimation() {

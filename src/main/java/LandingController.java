@@ -54,6 +54,14 @@ public class LandingController {
     public void initialize() {
         themeToggleBtn.setText("🌙");
 
+        // Resize canvas with window
+        animCanvas.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                animCanvas.widthProperty().bind(newScene.widthProperty());
+                animCanvas.heightProperty().bind(newScene.heightProperty());
+            }
+        });
+
         double w = animCanvas.getWidth();
         double h = animCanvas.getHeight();
 
@@ -61,7 +69,9 @@ public class LandingController {
             particles.add(new Particle(w, h, rand));
 
         particleTimer = new AnimationTimer() {
-            public void handle(long now) { drawFrame(w, h); }
+            public void handle(long now) {
+                drawFrame(animCanvas.getWidth(), animCanvas.getHeight());
+            }
         };
         particleTimer.start();
 
