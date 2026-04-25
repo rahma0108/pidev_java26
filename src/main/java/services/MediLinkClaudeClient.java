@@ -2,6 +2,7 @@ package services;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -10,18 +11,18 @@ import java.net.http.HttpResponse;
 public class MediLinkClaudeClient {
 
     private static final String API_URL = "https://api.groq.com/openai/v1/chat/completions";
-    private static final String MODEL   = "llama-3.3-70b-versatile";
+    private static final String MODEL = "llama-3.3-70b-versatile";
 
     public String ask(String systemPrompt, String userMessage) {
         try {
             String apiKey = System.getenv("GROQ_API_KEY");
+            boolean hasApiKey = apiKey != null && !apiKey.isBlank();
+            System.out.println("Clé API détectée : " + (hasApiKey ? "oui" : "non"));
 
-            if (apiKey == null || apiKey.isBlank()) {
-                System.err.println("=== ERREUR : GROQ_API_KEY non trouvée ===");
+            if (!hasApiKey) {
+                System.err.println("Erreur : GROQ_API_KEY non trouvee.");
                 return null;
             }
-
-            System.out.println("=== CLÉ GROQ trouvée : " + apiKey.substring(0, 10) + "... ===");
 
             String body = """
                 {
@@ -47,22 +48,27 @@ public class MediLinkClaudeClient {
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();
 
+            System.out.println("Appel API envoyé");
             HttpResponse<String> response = client.send(
                     request, HttpResponse.BodyHandlers.ofString()
             );
 
-            System.out.println("=== STATUS HTTP : " + response.statusCode() + " ===");
-            System.out.println("=== BODY : " + response.body() + " ===");
+            System.out.println("HTTP status = " + response.statusCode());
+            System.out.println("Réponse API reçue : "
+                    + ((response.body() != null && !response.body().isBlank()) ? "oui" : "non"));
+            System.out.println("=== BODY BRUT API ===");
+            System.out.println(response.body());
+            System.out.println("=== FIN BODY BRUT API ===");
 
-            // Extraire le contenu texte de la réponse Groq (format OpenAI)
-            // Extraire le contenu via Gson (gère les caractères échappés)
             JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+            System.out.println("Parsing JSON OK");
             return json.getAsJsonArray("choices")
                     .get(0).getAsJsonObject()
                     .getAsJsonObject("message")
                     .get("content").getAsString();
 
         } catch (Exception e) {
+            System.out.println("Parsing JSON KO");
             System.err.println("Erreur appel Groq : " + e.getMessage());
             e.printStackTrace();
             return null;

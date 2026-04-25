@@ -58,6 +58,9 @@ public class LoginController {
 
             if (user != null) {
                 loggedInUser = user;
+                System.out.println("[AUTH] User authentifie: email=" + user.getEmail()
+                        + " | id=" + user.getId()
+                        + " | roles=" + user.getRoles());
                 System.out.println("[userfx] Login success, navigating by role.");
                 navigateByRole(user.getRoles(), user);
                 return;
@@ -111,12 +114,16 @@ public class LoginController {
         if (hasRole(normalizedRoles, "MEDECIN")) {
             SessionContext.setCurrentMedecinId(user.getId());
             SessionContext.setCurrentPatientId(null);
+            System.out.println("[SESSION] Avant ouverture espace medecin: currentMedecinId="
+                    + SessionContext.getCurrentMedecinId());
             navigateTo("/fxml/ListeDisponibilitesView.fxml");
             return;
         }
 
         SessionContext.setCurrentPatientId(user.getId());
         SessionContext.setCurrentMedecinId(null);
+        System.out.println("[SESSION] Avant ouverture espace patient: currentPatientId="
+                + SessionContext.getCurrentPatientId());
         HomeController.setUser(user);
         navigateTo("/home.fxml");
     }

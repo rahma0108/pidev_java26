@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import models.User;
 import services.UserService;
+import userfx.LoginController;
 
 import java.io.IOException;
 
@@ -32,14 +33,26 @@ public class LoginViewController {
     }
 
     private void ouvrirEspaceMedecin() {
-        SessionContext.setCurrentMedecinId(resolveUserIdByRole(User.ROLE_MEDECIN));
+        Integer currentMedecin = SessionContext.getCurrentMedecinId();
+        SessionContext.setCurrentMedecinId(currentMedecin);
         SessionContext.setCurrentPatientId(null);
+        System.out.println("[SESSION][view.LoginView] Avant ouverture espace medecin: currentMedecinId="
+                + SessionContext.getCurrentMedecinId());
         changerVue("/dashboard.fxml", "MediLink - Espace Medecin", 960, 640);
     }
 
     private void ouvrirEspacePatient() {
-        SessionContext.setCurrentPatientId(resolveUserIdByRole(User.ROLE_PATIENT));
+        Integer currentPatient = SessionContext.getCurrentPatientId();
+        if (currentPatient == null) {
+            userfx.User logged = LoginController.getLoggedInUser();
+            if (logged != null) {
+                currentPatient = logged.getId();
+            }
+        }
+        SessionContext.setCurrentPatientId(currentPatient);
         SessionContext.setCurrentMedecinId(null);
+        System.out.println("[SESSION][view.LoginView] Avant ouverture espace patient: currentPatientId="
+                + SessionContext.getCurrentPatientId());
         changerVue("/home.fxml", "MediLink - Espace Patient", 1000, 680);
     }
 
@@ -59,14 +72,4 @@ public class LoginViewController {
         }
     }
 
-    private Integer resolveUserIdByRole(String role) {
-        if (userService == null) {
-            return null;
-        }
-        try {
-            return userService.findFirstByRole(role).map(User::getId).orElse(null);
-        } catch (ServiceException e) {
-            return null;
-        }
-    }
 }

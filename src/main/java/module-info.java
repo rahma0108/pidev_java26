@@ -5,6 +5,7 @@ module gdons {
     requires java.net.http;
     requires com.google.gson;
     requires jbcrypt;
+    requires jakarta.mail;
 
     opens test to javafx.graphics;
     opens controllers to javafx.fxml;

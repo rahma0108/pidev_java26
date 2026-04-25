@@ -23,10 +23,13 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.AIRecommendation;
+import models.AINotification;
 import models.Disponibilite;
 import models.RendezVous;
 import models.User;
 import services.DisponibiliteService;
+import services.NotificationAIService;
+import services.NotificationEmailService;
 import services.PlanningAIService;
 import services.UserService;
 
@@ -108,7 +111,10 @@ public class ReserverRendezVousViewController {
             return;
         }
 
+        System.out.println("[SESSION][Reserver.initialize] currentPatientId(SessionContext)="
+                + SessionContext.getCurrentPatientId());
         demoPatientId = resoudrePatientId();
+        System.out.println("[SESSION][Reserver.initialize] demoPatientId(resolu)=" + demoPatientId);
 
         if (retourButton != null) {
             retourButton.setOnAction(e -> retournerAccueil());
@@ -128,6 +134,31 @@ public class ReserverRendezVousViewController {
         chargerCreneauxLibres();
         chargerMesRendezVous();
         mettreAJourRecommandation();
+
+        // Test notification IA
+        new Thread(() -> {
+            try {
+                User patient = userService.findById(demoPatientId).orElse(null);
+                List<RendezVous> rdvs = rendezVousController.listerPourPatient(demoPatientId);
+
+                if (patient != null && !rdvs.isEmpty()) {
+                    // 1. Generer la notification IA
+                    NotificationAIService aiService = new NotificationAIService();
+                    AINotification notif = aiService.genererNotification(
+                            patient, rdvs.get(0), rdvs
+                    );
+                    System.out.println("NOTIF : " + notif);
+
+                    // 2. Envoyer l'email si pas d'echec
+                    if (!notif.isEchec()) {
+                        NotificationEmailService emailService = new NotificationEmailService();
+                        emailService.envoyerNotification(patient, notif);
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Test notif : " + e.getMessage());
+            }
+        }).start();
     }
 
     private void chargerCreneauxLibres() {
@@ -178,6 +209,11 @@ public class ReserverRendezVousViewController {
 
     @FXML
     private void handleTrouverAvecIA() {
+        System.out.println("Bouton IA cliqué");
+        System.out.println("[SESSION][Reserver.handleTrouverAvecIA] currentPatientId(SessionContext)="
+                + SessionContext.getCurrentPatientId()
+                + " | demoPatientId=" + demoPatientId);
+
         List<Disponibilite> creneaux;
         try {
             DisponibiliteService disponibiliteService = new DisponibiliteService();
@@ -198,13 +234,21 @@ public class ReserverRendezVousViewController {
         btnTrouverIA.setDisable(true);
         labelResultatIA.setText("L'IA analyse les creneaux...");
 
-        final String prenomPatient = resolvePatientDisplayName();
+        final User patientIA = resolvePatientForIA();
+        if (patientIA == null) {
+            btnTrouverIA.setDisable(false);
+            labelResultatIA.setText("Aucun patient connecte. Connectez-vous puis reessayez.");
+            return;
+        }
+
+        final String prenomPatient = resolvePatientDisplayName(patientIA);
         final String preferenceHoraire = comboPreferenceHoraire != null && comboPreferenceHoraire.getValue() != null
                 ? comboPreferenceHoraire.getValue()
-                : resolvePatientPreferenceHoraire();
+                : resolvePatientPreferenceHoraireForAI(patientIA);
         final String urgenceDeclaree = comboUrgence != null && comboUrgence.getValue() != null
                 ? comboUrgence.getValue()
                 : "normale";
+        final List<RendezVous> historique = loadHistoriquePatientIA();
 
         Task<AIRecommendation> task = new Task<>() {
             @Override
@@ -214,7 +258,8 @@ public class ReserverRendezVousViewController {
                         prenomPatient,
                         preferenceHoraire,
                         urgenceDeclaree,
-                        creneaux
+                        creneaux,
+                        historique
                 );
             }
         };
@@ -630,19 +675,19 @@ public class ReserverRendezVousViewController {
     }
 
     private String resolvePatientDisplayName() {
-        if (demoPatientId == null) {
+        User patient = resolvePatientForIA();
+        return resolvePatientDisplayName(patient);
+    }
+
+    private String resolvePatientDisplayName(User patient) {
+        if (patient == null) {
             return "Patient";
         }
-        try {
-            User patient = userService.findById(demoPatientId).orElse(null);
-            if (patient == null || patient.getFullName() == null || patient.getFullName().isBlank()) {
-                return "Patient";
-            }
-            String[] parts = patient.getFullName().trim().split("\\s+");
-            return parts.length > 0 ? parts[0] : "Patient";
-        } catch (ServiceException e) {
+        if (patient.getFullName() == null || patient.getFullName().isBlank()) {
             return "Patient";
         }
+        String[] parts = patient.getFullName().trim().split("\\s+");
+        return parts.length > 0 ? parts[0] : "Patient";
     }
 
     private String resolveShortRoleLabel(Disponibilite disponibilite) {
@@ -650,18 +695,11 @@ public class ReserverRendezVousViewController {
     }
 
     private String resolvePatientPreferenceHoraire() {
-        if (demoPatientId == null) {
+        User patient = resolvePatientForIA();
+        if (patient == null || patient.getPreferredTime() == null) {
             return "matin";
         }
-        try {
-            User patient = userService.findById(demoPatientId).orElse(null);
-            if (patient == null || patient.getPreferredTime() == null) {
-                return "matin";
-            }
-            return patient.getPreferredTime().getHour() < 12 ? "matin" : "apres-midi";
-        } catch (ServiceException e) {
-            return "matin";
-        }
+        return patient.getPreferredTime().getHour() < 12 ? "matin" : "apres-midi";
     }
 
     private String resolveMotif(RendezVous rdv) {
@@ -792,15 +830,51 @@ public class ReserverRendezVousViewController {
                     return configuredId;
                 }
             }
-            User fallbackUser = userService.findFirstByRole(User.ROLE_PATIENT).orElse(null);
-            if (fallbackUser == null) {
-                fallbackUser = userService.findFirstByRole("ROLE_USER").orElse(null);
-            }
-            Integer fallback = fallbackUser != null ? fallbackUser.getId() : null;
-            SessionContext.setCurrentPatientId(fallback);
-            return fallback;
+            return null;
         } catch (ServiceException e) {
             return null;
+        }
+    }
+
+    private User resolvePatientForIA() {
+        if (demoPatientId == null) {
+            System.out.println("[SESSION][Reserver.resolvePatientForIA] demoPatientId=null | currentPatientId(SessionContext)="
+                    + SessionContext.getCurrentPatientId());
+            return null;
+        }
+        try {
+            User patient = userService.findById(demoPatientId).orElse(null);
+            if (patient != null) {
+                System.out.println("Patient IA utilise = "
+                        + patient.getEmail() + " / "
+                        + patient.getId() + " / "
+                        + patient.getFullName());
+            } else {
+                System.out.println("[SESSION][Reserver.resolvePatientForIA] Aucun user trouve pour id=" + demoPatientId);
+            }
+            return patient;
+        } catch (ServiceException e) {
+            System.out.println("[SESSION][Reserver.resolvePatientForIA] Erreur chargement patient id="
+                    + demoPatientId + " : " + e.getMessage());
+            return null;
+        }
+    }
+
+    private String resolvePatientPreferenceHoraireForAI(User patient) {
+        if (patient == null || patient.getPreferredTime() == null) {
+            return "non precisee";
+        }
+        return patient.getPreferredTime().getHour() < 12 ? "matin" : "apres-midi";
+    }
+
+    private List<RendezVous> loadHistoriquePatientIA() {
+        if (demoPatientId == null) {
+            return List.of();
+        }
+        try {
+            return rendezVousController.listerPourPatient(demoPatientId);
+        } catch (ServiceException e) {
+            return List.of();
         }
     }
 

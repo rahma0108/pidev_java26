@@ -8,7 +8,13 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import models.User;
+import services.NotificationAIService;
+import services.NotificationEmailService;
 import services.UserService;
+import models.AINotification;
+import models.RendezVous;
+
+import java.util.List;
 
 public class PatientHomeViewController {
 
@@ -45,6 +51,31 @@ public class PatientHomeViewController {
             loadProfile();
             loadCounters();
             refreshAITip();
+
+            // TEST TEMPORAIRE - a supprimer apres validation
+            new Thread(() -> {
+                try {
+                    if (patientId == null) {
+                        return;
+                    }
+                    User patient = userService.findById(patientId).orElse(null);
+                    List<RendezVous> rdvs = rendezVousController.listerPourPatient(patientId);
+                    if (patient != null && !rdvs.isEmpty()) {
+                        NotificationAIService aiService = new NotificationAIService();
+                        AINotification notif = aiService.genererNotification(
+                                patient, rdvs.get(0), rdvs
+                        );
+                        System.out.println("NOTIF : " + notif);
+
+                        if (!notif.isEchec()) {
+                            NotificationEmailService emailService = new NotificationEmailService();
+                            emailService.envoyerNotification(patient, notif);
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Test : " + e.getMessage());
+                }
+            }).start();
         } catch (ServiceException e) {
             ViewAlertUtil.erreur("Initialisation patient", e.formatWithCauses());
         }
