@@ -92,6 +92,7 @@ public class ReserverRendezVousViewController {
     @FXML private Button mesRendezVousButton;
     @FXML private Button btnTrouverIA;
     @FXML private Button floatingScrollButton;
+    @FXML private Button floatingScrollTopButton;
     @FXML private FlowPane mesRendezVousListContainer;
     @FXML private Label disponibilitesCountLabel;
     @FXML private Label mesRendezVousCountLabel;
@@ -231,6 +232,20 @@ public class ReserverRendezVousViewController {
         timeline.play();
     }
 
+    @FXML
+    private void handleScrollToTop() {
+        if (pageScrollPane == null) {
+            return;
+        }
+        Timeline timeline = new Timeline(
+                new KeyFrame(
+                        Duration.millis(500),
+                        new KeyValue(pageScrollPane.vvalueProperty(), 0.0)
+                )
+        );
+        timeline.play();
+    }
+
     private void animerBoutonScrollFlottant() {
         if (floatingScrollButton == null) {
             return;
@@ -247,6 +262,21 @@ public class ReserverRendezVousViewController {
         slide.setToY(0);
 
         new ParallelTransition(fade, slide).play();
+
+        if (floatingScrollTopButton != null) {
+            floatingScrollTopButton.setOpacity(0);
+            floatingScrollTopButton.setTranslateY(18);
+
+            FadeTransition fadeTop = new FadeTransition(Duration.millis(320), floatingScrollTopButton);
+            fadeTop.setFromValue(0);
+            fadeTop.setToValue(1);
+
+            TranslateTransition slideTop = new TranslateTransition(Duration.millis(320), floatingScrollTopButton);
+            slideTop.setFromY(18);
+            slideTop.setToY(0);
+
+            new ParallelTransition(fadeTop, slideTop).play();
+        }
     }
 
     private void handleReserver() {
@@ -365,7 +395,7 @@ public class ReserverRendezVousViewController {
             }
 
             labelResultatIA.setText("");
-            creneauRecommandeId = result.getCreneauRecommandeId();
+            creneauRecommandeId = result.getCreneauRecommandeId ();
             renderCreneauxCards(creneauxReservables);
             afficherPopupRecommandationFluide(recommande, result);
             Stage stage = (Stage) btnTrouverIA.getScene().getWindow();
