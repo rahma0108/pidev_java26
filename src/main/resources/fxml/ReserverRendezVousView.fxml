@@ -62,7 +62,7 @@
                                     <children>
                                         <HBox alignment="CENTER_LEFT" spacing="14.0">
                                             <children>
-                                                <Label text="🗓" styleClass="page-title"/>
+                                                <Label text="📋" styleClass="page-title"/>
                                                 <VBox spacing="4.0">
                                                     <children>
                                                         <Label text="Prendre rendez-vous" styleClass="page-title"/>
@@ -190,6 +190,15 @@
                     </StackPane>
                 </content>
             </ScrollPane>
+            <Button fx:id="floatingScrollButton"
+                    text="↓"
+                    onAction="#handleScrollToBottom"
+                    styleClass="patient-floating-scroll-button"
+                    StackPane.alignment="BOTTOM_RIGHT">
+                <StackPane.margin>
+                    <Insets right="26.0" bottom="24.0"/>
+                </StackPane.margin>
+            </Button>
         </children>
     </StackPane>
 </AnchorPane>

@@ -4,8 +4,12 @@ import controllers.DisponibiliteController;
 import controllers.RendezVousController;
 import exceptions.ServiceException;
 import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
+import javafx.animation.Timeline;
+import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -87,6 +91,7 @@ public class ReserverRendezVousViewController {
     @FXML private Button retourButton;
     @FXML private Button mesRendezVousButton;
     @FXML private Button btnTrouverIA;
+    @FXML private Button floatingScrollButton;
     @FXML private FlowPane mesRendezVousListContainer;
     @FXML private Label disponibilitesCountLabel;
     @FXML private Label mesRendezVousCountLabel;
@@ -150,6 +155,7 @@ public class ReserverRendezVousViewController {
         chargerMesRendezVous();
         mettreAJourRecommandation();
         verifierRendezVousProchain();
+        animerBoutonScrollFlottant();
     }
 
     private void chargerCreneauxLibres() {
@@ -209,6 +215,38 @@ public class ReserverRendezVousViewController {
                 System.err.println("[Toast] Erreur verification RDV : " + e.getMessage());
             }
         }).start();
+    }
+
+    @FXML
+    private void handleScrollToBottom() {
+        if (pageScrollPane == null) {
+            return;
+        }
+        Timeline timeline = new Timeline(
+                new KeyFrame(
+                        Duration.millis(500),
+                        new KeyValue(pageScrollPane.vvalueProperty(), 1.0)
+                )
+        );
+        timeline.play();
+    }
+
+    private void animerBoutonScrollFlottant() {
+        if (floatingScrollButton == null) {
+            return;
+        }
+        floatingScrollButton.setOpacity(0);
+        floatingScrollButton.setTranslateY(18);
+
+        FadeTransition fade = new FadeTransition(Duration.millis(320), floatingScrollButton);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+
+        TranslateTransition slide = new TranslateTransition(Duration.millis(320), floatingScrollButton);
+        slide.setFromY(18);
+        slide.setToY(0);
+
+        new ParallelTransition(fade, slide).play();
     }
 
     private void handleReserver() {
