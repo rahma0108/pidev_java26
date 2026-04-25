@@ -19,6 +19,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Disponibilite;
 import models.RendezVous;
+import services.AppointmentMailerService;
 import userfx.LoginController;
 import userfx.User;
 
@@ -327,12 +328,17 @@ public class ListeDisponibilitesViewController {
         Button confirmerButton = createActionButton("✓", "Confirmer",
                 "secondary-button", "rdv-action-button", "icon-action-button", "confirm-action");
         confirmerButton.setDisable(!RendezVous.EN_ATTENTE.equals(rdv.getStatut()));
-        confirmerButton.setOnAction(e -> executerActionRendezVous(
-                "Confirmation",
-                "Confirmer ce rendez-vous ?",
-                () -> rendezVousController.confirmerRendezVous(rdv.getId(), medecinIdContexte),
-                "Rendez-vous confirme."
-        ));
+        confirmerButton.setOnAction(e -> {
+            executerActionRendezVous(
+                    "Confirmation",
+                    "Confirmer ce rendez-vous ?",
+                    () -> rendezVousController.confirmerRendezVous(rdv.getId(), medecinIdContexte),
+                    "Rendez-vous confirme."
+            );
+            try {
+                new AppointmentMailerService().sendConfirmationEmail(rdv);
+            } catch (Exception ignored) {}
+        });
 
         Button terminerButton = createActionButton("🏁", "Marquer termine",
                 "secondary-button", "rdv-action-button", "icon-action-button", "done-action");
@@ -350,12 +356,17 @@ public class ListeDisponibilitesViewController {
         Button annulerButton = createActionButton("✕", "Annuler",
                 "danger-button", "rdv-action-button", "icon-action-button", "cancel-action");
         annulerButton.setDisable(RendezVous.TERMINE.equals(rdv.getStatut()));
-        annulerButton.setOnAction(e -> executerActionRendezVous(
-                "Annulation",
-                "Annuler ce rendez-vous ? La disponibilite sera liberee si la logique metier le prevoit.",
-                () -> rendezVousController.annulerRendezVous(rdv.getId()),
-                "Rendez-vous annule."
-        ));
+        annulerButton.setOnAction(e -> {
+            executerActionRendezVous(
+                    "Annulation",
+                    "Annuler ce rendez-vous ? La disponibilite sera liberee si la logique metier le prevoit.",
+                    () -> rendezVousController.annulerRendezVous(rdv.getId()),
+                    "Rendez-vous annule."
+            );
+            try {
+                new AppointmentMailerService().sendCancellationEmail(rdv);
+            } catch (Exception ignored) {}
+        });
 
         actionsBox.getChildren().addAll(calendrierButton, confirmerButton, terminerButton, annulerButton);
         row.getChildren().addAll(dateLabel, patientLabel, motifLabel, statutBox, actionsBox);
@@ -378,7 +389,12 @@ public class ListeDisponibilitesViewController {
         return button;
     }
 
-    private void executerActionRendezVous(String titre, String confirmation, RendezVousCommand command, String succesMessage) {
+    private void executerActionRendezVous(
+            String titre,
+            String confirmation,
+            RendezVousCommand command,
+            String succesMessage
+    ) {
         if (medecinIdContexte == null) {
             ViewAlertUtil.erreur(titre, "Aucun medecin connecte dans le contexte de session.");
             return;
@@ -390,6 +406,7 @@ public class ListeDisponibilitesViewController {
             command.run();
             chargerDonnees();
             ViewAlertUtil.info(titre, succesMessage);
+
         } catch (ServiceException e) {
             ViewAlertUtil.erreur(titre, e.formatWithCauses());
         }

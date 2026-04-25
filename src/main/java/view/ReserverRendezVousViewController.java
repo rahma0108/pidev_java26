@@ -23,13 +23,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.AIRecommendation;
-import models.AINotification;
 import models.Disponibilite;
 import models.RendezVous;
 import models.User;
+import services.AppointmentMailerService;
 import services.DisponibiliteService;
-import services.NotificationAIService;
-import services.NotificationEmailService;
 import services.PlanningAIService;
 import services.UserService;
 
@@ -134,31 +132,6 @@ public class ReserverRendezVousViewController {
         chargerCreneauxLibres();
         chargerMesRendezVous();
         mettreAJourRecommandation();
-
-        // Test notification IA
-        new Thread(() -> {
-            try {
-                User patient = userService.findById(demoPatientId).orElse(null);
-                List<RendezVous> rdvs = rendezVousController.listerPourPatient(demoPatientId);
-
-                if (patient != null && !rdvs.isEmpty()) {
-                    // 1. Generer la notification IA
-                    NotificationAIService aiService = new NotificationAIService();
-                    AINotification notif = aiService.genererNotification(
-                            patient, rdvs.get(0), rdvs
-                    );
-                    System.out.println("NOTIF : " + notif);
-
-                    // 2. Envoyer l'email si pas d'echec
-                    if (!notif.isEchec()) {
-                        NotificationEmailService emailService = new NotificationEmailService();
-                        emailService.envoyerNotification(patient, notif);
-                    }
-                }
-            } catch (Exception e) {
-                System.err.println("Test notif : " + e.getMessage());
-            }
-        }).start();
     }
 
     private void chargerCreneauxLibres() {
@@ -192,6 +165,9 @@ public class ReserverRendezVousViewController {
             String motif = motifTextField != null ? motifTextField.getText() : null;
             RendezVous rdv = rendezVousController.reserverRendezVous(selectedDisponibilite.getId(), demoPatientId, motif);
             ViewAlertUtil.info("Reservation", "Rendez-vous cree (n " + rdv.getId() + ").");
+            try {
+                new AppointmentMailerService().sendReservationEmail(rdv);
+            } catch (Exception ignored) {}
             if (motifTextField != null) {
                 motifTextField.clear();
             }
