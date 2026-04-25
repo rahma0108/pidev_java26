@@ -62,6 +62,12 @@ public class ReserverRendezVousViewController {
     private static final String CARD_SELECTED_STYLE =
             "-fx-background-color: #f7faff; -fx-background-radius: 16; -fx-border-radius: 16; "
                     + "-fx-border-color: #2d6ecf; -fx-border-width: 1.5; -fx-padding: 16;";
+    private static final String CARD_RECOMMENDED_STYLE =
+            "-fx-background-color: linear-gradient(to bottom, #fffdf6, #fff8df); -fx-background-radius: 16; -fx-border-radius: 16; "
+                    + "-fx-border-color: #f0c94a; -fx-border-width: 1.5; -fx-padding: 16;";
+    private static final String CARD_SELECTED_RECOMMENDED_STYLE =
+            "-fx-background-color: linear-gradient(to bottom, #fffdf6, #fff7d8); -fx-background-radius: 16; -fx-border-radius: 16; "
+                    + "-fx-border-color: #d8a826; -fx-border-width: 2; -fx-padding: 16;";
     private static final String META_CHIP_STYLE =
             "-fx-background-color: #eef4ff; -fx-text-fill: #0c447c; -fx-background-radius: 10; "
                     + "-fx-padding: 4 10; -fx-font-size: 11px; -fx-font-weight: 700;";
@@ -97,6 +103,7 @@ public class ReserverRendezVousViewController {
     private List<Disponibilite> creneauxReservables = new ArrayList<>();
     private Integer demoPatientId;
     private Integer preselectedDisponibiliteId;
+    private String creneauRecommandeId;
     private Disponibilite selectedDisponibilite;
 
     public void prefillDisponibiliteId(int id) {
@@ -320,6 +327,8 @@ public class ReserverRendezVousViewController {
             }
 
             labelResultatIA.setText("");
+            creneauRecommandeId = result.getCreneauRecommandeId();
+            renderCreneauxCards(creneauxReservables);
             afficherPopupRecommandationFluide(recommande, result);
             Stage stage = (Stage) btnTrouverIA.getScene().getWindow();
             ToastNotificationService.info(stage, "L'IA a trouve un creneau recommande.");
@@ -352,7 +361,15 @@ public class ReserverRendezVousViewController {
     private VBox createCreneauCard(Disponibilite disponibilite) {
         VBox card = new VBox(12);
         boolean isSelected = selectedDisponibilite != null && selectedDisponibilite.equals(disponibilite);
-        card.setStyle(isSelected ? CARD_SELECTED_STYLE : CARD_BASE_STYLE);
+        boolean isRecommended = creneauRecommandeId != null && disponibilite != null
+                && creneauRecommandeId.equals(String.valueOf(disponibilite.getId()));
+        if (isSelected && isRecommended) {
+            card.setStyle(CARD_SELECTED_RECOMMENDED_STYLE);
+        } else if (isRecommended) {
+            card.setStyle(CARD_RECOMMENDED_STYLE);
+        } else {
+            card.setStyle(isSelected ? CARD_SELECTED_STYLE : CARD_BASE_STYLE);
+        }
         card.setPrefWidth(360);
         card.setMaxWidth(360);
 
@@ -371,11 +388,14 @@ public class ReserverRendezVousViewController {
 
         HBox chips = new HBox(8);
         chips.setAlignment(Pos.CENTER_LEFT);
-        chips.getChildren().addAll(
-                buildMetaChip("MEDECIN", resolveShortRoleLabel(disponibilite)),
-                buildStatusChip(isTresDemande(disponibilite) ? "TRES DEMANDE" : "DISPONIBLE"),
-                buildSelectionChip(isSelected ? "CHOISI" : "LIBRE")
-        );
+        chips.getChildren().add(buildMetaChip("MEDECIN", resolveShortRoleLabel(disponibilite)));
+        chips.getChildren().add(buildStatusChip(isTresDemande(disponibilite) ? "TRES DEMANDE" : "DISPONIBLE"));
+        chips.getChildren().add(buildSelectionChip(isSelected ? "CHOISI" : "LIBRE"));
+        if (isRecommended) {
+            Label recommendedChip = new Label("⭐ Recommandé");
+            recommendedChip.getStyleClass().add("ai-recommended-chip");
+            chips.getChildren().add(recommendedChip);
+        }
 
         VBox details = new VBox(6);
         details.getChildren().addAll(
