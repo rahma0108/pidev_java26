@@ -336,7 +336,7 @@ public class ListeDisponibilitesViewController {
                     () -> rendezVousController.confirmerRendezVous(rdv.getId(), medecinIdContexte),
                     "Rendez-vous confirme."
             );
-            Stage stage = (Stage) confirmerButton.getScene().getWindow();
+            Stage stage = (Stage) rendezVousListContainer.getScene().getWindow();
             ToastNotificationService.succes(stage, "Rendez-vous confirme.");
             try {
                 new AppointmentMailerService().sendConfirmationEmail(rdv);
@@ -366,7 +366,7 @@ public class ListeDisponibilitesViewController {
                     () -> rendezVousController.annulerRendezVous(rdv.getId()),
                     "Rendez-vous annule."
             );
-            Stage stage = (Stage) annulerButton.getScene().getWindow();
+            Stage stage = (Stage) rendezVousListContainer.getScene().getWindow();
             ToastNotificationService.warning(stage, "Rendez-vous annule. Le creneau est a nouveau disponible.");
             try {
                 new AppointmentMailerService().sendCancellationEmail(rdv);
