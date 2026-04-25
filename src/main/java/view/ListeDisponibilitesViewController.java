@@ -22,6 +22,7 @@ import models.RendezVous;
 import services.AppointmentMailerService;
 import userfx.LoginController;
 import userfx.User;
+import view.ToastNotificationService;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -335,6 +336,8 @@ public class ListeDisponibilitesViewController {
                     () -> rendezVousController.confirmerRendezVous(rdv.getId(), medecinIdContexte),
                     "Rendez-vous confirme."
             );
+            Stage stage = (Stage) confirmerButton.getScene().getWindow();
+            ToastNotificationService.succes(stage, "Rendez-vous confirme.");
             try {
                 new AppointmentMailerService().sendConfirmationEmail(rdv);
             } catch (Exception ignored) {}
@@ -363,6 +366,8 @@ public class ListeDisponibilitesViewController {
                     () -> rendezVousController.annulerRendezVous(rdv.getId()),
                     "Rendez-vous annule."
             );
+            Stage stage = (Stage) annulerButton.getScene().getWindow();
+            ToastNotificationService.warning(stage, "Rendez-vous annule. Le creneau est a nouveau disponible.");
             try {
                 new AppointmentMailerService().sendCancellationEmail(rdv);
             } catch (Exception ignored) {}

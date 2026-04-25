@@ -3,6 +3,10 @@ package view;
 import controllers.DisponibiliteController;
 import controllers.RendezVousController;
 import exceptions.ServiceException;
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.ScaleTransition;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -13,15 +17,20 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.scene.paint.Color;
+import javafx.util.Duration;
 import models.AIRecommendation;
 import models.Disponibilite;
 import models.RendezVous;
@@ -79,6 +88,7 @@ public class ReserverRendezVousViewController {
     @FXML private Label labelResultatIA;
     @FXML private ComboBox<String> comboPreferenceHoraire;
     @FXML private ComboBox<String> comboUrgence;
+    @FXML private ScrollPane pageScrollPane;
 
     private DisponibiliteController disponibiliteController;
     private RendezVousController rendezVousController;
@@ -132,6 +142,7 @@ public class ReserverRendezVousViewController {
         chargerCreneauxLibres();
         chargerMesRendezVous();
         mettreAJourRecommandation();
+        verifierRendezVousProchain();
     }
 
     private void chargerCreneauxLibres() {
@@ -152,6 +163,47 @@ public class ReserverRendezVousViewController {
         }
     }
 
+    private void verifierRendezVousProchain() {
+        new Thread(() -> {
+            try {
+                if (demoPatientId == null) return;
+
+                List<RendezVous> rdvs = rendezVousController
+                        .listerPourPatient(demoPatientId);
+
+                if (rdvs == null || rdvs.isEmpty()) return;
+
+                java.time.LocalDateTime maintenant = java.time.LocalDateTime.now();
+                java.time.LocalDateTime dans24h = maintenant.plusHours(24);
+
+                for (RendezVous rdv : rdvs) {
+                    if (rdv.getDateHeure() == null) continue;
+                    if (RendezVous.ANNULE.equalsIgnoreCase(rdv.getStatut())) continue;
+
+                    java.time.LocalDateTime dateRdv = rdv.getDateHeure();
+
+                    if (dateRdv.isAfter(maintenant) && dateRdv.isBefore(dans24h)) {
+                        String heure = dateRdv.format(
+                                java.time.format.DateTimeFormatter.ofPattern("HH:mm")
+                        );
+                        String medecin = resolveMedecinName(rdv.getDisponibilite());
+
+                        Platform.runLater(() -> {
+                            Stage stage = (Stage) retourButton.getScene().getWindow();
+                            ToastNotificationService.warning(stage,
+                                    "Vous avez un rendez-vous demain a "
+                                            + heure + " avec " + medecin + "."
+                            );
+                        });
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("[Toast] Erreur verification RDV : " + e.getMessage());
+            }
+        }).start();
+    }
+
     private void handleReserver() {
         if (demoPatientId == null) {
             ViewAlertUtil.erreur("Configuration", "Aucun patient connecte valide n'a ete trouve.");
@@ -165,6 +217,8 @@ public class ReserverRendezVousViewController {
             String motif = motifTextField != null ? motifTextField.getText() : null;
             RendezVous rdv = rendezVousController.reserverRendezVous(selectedDisponibilite.getId(), demoPatientId, motif);
             ViewAlertUtil.info("Reservation", "Rendez-vous cree (n " + rdv.getId() + ").");
+            Stage stage = (Stage) btnTrouverIA.getScene().getWindow();
+            ToastNotificationService.succes(stage, "Rendez-vous reserve avec succes. Statut : en attente.");
             try {
                 new AppointmentMailerService().sendReservationEmail(rdv);
             } catch (Exception ignored) {}
@@ -190,6 +244,8 @@ public class ReserverRendezVousViewController {
                 + SessionContext.getCurrentPatientId()
                 + " | demoPatientId=" + demoPatientId);
 
+        final double scrollAvantIA = pageScrollPane != null ? pageScrollPane.getVvalue() : 0.0;
+
         List<Disponibilite> creneaux;
         try {
             DisponibiliteService disponibiliteService = new DisponibiliteService();
@@ -209,11 +265,13 @@ public class ReserverRendezVousViewController {
 
         btnTrouverIA.setDisable(true);
         labelResultatIA.setText("L'IA analyse les creneaux...");
+        restaurerScrollPage(scrollAvantIA);
 
         final User patientIA = resolvePatientForIA();
         if (patientIA == null) {
             btnTrouverIA.setDisable(false);
             labelResultatIA.setText("Aucun patient connecte. Connectez-vous puis reessayez.");
+            restaurerScrollPage(scrollAvantIA);
             return;
         }
 
@@ -243,6 +301,7 @@ public class ReserverRendezVousViewController {
         task.setOnSucceeded(event -> {
             AIRecommendation result = task.getValue();
             btnTrouverIA.setDisable(false);
+            restaurerScrollPage(scrollAvantIA);
 
             if (result == null) {
                 labelResultatIA.setText("Une erreur inattendue s'est produite.");
@@ -261,11 +320,14 @@ public class ReserverRendezVousViewController {
             }
 
             labelResultatIA.setText("");
-            afficherPopupRecommandation(recommande, result);
+            afficherPopupRecommandationFluide(recommande, result);
+            Stage stage = (Stage) btnTrouverIA.getScene().getWindow();
+            ToastNotificationService.info(stage, "L'IA a trouve un creneau recommande.");
         });
 
         task.setOnFailed(event -> {
             btnTrouverIA.setDisable(false);
+            restaurerScrollPage(scrollAvantIA);
             labelResultatIA.setText("Une erreur inattendue s'est produite.");
         });
 
@@ -600,6 +662,138 @@ public class ReserverRendezVousViewController {
         });
 
         popup.show();
+    }
+
+    private void afficherPopupRecommandationFluide(Disponibilite creneau, AIRecommendation result) {
+        Stage ownerStage = btnTrouverIA != null && btnTrouverIA.getScene() != null
+                ? (Stage) btnTrouverIA.getScene().getWindow()
+                : null;
+        String medecin = creneau.getMedecin() != null
+                ? creneau.getMedecin().getFullName()
+                : "Medecin inconnu";
+
+        Stage popup = new Stage();
+        popup.initModality(Modality.WINDOW_MODAL);
+        popup.initStyle(StageStyle.TRANSPARENT);
+        if (ownerStage != null) {
+            popup.initOwner(ownerStage);
+        }
+        popup.setResizable(false);
+
+        Label badge = new Label("Suggestion IA");
+        badge.setStyle("-fx-background-color: #eef4ff; -fx-text-fill: #1f67c1; "
+                + "-fx-background-radius: 999; -fx-padding: 6 12; -fx-font-size: 11px; -fx-font-weight: 800;");
+
+        Label titre = new Label("Le meilleur creneau pour vous");
+        titre.setStyle("-fx-font-size: 24px; -fx-font-weight: 800; -fx-text-fill: #12233d;");
+
+        Label sousTitre = new Label("Une recommandation construite a partir de vos preferences et de votre historique.");
+        sousTitre.setWrapText(true);
+        sousTitre.setStyle("-fx-font-size: 13px; -fx-text-fill: #63758c;");
+
+        VBox header = new VBox(10, badge, titre, sousTitre);
+
+        VBox detailsCard = new VBox(10,
+                buildPopupMetric("Medecin", medecin),
+                buildPopupMetric("Date", formatDate(creneau)),
+                buildPopupMetric("Heure", formatTimeRange(creneau)),
+                buildPopupMetric("Confiance", (int) (result.getNiveauConfiance() * 100) + "%")
+        );
+        detailsCard.setStyle("-fx-background-color: linear-gradient(to bottom right, #f7fbff, #eef4ff); "
+                + "-fx-background-radius: 18; -fx-border-color: #dbe8fb; -fx-border-radius: 18; -fx-padding: 18;");
+
+        Label justificationTitre = new Label("Pourquoi ce choix");
+        justificationTitre.setStyle("-fx-font-size: 14px; -fx-font-weight: 800; -fx-text-fill: #183153;");
+
+        Label justification = new Label(result.getJustification());
+        justification.setWrapText(true);
+        justification.setStyle("-fx-font-size: 13px; -fx-text-fill: #31455f; -fx-line-spacing: 2;");
+
+        VBox justificationBox = new VBox(8, justificationTitre, justification);
+        justificationBox.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 16; "
+                + "-fx-border-color: #e6edf8; -fx-border-radius: 16; -fx-padding: 16;");
+
+        Button btnReserver = new Button("Reserver ce creneau");
+        btnReserver.setStyle("-fx-background-color: linear-gradient(to right, #2463eb, #2f7cf6); "
+                + "-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 700; "
+                + "-fx-background-radius: 12; -fx-padding: 12 20; -fx-cursor: hand;");
+
+        Button btnAnnuler = new Button("Plus tard");
+        btnAnnuler.setStyle("-fx-background-color: #f3f6fb; -fx-text-fill: #2c4363; "
+                + "-fx-font-size: 13px; -fx-font-weight: 700; -fx-background-radius: 12; "
+                + "-fx-border-color: #d8e2f2; -fx-border-radius: 12; -fx-padding: 12 18; -fx-cursor: hand;");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox boutons = new HBox(12, spacer, btnAnnuler, btnReserver);
+        boutons.setAlignment(Pos.CENTER_LEFT);
+
+        VBox card = new VBox(18, header, detailsCard, justificationBox, boutons);
+        card.setPadding(new Insets(24));
+        card.setMaxWidth(520);
+        card.setPrefWidth(520);
+        card.setStyle("-fx-background-color: linear-gradient(to bottom, #ffffff, #fbfdff); "
+                + "-fx-background-radius: 24; -fx-border-color: #dce8f8; -fx-border-radius: 24; "
+                + "-fx-effect: dropshadow(gaussian, rgba(15, 30, 56, 0.22), 32, 0.15, 0, 10);");
+
+        StackPane overlay = new StackPane(card);
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setPadding(new Insets(28));
+        overlay.setStyle("-fx-background-color: rgba(11, 25, 44, 0.18);");
+
+        Scene scene = new Scene(overlay, Color.TRANSPARENT);
+        popup.setScene(scene);
+
+        btnAnnuler.setOnAction(e -> popup.close());
+        btnReserver.setOnAction(e -> {
+            popup.close();
+            selectedDisponibilite = creneau;
+            handleReserver();
+        });
+
+        overlay.setOpacity(0);
+        card.setOpacity(0);
+        card.setScaleX(0.94);
+        card.setScaleY(0.94);
+        popup.show();
+
+        FadeTransition overlayFade = new FadeTransition(Duration.millis(180), overlay);
+        overlayFade.setFromValue(0);
+        overlayFade.setToValue(1);
+
+        FadeTransition cardFade = new FadeTransition(Duration.millis(220), card);
+        cardFade.setFromValue(0);
+        cardFade.setToValue(1);
+
+        ScaleTransition cardScale = new ScaleTransition(Duration.millis(220), card);
+        cardScale.setFromX(0.94);
+        cardScale.setFromY(0.94);
+        cardScale.setToX(1);
+        cardScale.setToY(1);
+
+        new ParallelTransition(overlayFade, cardFade, cardScale).play();
+    }
+
+    private HBox buildPopupMetric(String label, String value) {
+        Label labelNode = new Label(label);
+        labelNode.setStyle("-fx-font-size: 12px; -fx-font-weight: 800; -fx-text-fill: #6b7f97;");
+
+        Label valueNode = new Label(value);
+        valueNode.setStyle("-fx-font-size: 15px; -fx-font-weight: 700; -fx-text-fill: #12233d;");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox row = new HBox(12, labelNode, spacer, valueNode);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    private void restaurerScrollPage(double valeur) {
+        if (pageScrollPane == null) {
+            return;
+        }
+        Platform.runLater(() -> pageScrollPane.setVvalue(valeur));
     }
 
     private void ouvrirPreferences() {

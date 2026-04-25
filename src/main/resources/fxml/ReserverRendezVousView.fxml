@@ -22,7 +22,7 @@
                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                styleClass="page-shell">
         <children>
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll">
+            <ScrollPane fx:id="pageScrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll">
                 <content>
                     <StackPane styleClass="page-content-shell">
                         <children>
