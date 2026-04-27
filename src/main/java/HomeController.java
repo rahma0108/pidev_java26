@@ -85,10 +85,22 @@ public class HomeController {
         fade(heroLabel, 900, 200); fade(heroSub, 900, 500);
 
         // Animate cards
-        animateCardIn(cardRdv, 0);
-        animateCardIn(cardMed, 150);
-        animateCardIn(cardOrd, 300);
+        animateCardIn(cardRdv,   0);
+        animateCardIn(cardMed,   150);
+        animateCardIn(cardOrd,   300);
         animateCardIn(cardEvent, 450);
+
+        // Add hover glow to cards
+        javafx.application.Platform.runLater(() -> {
+            EffectsHelper.addHoverGlow(cardRdv,   "#185FA5");
+            EffectsHelper.addHoverGlow(cardMed,   "#0F6E56");
+            EffectsHelper.addHoverGlow(cardOrd,   "#534AB7");
+            EffectsHelper.addHoverGlow(cardEvent, "#1D9E75");
+        });
+
+        // Typing effect on hero
+        javafx.application.Platform.runLater(() ->
+            EffectsHelper.typeText(heroSub, "Everything you need, in one place", 40));
 
         loadCounts();
         loadAITip();
@@ -155,15 +167,6 @@ public class HomeController {
                 System.err.println("Count error: " + e.getMessage());
             }
         }).start();
-    }
-    @FXML
-    public void goToProfile() {
-        stopAnimation();
-        ProfileController.setUser(loggedInUser);
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/profile.fxml"));
-            ThemeManager.applyWithFade(heroLabel.getScene(), root, null);
-        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private int getCount(java.sql.Connection conn, String sql) throws Exception {

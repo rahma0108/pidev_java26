@@ -35,15 +35,15 @@ public class DashboardController {
         if (loggedInUser != null) {
             welcomeLabel.setText(loggedInUser.getFullName());
             String role = loggedInUser.getRoles() != null
-                    ? loggedInUser.getRoles().replace("[","").replace("]","").replace("\"","")
-                    : "USER";
+                ? loggedInUser.getRoles().replace("[","").replace("]","").replace("\"","")
+                : "USER";
             roleLabel.setText(role);
 
             aiWelcomeLabel.setText("Loading...");
             new Thread(() -> {
                 String system = "You are a friendly assistant for MediLink. " +
-                        "Write a short personalized welcome (max 2 sentences) based on role. " +
-                        "Always reply in English.";
+                                "Write a short personalized welcome (max 2 sentences) based on role. " +
+                                "Always reply in English.";
                 String reply = ClaudeAI.ask(system, "Name: " + loggedInUser.getFullName() + "\nRole: " + role);
                 Platform.runLater(() -> aiWelcomeLabel.setText(reply));
             }).start();
@@ -52,6 +52,14 @@ public class DashboardController {
         // Set correct icon on load
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
         loadStats();
+
+        // ── Animate page title typing effect ──
+        EffectsHelper.typeText(pageTitle, "Dashboard", 60);
+
+        // ── Slide in stat cards ──
+        javafx.application.Platform.runLater(() -> {
+            EffectsHelper.slideInUp(pageTitle, 0);
+        });
     }
 
     @FXML
@@ -67,12 +75,22 @@ public class DashboardController {
         long admins   = users.stream().filter(u -> u.getRoles() != null && u.getRoles().contains("ROLE_ADMIN")).count();
         long medecins = users.stream().filter(u -> u.getRoles() != null && u.getRoles().contains("ROLE_MEDECIN")).count();
         long patients = users.stream().filter(u -> u.getRoles() != null
-                && !u.getRoles().contains("ROLE_ADMIN")
-                && !u.getRoles().contains("ROLE_MEDECIN")).count();
+                            && !u.getRoles().contains("ROLE_ADMIN")
+                            && !u.getRoles().contains("ROLE_MEDECIN")).count();
         long active   = users.stream().filter(u -> "ACTIVE".equalsIgnoreCase(u.getStatus())).count();
         long inactive = users.stream().filter(u -> !"ACTIVE".equalsIgnoreCase(u.getStatus())).count();
 
         totalUsersLabel.setText(String.valueOf(users.size()));
+
+        // Glow pulse on stat cards
+        javafx.application.Platform.runLater(() -> {
+            try {
+                EffectsHelper.glowPulse(
+                    (javafx.scene.layout.Region) totalUsersLabel.getParent(),
+                    "#185FA5");
+                EffectsHelper.countUp(totalUsersLabel, users.size(), "", 200);
+            } catch (Exception ignored) {}
+        });
         totalAppointmentsLabel.setText("—");
         totalMedsLabel.setText("—");
         totalEventsLabel.setText("3");
@@ -113,21 +131,13 @@ public class DashboardController {
             navigateTo("/main.fxml");
         }
     }
+
     private void navigateTo(String fxml) {
         try {
-            System.out.println("Dashboard navigating to: " + fxml);
-            var url = getClass().getResource(fxml);
-            if (url == null) {
-                System.err.println("FXML not found: " + fxml);
-                PopupHelper.showError("Page not found: " + fxml);
-                return;
-            }
-            Parent root = FXMLLoader.load(url);
+            Parent root = FXMLLoader.load(getClass().getResource(fxml));
             ThemeManager.applyWithFade(pageTitle.getScene(), root, null);
         } catch (Exception e) {
-            System.err.println("Nav error: " + e.getMessage());
-            e.printStackTrace();
-            PopupHelper.showError(e.getMessage());
+            System.err.println("Navigation error: " + e.getMessage());
         }
     }
 
@@ -151,8 +161,8 @@ public class DashboardController {
         } else {
             javafx.stage.Window window = pageTitle.getScene().getWindow();
             chatPopup.show(window,
-                    window.getX() + window.getWidth() - 420,
-                    window.getY() + window.getHeight() - 560);
+                window.getX() + window.getWidth() - 420,
+                window.getY() + window.getHeight() - 560);
         }
     }
 

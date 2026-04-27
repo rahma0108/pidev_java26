@@ -64,13 +64,15 @@ public class UserListController {
             if (filter != null && !filter.isEmpty()) {
                 String f = filter.toLowerCase();
                 boolean matches =
-                        user.getFullName().toLowerCase().contains(f) ||
-                                user.getEmail().toLowerCase().contains(f) ||
-                                (user.getRoles() != null && user.getRoles().toLowerCase().contains(f)) ||
-                                (user.getStatus() != null && user.getStatus().toLowerCase().contains(f));
+                    user.getFullName().toLowerCase().contains(f) ||
+                    user.getEmail().toLowerCase().contains(f) ||
+                    (user.getRoles() != null && user.getRoles().toLowerCase().contains(f)) ||
+                    (user.getStatus() != null && user.getStatus().toLowerCase().contains(f));
                 if (!matches) continue;
             }
-            cardsContainer.getChildren().add(createCard(user));
+            VBox card = createCard(user);
+            cardsContainer.getChildren().add(card);
+            EffectsHelper.slideInUp(card, cardsContainer.getChildren().size() * 60);
         }
 
         if (cardsContainer.getChildren().isEmpty()) {
@@ -104,7 +106,7 @@ public class UserListController {
         passField.setPromptText("Password (min 6 characters)");
         passField.setPrefHeight(38);
         passField.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; " +
-                "-fx-border-color: #ddd; -fx-font-size: 13px;");
+                           "-fx-border-color: #ddd; -fx-font-size: 13px;");
         TextField phoneField = styledField("", "Phone (optional)");
 
         ComboBox<String> roleBox = new ComboBox<>();
@@ -119,13 +121,13 @@ public class UserListController {
         errorLabel.setWrapText(true);
 
         content.getChildren().addAll(
-                title, sep,
-                fieldLabel("Full Name"), nameField,
-                fieldLabel("Email"),     emailField,
-                fieldLabel("Password"),  passField,
-                fieldLabel("Phone"),     phoneField,
-                fieldLabel("Role"),      roleBox,
-                errorLabel
+            title, sep,
+            fieldLabel("Full Name"), nameField,
+            fieldLabel("Email"),     emailField,
+            fieldLabel("Password"),  passField,
+            fieldLabel("Phone"),     phoneField,
+            fieldLabel("Role"),      roleBox,
+            errorLabel
         );
 
         pane.setContent(content);
@@ -136,12 +138,12 @@ public class UserListController {
 
         Button saveButton = (Button) pane.lookupButton(saveBtn);
         saveButton.setStyle("-fx-background-color: #0F6E56; -fx-text-fill: white; " +
-                "-fx-background-radius: 8; -fx-font-size: 13px; -fx-border-color: transparent;");
+                            "-fx-background-radius: 8; -fx-font-size: 13px; -fx-border-color: transparent;");
 
         saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             if (nameField.getText().trim().isEmpty() ||
-                    emailField.getText().trim().isEmpty() ||
-                    passField.getText().trim().isEmpty()) {
+                emailField.getText().trim().isEmpty() ||
+                passField.getText().trim().isEmpty()) {
                 errorLabel.setText("Name, email and password are required.");
                 event.consume();
             } else if (!emailField.getText().contains("@")) {
@@ -156,11 +158,11 @@ public class UserListController {
         dialog.showAndWait().ifPresent(result -> {
             if (result == saveBtn) {
                 User u = new User(
-                        emailField.getText().trim(),
-                        passField.getText().trim(),
-                        nameField.getText().trim(),
-                        "[\"" + roleBox.getValue() + "\"]",
-                        "ACTIVE"
+                    emailField.getText().trim(),
+                    passField.getText().trim(),
+                    nameField.getText().trim(),
+                    "[\"" + roleBox.getValue() + "\"]",
+                    "ACTIVE"
                 );
                 u.setPhone(phoneField.getText().trim());
                 userService.insert(u);
@@ -202,7 +204,7 @@ public class UserListController {
         passEdit.setPromptText("Leave empty to keep current password");
         passEdit.setPrefHeight(38);
         passEdit.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; " +
-                "-fx-border-color: #ddd; -fx-font-size: 13px;");
+                          "-fx-border-color: #ddd; -fx-font-size: 13px;");
 
         ComboBox<String> roleBox = new ComboBox<>();
         roleBox.getItems().addAll("ROLE_USER", "ROLE_MEDECIN", "ROLE_ADMIN");
@@ -224,13 +226,13 @@ public class UserListController {
         statusBox.setStyle("-fx-font-size: 13px;");
 
         content.getChildren().addAll(
-                header, sep,
-                fieldLabel("Full Name"),               nameEdit,
-                fieldLabel("Email"),                   emailEdit,
-                fieldLabel("Phone"),                   phoneEdit,
-                fieldLabel("New Password (optional)"), passEdit,
-                fieldLabel("Role"),                    roleBox,
-                fieldLabel("Status"),                  statusBox
+            header, sep,
+            fieldLabel("Full Name"),               nameEdit,
+            fieldLabel("Email"),                   emailEdit,
+            fieldLabel("Phone"),                   phoneEdit,
+            fieldLabel("New Password (optional)"), passEdit,
+            fieldLabel("Role"),                    roleBox,
+            fieldLabel("Status"),                  statusBox
         );
 
         pane.setContent(content);
@@ -241,7 +243,7 @@ public class UserListController {
 
         Button saveButton = (Button) pane.lookupButton(saveBtn);
         saveButton.setStyle("-fx-background-color: #185FA5; -fx-text-fill: white; " +
-                "-fx-background-radius: 8; -fx-font-size: 13px; -fx-border-color: transparent;");
+                            "-fx-background-radius: 8; -fx-font-size: 13px; -fx-border-color: transparent;");
 
         dialog.showAndWait().ifPresent(result -> {
             if (result == saveBtn) {
@@ -268,8 +270,8 @@ public class UserListController {
         showMessage("AI is searching...", "#534AB7");
         new Thread(() -> {
             String system = "Extract ONE search keyword from the query. " +
-                    "Examples: 'show doctors'->'MEDECIN', 'find admins'->'ADMIN', " +
-                    "'active users'->'ACTIVE'. Reply ONLY with the keyword.";
+                "Examples: 'show doctors'->'MEDECIN', 'find admins'->'ADMIN', " +
+                "'active users'->'ACTIVE'. Reply ONLY with the keyword.";
             String keyword = ClaudeAI.ask(system, query);
             Platform.runLater(() -> {
                 showMessage("Results for: " + keyword.trim(), "#534AB7");
@@ -288,7 +290,7 @@ public class UserListController {
         new Thread(() -> {
             String system = "Write a 2-sentence professional profile for a medical platform user. Be concise.";
             String prompt = "Name: " + user.getFullName() + "\nRole: " + user.getRoles() +
-                    "\nStatus: " + user.getStatus() + "\nEmail: " + user.getEmail();
+                            "\nStatus: " + user.getStatus() + "\nEmail: " + user.getEmail();
             String summary = ClaudeAI.ask(system, prompt);
             Platform.runLater(() -> {
                 if (aiProfileLabel != null) aiProfileLabel.setText(summary);
@@ -298,11 +300,14 @@ public class UserListController {
 
     // ── CREATE CARD ──
     private VBox createCard(User user) {
-        VBox card = new VBox(10);
+        VBox cardNode = new VBox(10);
         card.setPrefWidth(240);
         card.setPadding(new Insets(16));
         card.setStyle("-fx-background-color: white; -fx-border-color: #e0e0e0; " +
-                "-fx-border-width: 0.5; -fx-border-radius: 12; -fx-background-radius: 12;");
+                      "-fx-border-width: 0.5; -fx-border-radius: 12; -fx-background-radius: 12;");
+
+        // Add hover glow effect
+        EffectsHelper.addHoverGlow(card, "#185FA5");
 
         HBox header = new HBox(12);
         header.setAlignment(Pos.CENTER_LEFT);
@@ -395,8 +400,8 @@ public class UserListController {
         Button btn = new Button(text);
         btn.setPrefHeight(30);
         btn.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; " +
-                "-fx-background-radius: 8; -fx-font-size: 11px; " +
-                "-fx-cursor: hand; -fx-border-color: transparent;");
+                     "-fx-background-radius: 8; -fx-font-size: 11px; " +
+                     "-fx-cursor: hand; -fx-border-color: transparent;");
         return btn;
     }
 
@@ -411,7 +416,7 @@ public class UserListController {
         tf.setPromptText(placeholder);
         tf.setPrefHeight(38);
         tf.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; " +
-                "-fx-border-color: #ddd; -fx-font-size: 13px;");
+                    "-fx-border-color: #ddd; -fx-font-size: 13px;");
         return tf;
     }
 
@@ -423,7 +428,7 @@ public class UserListController {
         }
         Label b = new Label(role);
         b.setStyle("-fx-background-color:" + bg + ";-fx-text-fill:" + fg + ";" +
-                "-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:3 8;-fx-background-radius:10;");
+                   "-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:3 8;-fx-background-radius:10;");
         return b;
     }
 
@@ -432,7 +437,7 @@ public class UserListController {
         if ("INACTIVE".equalsIgnoreCase(status)) { bg = "#FCEBEB"; fg = "#791F1F"; }
         Label b = new Label(status != null ? status : "ACTIVE");
         b.setStyle("-fx-background-color:" + bg + ";-fx-text-fill:" + fg + ";" +
-                "-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:3 8;-fx-background-radius:10;");
+                   "-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:3 8;-fx-background-radius:10;");
         return b;
     }
 
@@ -440,7 +445,7 @@ public class UserListController {
         if (name == null || name.isEmpty()) return "?";
         String[] p = name.trim().split(" ");
         return p.length == 1 ? p[0].substring(0,1).toUpperCase()
-                : (p[0].substring(0,1) + p[1].substring(0,1)).toUpperCase();
+                             : (p[0].substring(0,1) + p[1].substring(0,1)).toUpperCase();
     }
 
     private void showMessage(String msg, String color) {

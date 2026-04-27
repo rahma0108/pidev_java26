@@ -24,6 +24,11 @@ public class LoginController {
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
         applyCurrentTheme();
 
+        // Animate login card sliding up on load
+        if (loginCard != null) {
+            EffectsHelper.slideInUp(loginCard, 150);
+        }
+
         String savedEmail = RememberMeHelper.load();
         if (!savedEmail.isEmpty()) {
             emailField.setText(savedEmail);
@@ -37,48 +42,48 @@ public class LoginController {
         if (loginCard == null || rootPane == null) return;
         if (ThemeManager.isDark()) {
             loginCard.setStyle(
-                    "-fx-background-color: #16213e;" +
-                            "-fx-padding: 28 32;" +
-                            "-fx-background-radius: 16;" +
-                            "-fx-border-radius: 16;" +
-                            "-fx-border-color: #1a3a5a;" +
-                            "-fx-border-width: 1;");
+                "-fx-background-color: #16213e;" +
+                "-fx-padding: 28 32;" +
+                "-fx-background-radius: 16;" +
+                "-fx-border-radius: 16;" +
+                "-fx-border-color: #1a3a5a;" +
+                "-fx-border-width: 1;");
             rootPane.setStyle("-fx-background-color: #0d1b2a;");
             emailField.setStyle(
-                    "-fx-background-color: #0d1b2a;" +
-                            "-fx-text-fill: #e0e0e0;" +
-                            "-fx-prompt-text-fill: #445566;" +
-                            "-fx-background-radius: 8;" +
-                            "-fx-border-radius: 8;" +
-                            "-fx-border-color: #1a3a5a;" +
-                            "-fx-font-size: 13px;");
+                "-fx-background-color: #0d1b2a;" +
+                "-fx-text-fill: #e0e0e0;" +
+                "-fx-prompt-text-fill: #445566;" +
+                "-fx-background-radius: 8;" +
+                "-fx-border-radius: 8;" +
+                "-fx-border-color: #1a3a5a;" +
+                "-fx-font-size: 13px;");
             passwordField.setStyle(
-                    "-fx-background-color: #0d1b2a;" +
-                            "-fx-text-fill: #e0e0e0;" +
-                            "-fx-prompt-text-fill: #445566;" +
-                            "-fx-background-radius: 8;" +
-                            "-fx-border-radius: 8;" +
-                            "-fx-border-color: #1a3a5a;" +
-                            "-fx-font-size: 13px;");
+                "-fx-background-color: #0d1b2a;" +
+                "-fx-text-fill: #e0e0e0;" +
+                "-fx-prompt-text-fill: #445566;" +
+                "-fx-background-radius: 8;" +
+                "-fx-border-radius: 8;" +
+                "-fx-border-color: #1a3a5a;" +
+                "-fx-font-size: 13px;");
         } else {
             loginCard.setStyle(
-                    "-fx-background-color: white;" +
-                            "-fx-padding: 28 32;" +
-                            "-fx-background-radius: 16;" +
-                            "-fx-border-radius: 16;" +
-                            "-fx-border-color: #e0e0e0;" +
-                            "-fx-border-width: 0.5;");
+                "-fx-background-color: white;" +
+                "-fx-padding: 28 32;" +
+                "-fx-background-radius: 16;" +
+                "-fx-border-radius: 16;" +
+                "-fx-border-color: #e0e0e0;" +
+                "-fx-border-width: 0.5;");
             rootPane.setStyle("-fx-background-color: #f0f4f8;");
             emailField.setStyle(
-                    "-fx-background-radius: 8;" +
-                            "-fx-border-radius: 8;" +
-                            "-fx-border-color: #ddd;" +
-                            "-fx-font-size: 13px;");
+                "-fx-background-radius: 8;" +
+                "-fx-border-radius: 8;" +
+                "-fx-border-color: #ddd;" +
+                "-fx-font-size: 13px;");
             passwordField.setStyle(
-                    "-fx-background-radius: 8;" +
-                            "-fx-border-radius: 8;" +
-                            "-fx-border-color: #ddd;" +
-                            "-fx-font-size: 13px;");
+                "-fx-background-radius: 8;" +
+                "-fx-border-radius: 8;" +
+                "-fx-border-color: #ddd;" +
+                "-fx-font-size: 13px;");
         }
     }
 
@@ -133,9 +138,13 @@ public class LoginController {
         if (user != null) {
             if (rememberMeBox.isSelected()) RememberMeHelper.save(email);
             else RememberMeHelper.clear();
+            // Bounce effect before navigating
+            javafx.scene.Node signInBtn = emailField.getParent().getParent();
             routeUser(user);
         } else {
             showMessage("Invalid email or password.", "red");
+            EffectsHelper.shake(emailField);
+            EffectsHelper.shake(passwordField);
             loadCaptchaComponent();
         }
     }
@@ -151,7 +160,7 @@ public class LoginController {
         new Thread(() -> {
             try {
                 com.google.api.services.oauth2.model.Userinfo googleUser =
-                        GoogleAuthService.signIn();
+                    GoogleAuthService.signIn();
 
                 Platform.runLater(() -> {
                     googleBtn.setDisable(false);
@@ -169,8 +178,8 @@ public class LoginController {
 
                     UserService us = new UserService();
                     User existing = us.getAll().stream()
-                            .filter(u -> u.getEmail().equalsIgnoreCase(email))
-                            .findFirst().orElse(null);
+                        .filter(u -> u.getEmail().equalsIgnoreCase(email))
+                        .findFirst().orElse(null);
 
                     if (existing != null) {
                         System.out.println("Existing user found: " + existing.getFullName());
@@ -179,12 +188,12 @@ public class LoginController {
                     } else {
                         System.out.println("New user — creating account");
                         User newUser = new User(email,
-                                "GOOGLE_AUTH_" + System.currentTimeMillis(),
-                                name, "[\"ROLE_USER\"]", "ACTIVE");
+                            "GOOGLE_AUTH_" + System.currentTimeMillis(),
+                            name, "[\"ROLE_USER\"]", "ACTIVE");
                         us.insert(newUser);
                         User created = us.getAll().stream()
-                                .filter(u -> u.getEmail().equalsIgnoreCase(email))
-                                .findFirst().orElse(newUser);
+                            .filter(u -> u.getEmail().equalsIgnoreCase(email))
+                            .findFirst().orElse(newUser);
                         routeUser(created);
                     }
                 });
