@@ -221,14 +221,12 @@ public class HomeController {
 
     @FXML
     public void handleLogout() {
-        if (PopupHelper.confirmLogout()) {
-            stopAnimation();
-            try {
-                Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
-                heroLabel.getScene().setRoot(root);
-                ThemeManager.apply(heroLabel.getScene());
-            } catch (Exception e) { e.printStackTrace(); }
-        }
+        RememberMeHelper.clear(); // ← ADD THIS LINE
+        stopAnimation();
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
+            ThemeManager.applyWithFade(animCanvas.getScene(), root, null);
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML

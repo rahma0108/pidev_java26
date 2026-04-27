@@ -126,10 +126,13 @@ public class DashboardController {
     @FXML public void showAppointments() { pageTitle.setText("Appointments — coming soon"); }
     @FXML public void showMedications()  { pageTitle.setText("Medications — coming soon"); }
     @FXML public void showEvents()       { pageTitle.setText("Events — coming soon"); }
-    @FXML public void handleLogout() {
-        if (PopupHelper.confirmLogout()) {
-            navigateTo("/main.fxml");
-        }
+    @FXML
+    public void handleLogout() {
+        RememberMeHelper.clear(); // ← ADD THIS LINE
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
+            ThemeManager.applyWithFade(pageTitle.getScene(), root, null);
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void navigateTo(String fxml) {
