@@ -25,23 +25,35 @@
                                -fx-border-color: transparent; -fx-padding: 8 16;"/>
             </HBox>
 
-            <!-- AI SEARCH BAR -->
+            <!-- SEARCH BAR ROW -->
             <HBox spacing="10" style="-fx-padding: 0 24 14 24;" alignment="CENTER_LEFT">
-                <TextField fx:id="searchField"
-                           promptText="AI Search... (try: 'show doctors', 'find active users')"
-                           prefHeight="36" prefWidth="420"
+                <!-- Real-time filter -->
+                <TextField fx:id="filterField"
+                           promptText="Filter by name, email, role..."
+                           prefHeight="36" prefWidth="240"
                            style="-fx-background-radius: 8; -fx-border-radius: 8;
                                   -fx-border-color: #ddd; -fx-font-size: 13px;"/>
-                <Button text="Search" onAction="#handleSearch"
+                <!-- AI search -->
+                <TextField fx:id="searchField"
+                           promptText="AI Search... (try: 'show doctors')"
+                           prefHeight="36" prefWidth="220"
+                           style="-fx-background-radius: 8; -fx-border-radius: 8;
+                                  -fx-border-color: #ddd; -fx-font-size: 13px;"/>
+                <Button text="AI Search" onAction="#handleSearch"
                         prefHeight="36"
                         style="-fx-background-color: #534AB7; -fx-text-fill: white;
                                -fx-background-radius: 8; -fx-cursor: hand;
-                               -fx-border-color: transparent; -fx-padding: 0 16;"/>
+                               -fx-border-color: transparent; -fx-padding: 0 14;"/>
                 <Button text="Clear" onAction="#handleClear"
                         prefHeight="36"
                         style="-fx-background-color: #eee; -fx-text-fill: #333;
                                -fx-background-radius: 8; -fx-cursor: hand;
-                               -fx-border-color: transparent; -fx-padding: 0 16;"/>
+                               -fx-border-color: transparent; -fx-padding: 0 14;"/>
+                <Button text="Export" onAction="#handleExport"
+                        prefHeight="36"
+                        style="-fx-background-color: #0F6E56; -fx-text-fill: white;
+                               -fx-background-radius: 8; -fx-cursor: hand;
+                               -fx-border-color: transparent; -fx-padding: 0 14;"/>
                 <Label fx:id="messageLabel" text=""
                        style="-fx-font-size: 12px;"/>
             </HBox>

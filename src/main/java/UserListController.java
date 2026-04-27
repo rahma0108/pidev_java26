@@ -30,7 +30,7 @@ public class UserListController {
     private VBox sidePanel;
     private VBox aiBox;
     private VBox statsBox;
-    private TextField filterField;
+    @FXML private TextField filterField;
 
     private UserService userService = new UserService();
     private User selectedUser = null;
@@ -38,7 +38,12 @@ public class UserListController {
     @FXML
     public void initialize() {
         loadCards(null);
-        // filterField is not in FXML — skip listener
+        // Real-time filter listener
+        if (filterField != null) {
+            filterField.textProperty().addListener((obs, old, val) -> {
+                loadCards(val.trim());
+            });
+        }
     }
 
     private void loadCards(String filter) {
@@ -335,7 +340,8 @@ public class UserListController {
 
     @FXML
     public void handleClear() {
-        if (searchField    != null) searchField.clear();
+        if (searchField  != null) searchField.clear();
+        if (filterField  != null) filterField.clear();
         if (messageLabel   != null) messageLabel.setText("");
         if (aiNameLabel    != null) aiNameLabel.setText("");
         if (aiProfileLabel != null) aiProfileLabel.setText("No user selected yet.");
