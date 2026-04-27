@@ -175,7 +175,17 @@ public class HomeController {
     }
 
     @FXML public void refreshAITip() { loadAITip(); }
-
+    @FXML
+    public void goToProfile() {
+        stopAnimation();
+        try {
+            ProfileController.setUser(loggedInUser);
+            Parent root = FXMLLoader.load(getClass().getResource("/profile.fxml"));
+            ThemeManager.applyWithFade(animCanvas.getScene(), root, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     private void loadAITip() {
         aiTipLabel.setText("Loading your personalized health tip...");
         new Thread(() -> {
