@@ -1446,3 +1446,167 @@
 .medecin-page .doctor-floating-scroll-top-button:hover {
     -fx-background-color: linear-gradient(to right, #f7fbff, #eaf2fd);
 }
+
+/* ===== AMELIORATIONS ESTHETIQUES MEDILINK ===== */
+
+/* ── Badges de statut plus modernes ─────────────────────────────────── */
+.medecin-page .status-waiting {
+    -fx-background-color: #fff8e6;
+    -fx-text-fill: #92610a;
+    -fx-border-color: #f6d860;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-effect: dropshadow(gaussian, rgba(246,184,0,0.15), 4, 0, 0, 1);
+}
+
+.medecin-page .status-confirmed {
+    -fx-background-color: #e6f9f0;
+    -fx-text-fill: #1a6b42;
+    -fx-border-color: #6edba8;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-effect: dropshadow(gaussian, rgba(30,180,100,0.15), 4, 0, 0, 1);
+}
+
+.medecin-page .status-cancelled {
+    -fx-background-color: #fff0ef;
+    -fx-text-fill: #b53228;
+    -fx-border-color: #f5a09a;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-effect: dropshadow(gaussian, rgba(220,60,50,0.12), 4, 0, 0, 1);
+}
+
+.medecin-page .status-reserved {
+    -fx-background-color: #eaf4ff;
+    -fx-text-fill: #1a5fa8;
+    -fx-border-color: #90c4f8;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+}
+
+.medecin-page .status-done {
+    -fx-background-color: #f0eeff;
+    -fx-text-fill: #4a38a8;
+    -fx-border-color: #b3a8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+}
+
+/* ── Boutons d'action icone plus lisibles ───────────────────────────── */
+.medecin-page .confirm-action {
+    -fx-background-color: #e8f8f0;
+    -fx-text-fill: #1a7a4a;
+    -fx-border-color: #7dd9a8;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.medecin-page .confirm-action:hover {
+    -fx-background-color: #d0f2e2;
+    -fx-border-color: #4dc98a;
+    -fx-effect: dropshadow(gaussian, rgba(30,160,90,0.18), 6, 0, 0, 2);
+}
+
+.medecin-page .cancel-action {
+    -fx-background-color: #fff0ef;
+    -fx-text-fill: #c0392b;
+    -fx-border-color: #f5a09a;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.medecin-page .cancel-action:hover {
+    -fx-background-color: #ffe0de;
+    -fx-border-color: #e96259;
+    -fx-effect: dropshadow(gaussian, rgba(200,50,40,0.18), 6, 0, 0, 2);
+}
+
+.medecin-page .calendar-action {
+    -fx-background-color: #eef4ff;
+    -fx-text-fill: #1f67c1;
+    -fx-border-color: #a8c8f8;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.medecin-page .calendar-action:hover {
+    -fx-background-color: #daeaff;
+    -fx-border-color: #6aaaf5;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.18), 6, 0, 0, 2);
+}
+
+.medecin-page .done-action {
+    -fx-background-color: #f0eeff;
+    -fx-text-fill: #4a38a8;
+    -fx-border-color: #c0b8f5;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.medecin-page .done-action:hover {
+    -fx-background-color: #e2dcff;
+    -fx-border-color: #9b8ff0;
+}
+
+/* ── Lignes du tableau plus aerées avec hover ───────────────────────── */
+.medecin-page .rdv-row {
+    -fx-padding: 16 18 16 18;
+    -fx-background-color: white;
+    -fx-cursor: hand;
+}
+
+.medecin-page .rdv-row:hover {
+    -fx-background-color: #f0f7ff;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.06), 6, 0, 0, 1);
+}
+
+/* ── Toolbar recherche + filtres mieux alignée ──────────────────────── */
+.medecin-page .search-field {
+    -fx-background-color: #fafcff;
+    -fx-border-color: #cddff5;
+    -fx-border-width: 1.4;
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+    -fx-pref-height: 44;
+    -fx-font-size: 14px;
+}
+
+.medecin-page .search-field:focused {
+    -fx-border-color: #1f67c1;
+    -fx-background-color: white;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.14), 8, 0, 0, 2);
+}
+
+.medecin-page .combo-box {
+    -fx-pref-height: 44;
+    -fx-background-color: #fafcff;
+    -fx-border-color: #cddff5;
+    -fx-border-width: 1.4;
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+}
+
+/* ── Bouton IA medecin ──────────────────────────────────────────────── */
+.btn-ia,
+.medecin-page .btn-ia {
+    -fx-background-color: linear-gradient(to right, #6c47ff, #4f8bff);
+    -fx-text-fill: white;
+    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-padding: 10 20 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(108,71,255,0.28), 10, 0, 0, 3);
+}
+
+.btn-ia:hover,
+.medecin-page .btn-ia:hover {
+    -fx-background-color: linear-gradient(to right, #5a38e8, #3d74f0);
+    -fx-effect: dropshadow(gaussian, rgba(108,71,255,0.40), 14, 0, 0, 4);
+}

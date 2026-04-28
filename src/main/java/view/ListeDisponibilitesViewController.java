@@ -373,37 +373,62 @@ public class ListeDisponibilitesViewController {
         contenu.getChildren().addAll(header, buildInfoCard("Resume global", resume));
 
         if (result.getRdvPrioritaires() != null && !result.getRdvPrioritaires().isEmpty()) {
-            VBox prioritesBox = new VBox(10);
             Label titreRdv = new Label("Rendez-vous a traiter en priorite");
-            titreRdv.setStyle("-fx-font-weight:800; -fx-font-size:14px; -fx-text-fill:#183153;");
-            prioritesBox.getChildren().add(titreRdv);
+            titreRdv.setStyle("-fx-font-weight:bold; -fx-font-size:13px;");
+            contenu.getChildren().add(titreRdv);
 
             for (PlanningAnalysis.RdvPrioritaire rdv : result.getRdvPrioritaires()) {
                 String priorite = rdv.getPriorite() != null ? rdv.getPriorite() : "normale";
+                String rdvIdTexte = safeText(rdv.getRdvId());
+                String raison = safeText(rdv.getRaison());
                 String couleur = switch (priorite) {
                     case "haute" -> "#dc2626";
                     case "faible" -> "#16a34a";
                     default -> "#2563eb";
                 };
 
-                Label badgePriorite = new Label(priorite.toUpperCase(Locale.ROOT));
-                badgePriorite.setStyle("-fx-background-color:" + couleur + "18;"
-                        + "-fx-text-fill:" + couleur + "; -fx-background-radius:999;"
-                        + "-fx-padding:4 10 4 10; -fx-font-size:11px; -fx-font-weight:800;");
+                Label lRdv = new Label("RDV #" + rdvIdTexte + "  [" + priorite + "]  - " + raison);
+                lRdv.setWrapText(true);
+                lRdv.setMaxWidth(380);
+                lRdv.setStyle("-fx-text-fill:" + couleur + "; -fx-font-size:12px;");
 
-                Label ligne = new Label("RDV #" + safeText(rdv.getRdvId()) + " - " + safeText(rdv.getRaison()));
-                ligne.setWrapText(true);
-                ligne.setMaxWidth(420);
-                ligne.setStyle("-fx-text-fill:#31455f; -fx-font-size:12px;");
+                Button btnConfirmer = new Button("Confirmer");
+                btnConfirmer.setStyle(
+                        "-fx-background-color:#16a34a; -fx-text-fill:white;"
+                                + "-fx-padding:4 12 4 12; -fx-background-radius:6;"
+                                + "-fx-font-size:11px; -fx-cursor:hand;"
+                );
 
-                VBox texte = new VBox(4, badgePriorite, ligne);
-                HBox carte = new HBox(12, buildAccentDot(couleur), texte);
-                carte.setAlignment(Pos.TOP_LEFT);
-                carte.setStyle("-fx-background-color:#ffffff; -fx-background-radius:14; "
-                        + "-fx-border-color:#e6edf8; -fx-border-radius:14; -fx-padding:12;");
-                prioritesBox.getChildren().add(carte);
+                btnConfirmer.setOnAction(e -> {
+                    try {
+                        int rdvId = Integer.parseInt(rdvIdTexte.trim());
+                        rendezVousController.confirmerRendezVous(rdvId, medecinIdContexte);
+                        btnConfirmer.setText("Confirme");
+                        btnConfirmer.setDisable(true);
+                        btnConfirmer.setStyle(
+                                "-fx-background-color:#94a3b8; -fx-text-fill:white;"
+                                        + "-fx-padding:4 12 4 12; -fx-background-radius:6;"
+                                        + "-fx-font-size:11px;"
+                        );
+                        ToastNotificationService.succes(owner,
+                                "RDV #" + rdvIdTexte + " confirme avec succes.");
+                        chargerDonnees();
+                    } catch (Exception ex) {
+                        ToastNotificationService.erreur(owner,
+                                "Erreur confirmation RDV #" + rdvIdTexte);
+                    }
+                });
+
+                HBox ligneRdv = new HBox(12, lRdv, btnConfirmer);
+                ligneRdv.setAlignment(Pos.CENTER_LEFT);
+                ligneRdv.setStyle(
+                        "-fx-background-color:#f8fafc;"
+                                + "-fx-border-color:#e2e8f0;"
+                                + "-fx-border-radius:8; -fx-background-radius:8;"
+                                + "-fx-padding:10;"
+                );
+                contenu.getChildren().add(ligneRdv);
             }
-            contenu.getChildren().add(buildSectionCard(prioritesBox));
         }
 
         if (result.getAlertes() != null && !result.getAlertes().isEmpty()) {
