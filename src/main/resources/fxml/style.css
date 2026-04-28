@@ -1415,3 +1415,34 @@
     -fx-font-size: 14px;
     -fx-text-fill: #5f6f86;
 }
+
+.medecin-page .doctor-floating-scroll-button {
+    -fx-background-color: linear-gradient(to right, #1f67c1, #2d82ea);
+    -fx-text-fill: white;
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-min-width: 54px;
+    -fx-min-height: 54px;
+    -fx-pref-width: 54px;
+    -fx-pref-height: 54px;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(31,103,193,0.32), 18, 0.2, 0, 6);
+}
+
+.medecin-page .doctor-floating-scroll-button:hover {
+    -fx-background-color: linear-gradient(to right, #1858a7, #246fce);
+}
+
+.medecin-page .doctor-floating-scroll-top-button {
+    -fx-background-color: linear-gradient(to right, #ffffff, #f1f6fd);
+    -fx-text-fill: #1f67c1;
+    -fx-border-color: #d6e3f6;
+    -fx-border-width: 1;
+}
+
+.medecin-page .doctor-floating-scroll-top-button:hover {
+    -fx-background-color: linear-gradient(to right, #f7fbff, #eaf2fd);
+}

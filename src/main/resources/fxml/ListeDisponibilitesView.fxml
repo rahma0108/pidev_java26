@@ -22,7 +22,7 @@
                AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                styleClass="page-shell">
         <children>
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll">
+            <ScrollPane fx:id="pageScrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll">
                 <content>
                     <StackPane styleClass="page-content-shell">
                         <children>
@@ -122,6 +122,9 @@
                                                                     promptText="Date min."
                                                                     prefWidth="190.0"
                                                                     styleClass="rdv-date-filter"/>
+                                                        <Button text="&#129302; Analyser avec l'IA"
+                                                                onAction="#handleAnalyseIA"
+                                                                styleClass="secondary-button, rdv-toolbar-button"/>
                                                         <Button fx:id="rafraichirButton"
                                                                 text="Rafraichir"
                                                                 styleClass="secondary-button, rdv-toolbar-button, rdv-refresh-button"/>
@@ -228,6 +231,24 @@
                     </StackPane>
                 </content>
             </ScrollPane>
+            <Button fx:id="floatingScrollButton"
+                    text="&#8595;"
+                    onAction="#handleScrollToBottom"
+                    styleClass="doctor-floating-scroll-button"
+                    StackPane.alignment="BOTTOM_RIGHT">
+                <StackPane.margin>
+                    <Insets right="26.0" bottom="24.0"/>
+                </StackPane.margin>
+            </Button>
+            <Button fx:id="floatingScrollTopButton"
+                    text="&#8593;"
+                    onAction="#handleScrollToTop"
+                    styleClass="doctor-floating-scroll-button, doctor-floating-scroll-top-button"
+                    StackPane.alignment="BOTTOM_RIGHT">
+                <StackPane.margin>
+                    <Insets right="26.0" bottom="92.0"/>
+                </StackPane.margin>
+            </Button>
         </children>
     </StackPane>
 </AnchorPane>

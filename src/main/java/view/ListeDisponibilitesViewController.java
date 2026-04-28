@@ -3,23 +3,41 @@ package view;
 import controllers.DisponibiliteController;
 import controllers.RendezVousController;
 import exceptions.ServiceException;
+import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.ParallelTransition;
+import javafx.animation.Timeline;
+import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.concurrent.Task;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.stage.StageStyle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.scene.text.Text;
 import models.Disponibilite;
+import models.PlanningAnalysis;
 import models.RendezVous;
 import services.AppointmentMailerService;
+import services.PlanningMedecinAIService;
 import userfx.LoginController;
 import userfx.User;
 import view.ToastNotificationService;
@@ -35,6 +53,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javafx.util.Duration;
 
 public class ListeDisponibilitesViewController {
 
@@ -48,6 +67,12 @@ public class ListeDisponibilitesViewController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
+    @FXML
+    private ScrollPane pageScrollPane;
+    @FXML
+    private Button floatingScrollButton;
+    @FXML
+    private Button floatingScrollTopButton;
     @FXML
     private DatePicker filtreDatePicker;
     @FXML
@@ -109,6 +134,7 @@ public class ListeDisponibilitesViewController {
 
         configureRendezVousToolbar();
         configureDisponibiliteToolbar();
+        configureFloatingScrollButtons();
 
         if (rafraichirButton != null) {
             rafraichirButton.setOnAction(e -> chargerRendezVous());
@@ -121,6 +147,21 @@ public class ListeDisponibilitesViewController {
         }
 
         chargerDonnees();
+    }
+
+    @FXML
+    private void handleScrollToBottom() {
+        animatePageScroll(1.0);
+    }
+
+    @FXML
+    private void handleScrollToTop() {
+        animatePageScroll(0.0);
+    }
+
+    @FXML
+    private void handleAnalyseIA() {
+        lancerAnalyseIA();
     }
 
     private void configureRendezVousToolbar() {
@@ -172,9 +213,309 @@ public class ListeDisponibilitesViewController {
         }
     }
 
+    private void configureFloatingScrollButtons() {
+        if (pageScrollPane == null) {
+            return;
+        }
+        animateFloatingScrollButtons();
+        updateFloatingScrollButtonsState(pageScrollPane.getVvalue());
+        pageScrollPane.vvalueProperty().addListener((obs, oldValue, newValue) ->
+                updateFloatingScrollButtonsState(newValue.doubleValue()));
+    }
+
+    private void animateFloatingScrollButtons() {
+        animateFloatingButtonEntry(floatingScrollButton);
+        animateFloatingButtonEntry(floatingScrollTopButton);
+    }
+
+    private void animateFloatingButtonEntry(Button button) {
+        if (button == null) {
+            return;
+        }
+        button.setOpacity(0);
+        button.setTranslateY(18);
+
+        FadeTransition fade = new FadeTransition(Duration.millis(320), button);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+
+        TranslateTransition slide = new TranslateTransition(Duration.millis(320), button);
+        slide.setFromY(18);
+        slide.setToY(0);
+
+        new ParallelTransition(fade, slide).play();
+    }
+
+    private void updateFloatingScrollButtonsState(double scrollValue) {
+        if (floatingScrollTopButton != null) {
+            boolean atTop = scrollValue <= 0.02;
+            floatingScrollTopButton.setDisable(atTop);
+            floatingScrollTopButton.setOpacity(atTop ? 0.45 : 1.0);
+        }
+        if (floatingScrollButton != null) {
+            boolean atBottom = scrollValue >= 0.98;
+            floatingScrollButton.setDisable(atBottom);
+            floatingScrollButton.setOpacity(atBottom ? 0.45 : 1.0);
+        }
+    }
+
+    private void animatePageScroll(double targetValue) {
+        if (pageScrollPane == null) {
+            return;
+        }
+        Timeline timeline = new Timeline(
+                new KeyFrame(
+                        Duration.millis(500),
+                        new KeyValue(pageScrollPane.vvalueProperty(), targetValue)
+                )
+        );
+        timeline.play();
+    }
+
     private void chargerDonnees() {
         chargerDisponibilites();
         chargerRendezVous();
+    }
+
+    private void lancerAnalyseIA() {
+        if (rendezVousListContainer == null || rendezVousController == null || disponibiliteController == null) {
+            return;
+        }
+        Stage stage = (Stage) rendezVousListContainer.getScene().getWindow();
+        ToastNotificationService.info(stage, "L'IA analyse votre planning...");
+
+        Task<PlanningAnalysis> task = new Task<>() {
+            @Override
+            protected PlanningAnalysis call() {
+                List<RendezVous> rdvs;
+                List<Disponibilite> dispos;
+                try {
+                    if (medecinIdContexte == null) {
+                        PlanningAnalysis erreur = new PlanningAnalysis();
+                        erreur.setAlerte("Aucun medecin connecte.");
+                        erreur.setEchec(true);
+                        return erreur;
+                    }
+                    rdvs = rendezVousController.listerPourMedecin(medecinIdContexte);
+                    dispos = disponibiliteController.afficherDisponibilitesMedecin(medecinIdContexte);
+                } catch (Exception e) {
+                    PlanningAnalysis erreur = new PlanningAnalysis();
+                    erreur.setAlerte("Impossible de charger les donnees du planning : " + e.getMessage());
+                    erreur.setEchec(true);
+                    return erreur;
+                }
+
+                String nomMedecin = resolveNomMedecinConnecte();
+                PlanningMedecinAIService aiService = new PlanningMedecinAIService();
+                return aiService.analyserPlanning(nomMedecin, rdvs, dispos);
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            PlanningAnalysis result = task.getValue();
+            if (result == null || result.isEchec()) {
+                ToastNotificationService.erreur(stage,
+                        result != null ? result.getAlerte() : "Erreur IA.");
+                return;
+            }
+            afficherPopupAnalyseIA(result, stage);
+        });
+
+        task.setOnFailed(event ->
+                ToastNotificationService.erreur(stage, "Erreur inattendue.")
+        );
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void afficherPopupAnalyseIA(PlanningAnalysis result, Stage owner) {
+        Label badge = new Label("Analyse IA");
+        badge.setStyle("-fx-background-color:#e8f0ff; -fx-text-fill:#2458b8; "
+                + "-fx-background-radius:999; -fx-padding:6 12 6 12; "
+                + "-fx-font-size:11px; -fx-font-weight:800;");
+
+        Label titre = new Label("Analyse IA de votre planning");
+        titre.setStyle("-fx-font-size:22px; -fx-font-weight:800; -fx-text-fill:#12233d;");
+
+        Label sousTitre = new Label("Une synthese rapide de votre charge, des priorites et des actions a envisager.");
+        sousTitre.setWrapText(true);
+        sousTitre.setMaxWidth(480);
+        sousTitre.setStyle("-fx-font-size:13px; -fx-text-fill:#63758c;");
+
+        String niveauCharge = result.getNiveauCharge() != null && !result.getNiveauCharge().isBlank()
+                ? result.getNiveauCharge()
+                : "normal";
+        String couleurCharge = switch (niveauCharge) {
+            case "surcharge" -> "#dc2626";
+            case "charge" -> "#d97706";
+            default -> "#16a34a";
+        };
+
+        Label charge = new Label("Charge : " + niveauCharge);
+        charge.setStyle("-fx-background-color:" + couleurCharge + "22;"
+                + "-fx-border-color:" + couleurCharge + ";"
+                + "-fx-border-radius:10; -fx-background-radius:10;"
+                + "-fx-padding:6 12 6 12; -fx-font-weight:800;"
+                + "-fx-text-fill:" + couleurCharge + ";");
+
+        Label resume = new Label(result.getResumeGlobal() != null && !result.getResumeGlobal().isBlank()
+                ? result.getResumeGlobal()
+                : "Aucun resume disponible.");
+        resume.setWrapText(true);
+        resume.setMaxWidth(480);
+        resume.setStyle("-fx-font-size:13px; -fx-text-fill:#334155; -fx-line-spacing:1.5;");
+
+        VBox header = new VBox(10, badge, titre, sousTitre, charge);
+
+        VBox contenu = new VBox(16);
+        contenu.getChildren().addAll(header, buildInfoCard("Resume global", resume));
+
+        if (result.getRdvPrioritaires() != null && !result.getRdvPrioritaires().isEmpty()) {
+            VBox prioritesBox = new VBox(10);
+            Label titreRdv = new Label("Rendez-vous a traiter en priorite");
+            titreRdv.setStyle("-fx-font-weight:800; -fx-font-size:14px; -fx-text-fill:#183153;");
+            prioritesBox.getChildren().add(titreRdv);
+
+            for (PlanningAnalysis.RdvPrioritaire rdv : result.getRdvPrioritaires()) {
+                String priorite = rdv.getPriorite() != null ? rdv.getPriorite() : "normale";
+                String couleur = switch (priorite) {
+                    case "haute" -> "#dc2626";
+                    case "faible" -> "#16a34a";
+                    default -> "#2563eb";
+                };
+
+                Label badgePriorite = new Label(priorite.toUpperCase(Locale.ROOT));
+                badgePriorite.setStyle("-fx-background-color:" + couleur + "18;"
+                        + "-fx-text-fill:" + couleur + "; -fx-background-radius:999;"
+                        + "-fx-padding:4 10 4 10; -fx-font-size:11px; -fx-font-weight:800;");
+
+                Label ligne = new Label("RDV #" + safeText(rdv.getRdvId()) + " - " + safeText(rdv.getRaison()));
+                ligne.setWrapText(true);
+                ligne.setMaxWidth(420);
+                ligne.setStyle("-fx-text-fill:#31455f; -fx-font-size:12px;");
+
+                VBox texte = new VBox(4, badgePriorite, ligne);
+                HBox carte = new HBox(12, buildAccentDot(couleur), texte);
+                carte.setAlignment(Pos.TOP_LEFT);
+                carte.setStyle("-fx-background-color:#ffffff; -fx-background-radius:14; "
+                        + "-fx-border-color:#e6edf8; -fx-border-radius:14; -fx-padding:12;");
+                prioritesBox.getChildren().add(carte);
+            }
+            contenu.getChildren().add(buildSectionCard(prioritesBox));
+        }
+
+        if (result.getAlertes() != null && !result.getAlertes().isEmpty()) {
+            VBox alertesBox = buildStringListSection("Alertes", result.getAlertes(), "#d97706");
+            contenu.getChildren().add(buildSectionCard(alertesBox));
+        }
+
+        if (result.getRecommandations() != null && !result.getRecommandations().isEmpty()) {
+            VBox recommandationsBox = buildStringListSection("Recommandations", result.getRecommandations(), "#2563eb");
+            contenu.getChildren().add(buildSectionCard(recommandationsBox));
+        }
+
+        Button btnFermer = new Button("Fermer");
+        btnFermer.setStyle("-fx-background-color:linear-gradient(to right, #2463eb, #2f7cf6); "
+                + "-fx-text-fill:white; -fx-padding:10 24 10 24; -fx-background-radius:12; "
+                + "-fx-font-weight:700; -fx-cursor:hand;");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox footer = new HBox(12, spacer, btnFermer);
+        footer.setAlignment(Pos.CENTER_LEFT);
+        contenu.getChildren().add(footer);
+
+        contenu.setPadding(new Insets(26));
+        contenu.setMaxWidth(560);
+        contenu.setStyle("-fx-background-color:linear-gradient(to bottom, #ffffff, #fbfdff);"
+                + "-fx-background-radius:22;"
+                + "-fx-border-color:#dce8f8;"
+                + "-fx-border-radius:22;"
+                + "-fx-effect:dropshadow(gaussian, rgba(15, 30, 56, 0.22), 32, 0.15, 0, 10);");
+
+        ScrollPane scroll = new ScrollPane(contenu);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background-color:transparent;");
+
+        StackPane overlay = new StackPane(scroll);
+        overlay.setPadding(new Insets(24));
+        overlay.setStyle("-fx-background-color: rgba(11, 25, 44, 0.18);");
+
+        Scene scene = new Scene(overlay, 620, 560);
+        scene.setFill(Color.TRANSPARENT);
+
+        Stage popup = new Stage();
+        popup.initModality(Modality.WINDOW_MODAL);
+        popup.initStyle(StageStyle.TRANSPARENT);
+        popup.initOwner(owner);
+        popup.setTitle("Analyse IA - Planning medecin");
+        popup.setScene(scene);
+        popup.setResizable(false);
+
+        btnFermer.setOnAction(e -> popup.close());
+        popup.show();
+    }
+
+    private VBox buildSectionCard(VBox content) {
+        VBox wrapper = new VBox(content);
+        wrapper.setStyle("-fx-background-color:#ffffff; -fx-background-radius:16; "
+                + "-fx-border-color:#e6edf8; -fx-border-radius:16; -fx-padding:16;");
+        return wrapper;
+    }
+
+    private VBox buildInfoCard(String title, Label body) {
+        Label heading = new Label(title);
+        heading.setStyle("-fx-font-size:14px; -fx-font-weight:800; -fx-text-fill:#183153;");
+        VBox box = new VBox(10, heading, body);
+        box.setStyle("-fx-background-color:#f8fbff; -fx-background-radius:16; "
+                + "-fx-border-color:#e0eafb; -fx-border-radius:16; -fx-padding:16;");
+        return box;
+    }
+
+    private VBox buildStringListSection(String title, List<String> items, String color) {
+        Label heading = new Label(title);
+        heading.setStyle("-fx-font-weight:800; -fx-font-size:14px; -fx-text-fill:#183153;");
+
+        VBox box = new VBox(10);
+        box.getChildren().add(heading);
+
+        for (String item : items) {
+            Label text = new Label(safeText(item));
+            text.setWrapText(true);
+            text.setMaxWidth(440);
+            text.setStyle("-fx-text-fill:#31455f; -fx-font-size:12px;");
+
+            HBox row = new HBox(12, buildAccentDot(color), text);
+            row.setAlignment(Pos.TOP_LEFT);
+            box.getChildren().add(row);
+        }
+        return box;
+    }
+
+    private StackPane buildAccentDot(String color) {
+        Text dot = new Text("\u2022");
+        dot.setStyle("-fx-font-size:18px; -fx-font-weight:800;");
+        dot.setFill(Color.web(color));
+
+        StackPane shell = new StackPane(dot);
+        shell.setMinSize(14, 14);
+        shell.setPrefSize(14, 14);
+        shell.setAlignment(Pos.TOP_CENTER);
+        return shell;
+    }
+
+    private String resolveNomMedecinConnecte() {
+        User loggedUser = LoginController.getLoggedInUser();
+        if (loggedUser != null && loggedUser.getFullName() != null && !loggedUser.getFullName().isBlank()) {
+            return loggedUser.getFullName();
+        }
+        return "Medecin";
+    }
+
+    private String safeText(String value) {
+        return value != null && !value.isBlank() ? value : "-";
     }
 
     private void chargerDisponibilites() {
