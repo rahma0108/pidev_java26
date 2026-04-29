@@ -91,15 +91,16 @@ public class UserService {
     // UPDATE — update an existing user
     // ─────────────────────────────────────────
     public void update(User user) {
-        String query = "UPDATE user SET email=?, full_name=?, roles=?, status=?, phone=? WHERE id=?";
+        String query = "UPDATE user SET email=?, password=?, full_name=?, roles=?, status=?, phone=? WHERE id=?";
         try {
             PreparedStatement ps = connection.prepareStatement(query);
             ps.setString(1, user.getEmail());
-            ps.setString(2, user.getFullName());
-            ps.setString(3, user.getRoles());
-            ps.setString(4, user.getStatus());
-            ps.setString(5, user.getPhone());
-            ps.setInt(6, user.getId());
+            ps.setString(2, user.getPassword());   // ← added
+            ps.setString(3, user.getFullName());
+            ps.setString(4, user.getRoles());
+            ps.setString(5, user.getStatus());
+            ps.setString(6, user.getPhone());
+            ps.setInt(7, user.getId());             // ← shifted from 6 to 7
             ps.executeUpdate();
             System.out.println("User updated: " + user.getId());
         } catch (SQLException e) {
@@ -135,5 +136,17 @@ public class UserService {
         u.setStatus(rs.getString("status"));
         u.setPhone(rs.getString("phone"));
         return u;
+    }
+    public User getByEmail(String email) {
+        String query = "SELECT * FROM user WHERE email = ?";
+        try {
+            PreparedStatement ps = connection.prepareStatement(query);
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return mapRow(rs);
+        } catch (SQLException e) {
+            System.err.println("GetByEmail error: " + e.getMessage());
+        }
+        return null;
     }
 }

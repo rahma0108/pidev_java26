@@ -1,217 +1,214 @@
-import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.canvas.*;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.util.Duration;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 public class ForgotPasswordController {
 
-    @FXML private Canvas animCanvas;
-    @FXML private Button themeToggleBtn;
+    // ── Step 1
+    @FXML private VBox step1Box;
     @FXML private TextField emailField;
+    @FXML private Label emailErrorLabel;
+    @FXML private ProgressIndicator spinner1;
+    @FXML private Label sendingLabel;
+
+    // ── Step 2
+    @FXML private VBox step2Box;
     @FXML private TextField codeField;
     @FXML private PasswordField newPassField;
-    @FXML private Label emailErrorLabel;
     @FXML private Label resetErrorLabel;
     @FXML private Label strengthLabel;
-    @FXML private Label sendingLabel;
-    @FXML private ProgressIndicator spinner1;
-    @FXML private VBox step1Box;
-    @FXML private VBox step2Box;
+
+    // ── Strength bars
     @FXML private Region sBar1, sBar2, sBar3, sBar4;
 
-    private final Random rand = new Random();
-    private final List<LandingController.Particle> particles = new ArrayList<>();
-    private AnimationTimer particleTimer;
-    private String generatedCode = "";
+    private final UserService userService = new UserService();
+    private String generatedCode;
+    private String targetEmail;
 
+    // ─────────────────────────────────────────
+    // INIT — wire up password strength listener
+    // ─────────────────────────────────────────
     @FXML
     public void initialize() {
-        themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
-
-        // Particles
-        double w = animCanvas.getWidth();
-        double h = animCanvas.getHeight();
-        for (int i = 0; i < 60; i++)
-            particles.add(new LandingController.Particle(w, h, rand));
-        particleTimer = new AnimationTimer() {
-            public void handle(long now) { drawFrame(w, h); }
-        };
-        particleTimer.start();
-
-        // Password strength listener
-        newPassField.textProperty().addListener((obs, old, val) -> updateStrength(val));
+        newPassField.textProperty().addListener((obs, oldVal, newVal) ->
+                updateStrengthBars(newVal)
+        );
     }
 
-    // ── STEP 1: Send code ──
+    // ─────────────────────────────────────────
+    // STEP 1 — Send code
+    // ─────────────────────────────────────────
     @FXML
-    public void handleSendCode() {
+    private void handleSendCode() {
         String email = emailField.getText().trim();
+        emailErrorLabel.setText("");
 
-        if (email.isEmpty() || !email.contains("@")) {
-            showEmailError("Please enter a valid email address.", "red");
+        if (email.isEmpty()) {
+            showEmailError("Please enter your email address.", false);
             return;
         }
 
-        // Check if email exists in DB
-        UserService us = new UserService();
-        List<User> users = us.getAll();
-        boolean exists = users.stream().anyMatch(u -> u.getEmail().equalsIgnoreCase(email));
-
-        if (!exists) {
-            showEmailError("No account found with this email.", "red");
+        if (!email.matches("^[\\w.+\\-]+@[\\w\\-]+\\.[a-zA-Z]{2,}$")) {
+            showEmailError("Please enter a valid email address.", false);
             return;
         }
+
+        User user = userService.getByEmail(email);
+        if (user == null) {
+            showEmailError("No account found with this email.", false);
+            return;
+        }
+
+        targetEmail = email;
+        generatedCode = EmailService.generateCode();
 
         // Show spinner
-        spinner1.setVisible(true); spinner1.setManaged(true);
-        sendingLabel.setText("Sending code..."); sendingLabel.setVisible(true); sendingLabel.setManaged(true);
+        spinner1.setVisible(true);
+        spinner1.setManaged(true);
+        sendingLabel.setText("Sending code...");
+        sendingLabel.setVisible(true);
+        sendingLabel.setManaged(true);
 
-        // Generate 6-digit code
-        generatedCode = String.valueOf(100000 + rand.nextInt(900000));
-
-        // Simulate sending (in real app you'd send email)
         new Thread(() -> {
-            try { Thread.sleep(1500); } catch (InterruptedException ignored) {}
-            Platform.runLater(() -> {
-                spinner1.setVisible(false); spinner1.setManaged(false);
-                sendingLabel.setVisible(false); sendingLabel.setManaged(false);
+            try {
+                EmailService.sendResetCode(targetEmail, generatedCode);
+                Platform.runLater(() -> {
+                    spinner1.setVisible(false);
+                    spinner1.setManaged(false);
+                    sendingLabel.setVisible(false);
+                    sendingLabel.setManaged(false);
 
-                // Show step 2
-                step1Box.setVisible(false); step1Box.setManaged(false);
-                step2Box.setVisible(true); step2Box.setManaged(true);
-
-                // Fade in step 2
-                FadeTransition ft = new FadeTransition(Duration.millis(500), step2Box);
-                ft.setFromValue(0); ft.setToValue(1); ft.play();
-
-                // For demo — show the code in a popup
-                PopupHelper.showInfo("Reset Code v1.0",
-                    "el API mailling mazel mouch hadher ama...\n\n code mta3ek: " + generatedCode);
-            });
+                    // Switch to step 2
+                    step1Box.setVisible(false);
+                    step1Box.setManaged(false);
+                    step2Box.setVisible(true);
+                    step2Box.setManaged(true);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    spinner1.setVisible(false);
+                    spinner1.setManaged(false);
+                    sendingLabel.setVisible(false);
+                    sendingLabel.setManaged(false);
+                    showEmailError("Failed to send email: " + e.getMessage(), false);
+                });
+            }
         }).start();
     }
 
-    // ── STEP 2: Reset password ──
+    // ─────────────────────────────────────────
+    // STEP 2 — Verify code and reset password
+    // ─────────────────────────────────────────
     @FXML
-    public void handleResetPassword() {
-        String code    = codeField.getText().trim();
-        String newPass = newPassField.getText().trim();
+    private void handleResetPassword() {
+        resetErrorLabel.setText("");
 
-        if (code.isEmpty()) {
-            showResetError("Please enter the reset code.", "red"); return;
-        }
-        if (!code.equals(generatedCode)) {
-            showResetError("Invalid code. Please try again.", "red"); return;
-        }
-        if (newPass.length() < 6) {
-            showResetError("Password must be at least 6 characters.", "red"); return;
+        String enteredCode = codeField.getText().trim();
+        String newPassword = newPassField.getText();
+
+        if (enteredCode.isEmpty()) {
+            showResetError("Please enter the code sent to your email.", false);
+            return;
         }
 
-        // Update password in DB
-        String email = emailField.getText().trim();
-        UserService us = new UserService();
-        List<User> users = us.getAll();
-        users.stream()
-            .filter(u -> u.getEmail().equalsIgnoreCase(email))
-            .findFirst()
-            .ifPresent(user -> {
-                user.setPassword(newPass);
-                us.update(user);
-            });
+        if (!enteredCode.equals(generatedCode)) {
+            showResetError("Invalid code. Please check your email and try again.", false);
+            return;
+        }
 
-        PopupHelper.showSuccess("Password reset successfully!\nYou can now login with your new password.");
-        goToLogin();
+        if (newPassword.length() < 8) {
+            showResetError("Password must be at least 8 characters.", false);
+            return;
+        }
+
+        User user = userService.getByEmail(targetEmail);
+        if (user == null) {
+            showResetError("Something went wrong. Please restart the process.", false);
+            return;
+        }
+
+        user.setPassword(newPassword);
+        userService.update(user);
+
+        showResetError("✓ Password reset successfully! Redirecting...", true);
+
+        new Thread(() -> {
+            try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+            Platform.runLater(this::goToLogin);
+        }).start();
     }
 
-    private void updateStrength(String password) {
+    // ─────────────────────────────────────────
+    // PASSWORD STRENGTH BARS
+    // ─────────────────────────────────────────
+    private void updateStrengthBars(String password) {
         int score = 0;
-        if (password.length() >= 6)  score++;
-        if (password.length() >= 10) score++;
-        if (password.matches(".*[0-9].*")) score++;
-        if (password.matches(".*[A-Z].*") || password.matches(".*[!@#$%^&*].*")) score++;
+        if (password.length() >= 8)                         score++;
+        if (password.matches(".*[A-Z].*"))                  score++;
+        if (password.matches(".*[0-9].*"))                  score++;
+        if (password.matches(".*[^a-zA-Z0-9].*"))           score++;
 
-        String[] colors = {"#E24B4A","#EF9F27","#1D9E75","#0F6E56"};
-        String[] labels = {"Weak","Fair","Good","Strong"};
+        String[] colors = {"#E24B4A", "#EF9F27", "#1D9E75", "#1D9E75"};
+        String[] labels = {"", "Weak", "Fair", "Strong", "Very strong"};
         Region[] bars   = {sBar1, sBar2, sBar3, sBar4};
+        String activeColor = score > 0 ? colors[score - 1] : "#E24B4A";
 
-        for (int i = 0; i < 4; i++) {
-            bars[i].setStyle(i < score
-                ? "-fx-background-color: " + colors[score-1] + "; -fx-background-radius: 4;"
-                : "-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 4;");
+        for (int i = 0; i < bars.length; i++) {
+            String fill = i < score ? activeColor : "rgba(255,255,255,0.1)";
+            bars[i].setStyle("-fx-background-color: " + fill + "; -fx-background-radius: 4;");
         }
-        strengthLabel.setText(password.isEmpty() ? "" : labels[Math.max(0, score-1)]);
-        if (score > 0)
-            strengthLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " + colors[score-1] + ";");
+
+        strengthLabel.setText(score > 0 ? labels[score] : "");
+        strengthLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " +
+                (score > 0 ? activeColor : "#667788") + ";");
+    }
+
+    // ─────────────────────────────────────────
+    // NAVIGATION
+    // ─────────────────────────────────────────
+    @FXML
+    private void goToLogin() {
+        navigateTo("/forgot_password.fxml".replace("forgot_password", "landing"));
     }
 
     @FXML
-    public void goToLogin() {
-        stopAnimation();
+    private void goToLanding() {
+        navigateTo("/landing.fxml");
+    }
+
+    private void navigateTo(String fxmlPath) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
-            ThemeManager.applyWithFade(emailField.getScene(), root, null);
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    @FXML
-    public void goToLanding() {
-        stopAnimation();
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/landing.fxml"));
-            ThemeManager.applyWithFade(emailField.getScene(), root, null);
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    @FXML
-    public void toggleTheme() {
-        ThemeManager.toggle(themeToggleBtn.getScene());
-        themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
-    }
-
-    private void drawFrame(double w, double h) {
-        GraphicsContext gc = animCanvas.getGraphicsContext2D();
-        gc.setFill(Color.web("#050d1a"));
-        gc.fillRect(0, 0, w, h);
-        for (int i = 0; i < particles.size(); i++) {
-            LandingController.Particle a = particles.get(i);
-            for (int j = i+1; j < particles.size(); j++) {
-                LandingController.Particle b = particles.get(j);
-                double dist = Math.hypot(a.x-b.x, a.y-b.y);
-                if (dist < 100) {
-                    gc.setStroke(Color.web("#185FA5", (1-dist/100)*0.1));
-                    gc.setLineWidth(0.5);
-                    gc.strokeLine(a.x, a.y, b.x, b.y);
-                }
-            }
-        }
-        for (LandingController.Particle p : particles) {
-            p.update(w, h);
-            gc.setFill(Color.web(p.color, p.opacity * 0.6));
-            gc.fillOval(p.x-p.radius, p.y-p.radius, p.radius*2, p.radius*2);
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            emailField.getScene().setRoot(root);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    private void showEmailError(String msg, String color) {
-        emailErrorLabel.setStyle("-fx-text-fill: " + color + ";");
+    // ─────────────────────────────────────────
+    // THEME TOGGLE
+    // ─────────────────────────────────────────
+    @FXML
+    private void toggleTheme() {
+        ThemeManager.toggle(emailField.getScene());
+    }
+
+    // ─────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────
+    private void showEmailError(String msg, boolean isSuccess) {
         emailErrorLabel.setText(msg);
+        emailErrorLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: " +
+                (isSuccess ? "#5DCAA5" : "#E24B4A") + ";");
     }
 
-    private void showResetError(String msg, String color) {
-        resetErrorLabel.setStyle("-fx-text-fill: " + color + ";");
+    private void showResetError(String msg, boolean isSuccess) {
         resetErrorLabel.setText(msg);
-    }
-
-    private void stopAnimation() {
-        if (particleTimer != null) particleTimer.stop();
+        resetErrorLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: " +
+                (isSuccess ? "#5DCAA5" : "#E24B4A") + ";");
     }
 }
