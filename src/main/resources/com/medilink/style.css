@@ -1,0 +1,237 @@
+.root {
+    -fx-background-color: #f3f5f9;
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+}
+
+.navbar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent #dde3ec transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.logo-badge {
+    -fx-background-color: #2b79e9;
+    -fx-background-radius: 10;
+    -fx-padding: 5 8 5 8;
+}
+
+.logo-icon {
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+}
+
+.logo-text {
+    -fx-text-fill: #1e2938;
+    -fx-font-size: 30px;
+    -fx-font-weight: 700;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #3d4d63;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8;
+    -fx-padding: 7 12 7 12;
+    -fx-cursor: hand;
+}
+
+.nav-button:hover {
+    -fx-background-color: #edf3fc;
+    -fx-text-fill: #2069d4;
+}
+
+.nav-button-active {
+    -fx-background-color: #eaf2ff;
+    -fx-text-fill: #2069d4;
+}
+
+.auth-outline {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #2c77e8;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-text-fill: #1f66cf;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-padding: 7 16 7 16;
+    -fx-cursor: hand;
+}
+
+.auth-outline:hover {
+    -fx-background-color: #f3f8ff;
+}
+
+.auth-solid {
+    -fx-background-color: #2c77e8;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8;
+    -fx-padding: 7 16 7 16;
+    -fx-cursor: hand;
+}
+
+.auth-solid:hover {
+    -fx-background-color: #1f66cf;
+}
+
+.page-container {
+    -fx-background-color: #f3f5f9;
+}
+
+.hero-title {
+    -fx-text-fill: #1d2430;
+    -fx-font-size: 56px;
+    -fx-font-weight: 800;
+}
+
+.hero-subtitle {
+    -fx-text-fill: #5d6778;
+    -fx-font-size: 26px;
+}
+
+.page-title {
+    -fx-text-fill: #2a74df;
+    -fx-font-size: 36px;
+    -fx-font-weight: 700;
+}
+
+.page-subtitle {
+    -fx-text-fill: #5f6f84;
+    -fx-font-size: 14px;
+}
+
+.section-title {
+    -fx-text-fill: #2a74df;
+    -fx-font-size: 31px;
+    -fx-font-weight: 700;
+}
+
+.subsection-title {
+    -fx-text-fill: #2a74df;
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+}
+
+.section-panel {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #e4e9f1;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-padding: 16;
+}
+
+.soft-panel {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #e4e9f1;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-padding: 20;
+}
+
+.label {
+    -fx-text-fill: #40556f;
+    -fx-font-size: 13px;
+}
+
+.card-title {
+    -fx-text-fill: #1f3a5a;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+}
+
+.card-meta {
+    -fx-text-fill: #5c6f87;
+    -fx-font-size: 12px;
+}
+
+.empty-state {
+    -fx-text-fill: #7a8a9e;
+    -fx-font-size: 13px;
+}
+
+.text-field,
+.date-picker {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d8e0eb;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 9 12 9 12;
+    -fx-font-size: 13px;
+}
+
+.text-field:focused,
+.date-picker:focused {
+    -fx-border-color: #2f75de;
+}
+
+.button {
+    -fx-background-color: #2c77e8;
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-padding: 8 14 8 14;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #1f66cf;
+}
+
+.btn-primary {
+    -fx-background-color: #2c77e8;
+}
+
+.btn-muted {
+    -fx-background-color: #7f95af;
+}
+
+.btn-danger {
+    -fx-background-color: #df5252;
+}
+
+.btn-success {
+    -fx-background-color: #1db17f;
+}
+
+.event-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #dfe6f1;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-padding: 12;
+    -fx-cursor: hand;
+}
+
+.event-card:hover {
+    -fx-border-color: #b6cae7;
+}
+
+.event-card-selected {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #2d77e7;
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+    -fx-padding: 11;
+    -fx-cursor: hand;
+}
+
+.clean-scroll {
+    -fx-background-color: transparent;
+    -fx-background-radius: 12;
+    -fx-border-color: #e2e8f2;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+}
+
+.clean-scroll > .viewport {
+    -fx-background-color: transparent;
+}

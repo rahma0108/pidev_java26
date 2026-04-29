@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="rootStack" styleClass="root-care" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ModifierDonController">
+   <Canvas fx:id="particleCanvas" />
+   <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="12.0" styleClass="panel-header" StackPane.alignment="TOP_LEFT">
+      <padding>
+         <Insets bottom="14.0" left="14.0" right="14.0" top="14.0" />
+      </padding>
+      <children>
+         <Label styleClass="form-title-care" text="Modifier le don" />
+         <GridPane hgap="10.0" vgap="8.0">
+            <columnConstraints>
+               <ColumnConstraints hgrow="NEVER" minWidth="160.0" />
+               <ColumnConstraints hgrow="ALWAYS" minWidth="260.0" />
+            </columnConstraints>
+            <rowConstraints>
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints valignment="TOP" />
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+            </rowConstraints>
+            <children>
+               <Label styleClass="label-muted" text="Catégorie du don * :" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+               <ComboBox fx:id="cbCategorie" maxWidth="1.7976931348623157E308" styleClass="combo-box combo-box-base" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+               <Label styleClass="label-muted" text="Description article :" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+               <TextField fx:id="tfDescription" styleClass="field-care" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               <Label styleClass="label-muted" text="Quantité :" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+               <TextField fx:id="tfQuantite" promptText="Nombre entier" styleClass="field-care" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <Label styleClass="label-muted" text="Unité de mesure :" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+               <ComboBox fx:id="cbUnite" maxWidth="1.7976931348623157E308" styleClass="combo-box combo-box-base" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <Label styleClass="label-muted" text="Détails supplémentaires :" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+               <TextArea fx:id="taDetails" prefRowCount="3" styleClass="field-care" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <Label styleClass="label-muted" text="État du don :" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+               <ComboBox fx:id="cbEtat" maxWidth="1.7976931348623157E308" styleClass="combo-box combo-box-base" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+               <Label styleClass="label-muted" text="Niveau d'urgence :" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+               <ComboBox fx:id="cbNiveauUrgence" maxWidth="1.7976931348623157E308" styleClass="combo-box combo-box-base" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+               <Label styleClass="label-muted" text="Date d'expiration :" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+               <DatePicker fx:id="dpExpiration" styleClass="date-picker-care" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+            </children>
+         </GridPane>
+         <HBox alignment="CENTER_RIGHT" spacing="10.0">
+            <Button fx:id="btnEnregistrer" defaultButton="true" mnemonicParsing="false" styleClass="btn-care-primary" text="Enregistrer" />
+            <Button fx:id="btnAnnuler" cancelButton="true" mnemonicParsing="false" styleClass="btn-care-secondary" text="Annuler" />
+         </HBox>
+      </children>
+   </VBox>
+</StackPane>

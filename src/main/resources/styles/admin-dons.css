@@ -1,0 +1,39 @@
+/* Barre latérale — style proche tableau de bord MediLink CARE */
+.toggle-button.admin-nav-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-background-radius: 10;
+    -fx-padding: 10 14 10 14;
+    -fx-alignment: CENTER_LEFT;
+    -fx-max-width: Infinity;
+    -fx-cursor: hand;
+}
+
+.toggle-button.admin-nav-item:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+}
+
+.toggle-button.admin-nav-item:selected {
+    -fx-background-color: rgba(255, 255, 255, 0.22);
+    -fx-text-fill: white;
+}
+
+.button.admin-nav-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-background-radius: 10;
+    -fx-padding: 10 14 10 14;
+    -fx-alignment: CENTER_LEFT;
+    -fx-max-width: Infinity;
+    -fx-cursor: hand;
+}
+
+.button.admin-nav-btn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+}
+
+.button.admin-nav-btn:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.22);
+}
