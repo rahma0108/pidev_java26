@@ -430,15 +430,12 @@ public class ReserverRendezVousViewController {
 
     private VBox createCreneauCard(Disponibilite disponibilite) {
         VBox card = new VBox(12);
-        boolean isSelected = selectedDisponibilite != null && selectedDisponibilite.equals(disponibilite);
         boolean isRecommended = creneauRecommandeId != null && disponibilite != null
                 && creneauRecommandeId.equals(String.valueOf(disponibilite.getId()));
-        if (isSelected && isRecommended) {
-            card.setStyle(CARD_SELECTED_RECOMMENDED_STYLE);
-        } else if (isRecommended) {
+        if (isRecommended) {
             card.setStyle(CARD_RECOMMENDED_STYLE);
         } else {
-            card.setStyle(isSelected ? CARD_SELECTED_STYLE : CARD_BASE_STYLE);
+            card.setStyle(CARD_BASE_STYLE);
         }
         card.setPrefWidth(360);
         card.setMaxWidth(360);
@@ -460,7 +457,6 @@ public class ReserverRendezVousViewController {
         chips.setAlignment(Pos.CENTER_LEFT);
         chips.getChildren().add(buildMetaChip("MEDECIN", resolveShortRoleLabel(disponibilite)));
         chips.getChildren().add(buildStatusChip(isTresDemande(disponibilite) ? "TRES DEMANDE" : "DISPONIBLE"));
-        chips.getChildren().add(buildSelectionChip(isSelected ? "CHOISI" : "LIBRE"));
         if (isRecommended) {
             Label recommendedChip = new Label("⭐ Recommandé");
             recommendedChip.getStyleClass().add("ai-recommended-chip");
@@ -479,38 +475,133 @@ public class ReserverRendezVousViewController {
         HBox actions = new HBox(8);
         actions.setAlignment(Pos.CENTER_LEFT);
 
-        Button chooseButton = new Button("Choisir");
-        chooseButton.setStyle(ICON_BUTTON_SECONDARY_STYLE);
-        chooseButton.setOnAction(e -> ViewAlertUtil.info(
-                "Disponibilite",
-                "Medecin : " + resolveMedecinName(disponibilite) + "\n"
-                        + "Date : " + formatDate(disponibilite) + "\n"
-                        + "Heure : " + formatTimeRange(disponibilite) + "\n"
-                        + "Statut : " + (isTresDemande(disponibilite) ? "Tres demande" : "Disponible")
-        ));
-
-        Button editButton = new Button("Selectionner");
-        editButton.setStyle(ICON_BUTTON_PRIMARY_STYLE);
-        editButton.setOnAction(e -> {
-            selectedDisponibilite = disponibilite;
-            renderCreneauxCards(creneauxReservables);
-        });
+        Button detailsButton = new Button("Details");
+        detailsButton.setStyle(ICON_BUTTON_SECONDARY_STYLE);
+        detailsButton.setOnAction(e -> afficherPopupDetailsCreneau(disponibilite));
 
         Button reserveButton = new Button("Reserver");
         reserveButton.setStyle(ICON_BUTTON_DANGER_STYLE);
         reserveButton.setOnAction(e -> {
             selectedDisponibilite = disponibilite;
-            renderCreneauxCards(creneauxReservables);
             handleReserver();
         });
 
-        actions.getChildren().addAll(chooseButton, editButton, reserveButton);
+        actions.getChildren().addAll(detailsButton, reserveButton);
         card.getChildren().addAll(header, separator, chips, details, actions);
-        card.setOnMouseClicked(e -> {
-            selectedDisponibilite = disponibilite;
-            renderCreneauxCards(creneauxReservables);
-        });
         return card;
+    }
+
+    private void afficherPopupDetailsCreneau(Disponibilite disponibilite) {
+        if (disponibilite == null) {
+            return;
+        }
+
+        Stage ownerStage = retourButton != null && retourButton.getScene() != null
+                ? (Stage) retourButton.getScene().getWindow()
+                : null;
+
+        Stage popup = new Stage();
+        popup.initModality(Modality.WINDOW_MODAL);
+        popup.initStyle(StageStyle.TRANSPARENT);
+        if (ownerStage != null) {
+            popup.initOwner(ownerStage);
+        }
+        popup.setResizable(false);
+
+        Label badge = new Label("Details du creneau");
+        badge.setStyle("-fx-background-color: #eef4ff; -fx-text-fill: #1f67c1; "
+                + "-fx-background-radius: 999; -fx-padding: 6 12; -fx-font-size: 11px; -fx-font-weight: 800;");
+
+        Label titre = new Label(resolveMedecinName(disponibilite));
+        titre.setStyle("-fx-font-size: 24px; -fx-font-weight: 800; -fx-text-fill: #12233d;");
+
+        Label sousTitre = new Label("Consultez les informations du creneau avant de confirmer votre reservation.");
+        sousTitre.setWrapText(true);
+        sousTitre.setStyle("-fx-font-size: 13px; -fx-text-fill: #63758c;");
+
+        VBox header = new VBox(10, badge, titre, sousTitre);
+
+        VBox detailsCard = new VBox(10,
+                buildPopupMetric("Date", formatDate(disponibilite)),
+                buildPopupMetric("Heure", formatTimeRange(disponibilite)),
+                buildPopupMetric("Statut", isTresDemande(disponibilite) ? "Tres demande" : "Disponible")
+        );
+        detailsCard.setStyle("-fx-background-color: linear-gradient(to bottom right, #f7fbff, #eef4ff); "
+                + "-fx-background-radius: 18; -fx-border-color: #dbe8fb; -fx-border-radius: 18; -fx-padding: 18;");
+
+        Label noteTitre = new Label("Resume");
+        noteTitre.setStyle("-fx-font-size: 14px; -fx-font-weight: 800; -fx-text-fill: #183153;");
+
+        Label note = new Label("Ce creneau avec " + resolveMedecinName(disponibilite)
+                + " est prevu le " + formatDate(disponibilite)
+                + " de " + formatTimeRange(disponibilite)
+                + ". Vous pouvez reserver directement depuis cette fenetre.");
+        note.setWrapText(true);
+        note.setStyle("-fx-font-size: 13px; -fx-text-fill: #31455f; -fx-line-spacing: 2;");
+
+        VBox noteBox = new VBox(8, noteTitre, note);
+        noteBox.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 16; "
+                + "-fx-border-color: #e6edf8; -fx-border-radius: 16; -fx-padding: 16;");
+
+        Button btnFermer = new Button("Fermer");
+        btnFermer.setStyle("-fx-background-color: #f3f6fb; -fx-text-fill: #2c4363; "
+                + "-fx-font-size: 13px; -fx-font-weight: 700; -fx-background-radius: 12; "
+                + "-fx-border-color: #d8e2f2; -fx-border-radius: 12; -fx-padding: 12 18; -fx-cursor: hand;");
+
+        Button btnReserver = new Button("Reserver");
+        btnReserver.setStyle("-fx-background-color: linear-gradient(to right, #d54836, #ef6548); "
+                + "-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 700; "
+                + "-fx-background-radius: 12; -fx-padding: 12 20; -fx-cursor: hand;");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox boutons = new HBox(12, spacer, btnFermer, btnReserver);
+        boutons.setAlignment(Pos.CENTER_LEFT);
+
+        VBox card = new VBox(18, header, detailsCard, noteBox, boutons);
+        card.setPadding(new Insets(24));
+        card.setMaxWidth(520);
+        card.setPrefWidth(520);
+        card.setStyle("-fx-background-color: linear-gradient(to bottom, #ffffff, #fbfdff); "
+                + "-fx-background-radius: 24; -fx-border-color: #dce8f8; -fx-border-radius: 24; "
+                + "-fx-effect: dropshadow(gaussian, rgba(15, 30, 56, 0.22), 32, 0.15, 0, 10);");
+
+        StackPane overlay = new StackPane(card);
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setPadding(new Insets(28));
+        overlay.setStyle("-fx-background-color: rgba(11, 25, 44, 0.18);");
+
+        Scene scene = new Scene(overlay, Color.TRANSPARENT);
+        popup.setScene(scene);
+
+        btnFermer.setOnAction(e -> popup.close());
+        btnReserver.setOnAction(e -> {
+            popup.close();
+            selectedDisponibilite = disponibilite;
+            handleReserver();
+        });
+
+        overlay.setOpacity(0);
+        card.setOpacity(0);
+        card.setScaleX(0.94);
+        card.setScaleY(0.94);
+        popup.show();
+
+        FadeTransition overlayFade = new FadeTransition(Duration.millis(180), overlay);
+        overlayFade.setFromValue(0);
+        overlayFade.setToValue(1);
+
+        FadeTransition cardFade = new FadeTransition(Duration.millis(220), card);
+        cardFade.setFromValue(0);
+        cardFade.setToValue(1);
+
+        ScaleTransition cardScale = new ScaleTransition(Duration.millis(220), card);
+        cardScale.setFromX(0.94);
+        cardScale.setFromY(0.94);
+        cardScale.setToX(1);
+        cardScale.setToY(1);
+
+        new ParallelTransition(overlayFade, cardFade, cardScale).play();
     }
 
     private void chargerMesRendezVous() {
