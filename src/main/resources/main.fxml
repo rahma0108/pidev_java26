@@ -13,7 +13,7 @@
     <VBox prefWidth="420" prefHeight="580" alignment="CENTER" spacing="16"
           style="-fx-background-color: #185FA5; -fx-padding: 50 40;">
 
-        <ImageView fitWidth="160" fitHeight="70" preserveRatio="true"
+        <ImageView fx:id="logoImage" fitWidth="160" fitHeight="70" preserveRatio="true"
                    onMouseClicked="#goToLanding"
                    style="-fx-cursor: hand;">
             <image><Image url="@/logo.png"/></image>

@@ -1,9 +1,11 @@
 package userfx;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.Stage;
+import view.NavigationService;
 import view.SessionContext;
 
 public class LoginController {
@@ -12,6 +14,7 @@ public class LoginController {
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
     @FXML private Button themeToggleBtn;
+    @FXML private ImageView logoImage;
     private static User loggedInUser;
 
     public static User getLoggedInUser() {
@@ -21,9 +24,8 @@ public class LoginController {
     @FXML
     public void goToLanding() {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/landing.fxml"));
-            emailField.getScene().setRoot(root);
-            ThemeManager.apply(emailField.getScene());
+            Stage stage = (Stage) emailField.getScene().getWindow();
+            NavigationService.naviguerVers(stage, "/landing.fxml", "MediLink");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -33,12 +35,14 @@ public class LoginController {
     public void initialize() {
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
         ThemeManager.apply(themeToggleBtn.getScene());
+        applyLogo();
     }
 
     @FXML
     public void toggleTheme() {
         ThemeManager.toggle(themeToggleBtn.getScene());
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
+        applyLogo();
     }
 
     @FXML
@@ -76,9 +80,8 @@ public class LoginController {
     @FXML
     public void goToRegister() {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/register.fxml"));
-            emailField.getScene().setRoot(root);
-            ThemeManager.apply(emailField.getScene());
+            Stage stage = (Stage) emailField.getScene().getWindow();
+            NavigationService.naviguerVers(stage, "/register.fxml", "MediLink - Inscription");
         } catch (Exception e) {
             System.err.println("Navigation error: " + e.getMessage());
         }
@@ -86,9 +89,8 @@ public class LoginController {
 
     private void navigateTo(String fxml) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxml));
-            emailField.getScene().setRoot(root);
-            ThemeManager.apply(emailField.getScene());
+            Stage stage = (Stage) emailField.getScene().getWindow();
+            NavigationService.naviguerVers(stage, fxml, "MediLink");
         } catch (Exception e) {
             showMessage("Could not load page.", "red");
             e.printStackTrace();
@@ -131,5 +133,16 @@ public class LoginController {
     private boolean hasRole(String normalizedRoles, String role) {
         String withPrefix = "ROLE_" + role;
         return normalizedRoles.contains(withPrefix) || normalizedRoles.contains(role);
+    }
+
+    private void applyLogo() {
+        if (logoImage == null) {
+            return;
+        }
+        String res = ThemeManager.isDark() ? "/logo2.png" : "/logo.png";
+        var url = getClass().getResource(res);
+        if (url != null) {
+            logoImage.setImage(new Image(url.toExternalForm()));
+        }
     }
 }

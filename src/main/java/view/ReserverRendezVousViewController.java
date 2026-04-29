@@ -41,6 +41,7 @@ import models.RendezVous;
 import models.User;
 import services.AppointmentMailerService;
 import services.DisponibiliteService;
+import services.GoogleCalendarService;
 import services.PlanningAIService;
 import services.UserService;
 
@@ -424,6 +425,7 @@ public class ReserverRendezVousViewController {
         for (Disponibilite d : disponibilites) {
             creneauxListContainer.getChildren().add(createCreneauCard(d));
         }
+        NavigationService.animerListe(creneauxListContainer);
     }
 
     private VBox createCreneauCard(Disponibilite disponibilite) {
@@ -533,6 +535,7 @@ public class ReserverRendezVousViewController {
             for (RendezVous rdv : rdvs) {
                 mesRendezVousListContainer.getChildren().add(createRendezVousCard(rdv));
             }
+            NavigationService.animerListe(mesRendezVousListContainer);
         } catch (ServiceException e) {
             ViewAlertUtil.erreur("Rendez-vous", e.formatWithCauses());
         }
@@ -583,10 +586,7 @@ public class ReserverRendezVousViewController {
             Button calendrierButton = new Button("Calendrier");
             calendrierButton.setStyle(ICON_BUTTON_SECONDARY_STYLE);
             calendrierButton.setOnAction(e ->
-                    ViewAlertUtil.info("Rendez-vous",
-                            "Medecin : " + resolveMedecinName(rdv.getDisponibilite()) + "\n"
-                                    + "Date : " + formatDateHeure(rdv.getDateHeure()) + "\n"
-                                    + "Motif : " + resolveMotif(rdv)));
+                    GoogleCalendarService.ouvrirDansGoogleCalendar(rdv));
             actions.getChildren().add(calendrierButton);
         }
 
@@ -889,16 +889,8 @@ public class ReserverRendezVousViewController {
     }
 
     private void retournerAccueil() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/home.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) retourButton.getScene().getWindow();
-            stage.setTitle("MediLink - Espace Patient");
-            stage.setScene(new Scene(root, 1000, 680));
-            stage.centerOnScreen();
-        } catch (IOException e) {
-            ViewAlertUtil.erreur("Navigation", "Impossible de revenir a l'accueil : " + e.getMessage());
-        }
+        Stage stage = (Stage) retourButton.getScene().getWindow();
+        NavigationService.naviguerVers(stage, "/home.fxml", "MediLink - Espace Patient");
     }
 
     private void mettreAJourRecommandation() {

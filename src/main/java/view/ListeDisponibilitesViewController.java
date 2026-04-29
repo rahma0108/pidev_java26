@@ -37,6 +37,7 @@ import models.Disponibilite;
 import models.PlanningAnalysis;
 import models.RendezVous;
 import services.AppointmentMailerService;
+import services.GoogleCalendarService;
 import services.PlanningMedecinAIService;
 import userfx.LoginController;
 import userfx.User;
@@ -669,6 +670,7 @@ public class ListeDisponibilitesViewController {
         for (RendezVous rdv : rendezVousList) {
             rendezVousListContainer.getChildren().add(createRendezVousRow(rdv));
         }
+        NavigationService.animerListe(rendezVousListContainer);
     }
 
     private HBox createRendezVousRow(RendezVous rdv) {
@@ -690,7 +692,7 @@ public class ListeDisponibilitesViewController {
         Button calendrierButton = createActionButton("📅", "Ajouter au calendrier",
                 "secondary-button", "rdv-action-button", "icon-action-button", "calendar-action");
         calendrierButton.setOnAction(e ->
-                ViewAlertUtil.info("Calendrier", "Placeholder calendrier pour le rendez-vous du " + formatDateHeure(rdv.getDateHeure()) + "."));
+                GoogleCalendarService.ouvrirDansGoogleCalendar(rdv));
 
         Button confirmerButton = createActionButton("✓", "Confirmer",
                 "secondary-button", "rdv-action-button", "icon-action-button", "confirm-action");
@@ -901,16 +903,8 @@ public class ListeDisponibilitesViewController {
     }
 
     private void retournerAccueil() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/dashboard.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) retourButton.getScene().getWindow();
-            stage.setTitle("MediLink - Espace Medecin");
-            stage.setScene(new Scene(root, 960, 640));
-            stage.centerOnScreen();
-        } catch (IOException e) {
-            ViewAlertUtil.erreur("Interface", "Impossible de revenir a l'accueil : " + e.getMessage());
-        }
+        Stage stage = (Stage) rendezVousListContainer.getScene().getWindow();
+        NavigationService.naviguerVers(stage, "/dashboard.fxml", "MediLink - Dashboard");
     }
 
     private String resolvePatientName(RendezVous rdv) {

@@ -3,6 +3,7 @@ module gdons {
     requires javafx.fxml;
     requires java.sql;
     requires java.net.http;
+    requires java.desktop;
     requires com.google.gson;
     requires jbcrypt;
     requires jakarta.mail;

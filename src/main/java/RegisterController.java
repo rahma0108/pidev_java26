@@ -5,6 +5,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 public class RegisterController {
 
@@ -16,6 +18,12 @@ public class RegisterController {
     @FXML private Label messageLabel;
     @FXML private Label aiSuggestionLabel;
     @FXML private Button registerBtn;
+    @FXML private ImageView logoImage;
+
+    @FXML
+    public void initialize() {
+        applyLogo();
+    }
 
     @FXML
     public void handleRegister() {
@@ -150,6 +158,17 @@ public class RegisterController {
             ThemeManager.apply(nameField.getScene());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void applyLogo() {
+        if (logoImage == null) {
+            return;
+        }
+        String res = ThemeManager.isDark() ? "/logo2.png" : "/logo.png";
+        var url = getClass().getResource(res);
+        if (url != null) {
+            logoImage.setImage(new Image(url.toExternalForm()));
         }
     }
 }

@@ -11,7 +11,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import javafx.util.Duration;
+import view.NavigationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -192,9 +194,8 @@ public class HomeController {
     @FXML
     public void goToRdv() {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/fxml/ReserverRendezVousView.fxml"));
-            heroLabel.getScene().setRoot(root);
-            ThemeManager.apply(heroLabel.getScene());
+            Stage stage = (Stage) heroLabel.getScene().getWindow();
+            NavigationService.naviguerVers(stage, "/fxml/ReserverRendezVousView.fxml", "MediLink - Reservation");
         } catch (Exception e) {
             PopupHelper.showError("Impossible d'ouvrir la page de réservation.");
         }
@@ -208,9 +209,8 @@ public class HomeController {
         if (PopupHelper.confirmLogout()) {
             stopAnimation();
             try {
-                Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
-                heroLabel.getScene().setRoot(root);
-                ThemeManager.apply(heroLabel.getScene());
+                Stage stage = (Stage) heroLabel.getScene().getWindow();
+                NavigationService.naviguerVers(stage, "/main.fxml", "MediLink");
             } catch (Exception e) { e.printStackTrace(); }
         }
     }
