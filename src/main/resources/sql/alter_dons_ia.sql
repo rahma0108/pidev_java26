@@ -1,3 +1,0 @@
--- Non utilisé par l’application : l’avis IA est stocké dans des fichiers locaux
--- (voir services.DonAvisStockageFichier, dossier ~/.gdons/). Aucune modification de
--- schéma MySQL n’est nécessaire pour l’IA.

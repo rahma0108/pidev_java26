@@ -1,5 +1,3 @@
-package userfx;
-
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -7,8 +5,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.canvas.*;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
@@ -31,7 +27,6 @@ public class HomeController {
     @FXML private Label ordCount;
     @FXML private Label eventCount;
     @FXML private Button themeToggleBtn;
-    @FXML private ImageView logoImage;
 
     @FXML private VBox cardRdv;
     @FXML private VBox cardMed;
@@ -47,33 +42,45 @@ public class HomeController {
         loggedInUser = user;
     }
 
+    public static User getLoggedInUser() {
+        return loggedInUser;
+    }
+
     @FXML
     public void initialize() {
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
-        applyLogo();
 
         if (loggedInUser != null) {
             greetingLabel.setText("Hello, " + loggedInUser.getFullName().split(" ")[0] + "!");
             String role = loggedInUser.getRoles() != null
-                    ? loggedInUser.getRoles().replace("[","").replace("]","")
+                ? loggedInUser.getRoles().replace("[","").replace("]","")
                     .replace("\"","").replace("ROLE_","")
-                    : "USER";
+                : "USER";
             roleChipLabel.setText(role);
 
             String[] parts = loggedInUser.getFullName().trim().split(" ");
             String initials = parts[0].substring(0,1).toUpperCase() +
-                    (parts.length > 1 ? String.valueOf(parts[1].charAt(0)).toUpperCase() : "");
+                (parts.length > 1 ? String.valueOf(parts[1].charAt(0)).toUpperCase() : "");
             avatarLabel.setText(initials);
         }
 
-        // Particles
+        // Bind canvas to window size
+        animCanvas.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                animCanvas.widthProperty().bind(newScene.widthProperty());
+                animCanvas.heightProperty().bind(newScene.heightProperty());
+            }
+        });
+
         double w = animCanvas.getWidth();
         double h = animCanvas.getHeight();
         for (int i = 0; i < 70; i++)
             particles.add(new LandingController.Particle(w, h, rand));
 
         particleTimer = new AnimationTimer() {
-            public void handle(long now) { drawFrame(w, h); }
+            public void handle(long now) {
+                drawFrame(animCanvas.getWidth(), animCanvas.getHeight());
+            }
         };
         particleTimer.start();
 
@@ -82,10 +89,22 @@ public class HomeController {
         fade(heroLabel, 900, 200); fade(heroSub, 900, 500);
 
         // Animate cards
-        animateCardIn(cardRdv, 0);
-        animateCardIn(cardMed, 150);
-        animateCardIn(cardOrd, 300);
+        animateCardIn(cardRdv,   0);
+        animateCardIn(cardMed,   150);
+        animateCardIn(cardOrd,   300);
         animateCardIn(cardEvent, 450);
+
+        // Add hover glow to cards
+        javafx.application.Platform.runLater(() -> {
+            EffectsHelper.addHoverGlow(cardRdv,   "#185FA5");
+            EffectsHelper.addHoverGlow(cardMed,   "#0F6E56");
+            EffectsHelper.addHoverGlow(cardOrd,   "#534AB7");
+            EffectsHelper.addHoverGlow(cardEvent, "#1D9E75");
+        });
+
+        // Typing effect on hero
+        javafx.application.Platform.runLater(() ->
+            EffectsHelper.typeText(heroSub, "Everything you need, in one place", 40));
 
         loadCounts();
         loadAITip();
@@ -143,7 +162,7 @@ public class HomeController {
                 int ords   = getCount(conn, "SELECT COUNT(*) FROM ordonnances");
                 int events = getCount(conn, "SELECT COUNT(*) FROM evenements");
                 Platform.runLater(() -> {
-                    rdvCount.setText(rdv + " rendez-vous");
+                    rdvCount.setText(rdv + " upcoming");
                     medCount.setText(meds + " items");
                     ordCount.setText(ords + " prescriptions");
                     eventCount.setText(events + " upcoming");
@@ -160,14 +179,24 @@ public class HomeController {
     }
 
     @FXML public void refreshAITip() { loadAITip(); }
-
+    @FXML
+    public void goToProfile() {
+        stopAnimation();
+        try {
+            ProfileController.setUser(loggedInUser);
+            Parent root = FXMLLoader.load(getClass().getResource("/profile.fxml"));
+            ThemeManager.applyWithFade(animCanvas.getScene(), root, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     private void loadAITip() {
         aiTipLabel.setText("Loading your personalized health tip...");
         new Thread(() -> {
             String name = loggedInUser != null ? loggedInUser.getFullName().split(" ")[0] : "User";
             String tip  = ClaudeAI.ask(
-                    "You are a friendly medical assistant. Give ONE short practical health tip (max 2 sentences). Be encouraging. Always reply in English.",
-                    "Health tip for patient named " + name
+                "You are a friendly medical assistant. Give ONE short practical health tip (max 2 sentences). Be encouraging. Always reply in English.",
+                "Health tip for patient named " + name
             );
             Platform.runLater(() -> {
                 aiTipLabel.setText(tip);
@@ -188,60 +217,34 @@ public class HomeController {
         st.setToX(1.0); st.setToY(1.0); st.play();
     }
 
-    // ── Navigation ──
-    @FXML
-    public void goToRdv() {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/fxml/ReserverRendezVousView.fxml"));
-            heroLabel.getScene().setRoot(root);
-            ThemeManager.apply(heroLabel.getScene());
-        } catch (Exception e) {
-            PopupHelper.showError("Impossible d'ouvrir la page de réservation.");
-        }
-    }
+    // ── Navigation — Coming Soon for all ──
+    @FXML public void goToRdv()         { PopupHelper.showComingSoon("Appointments"); }
     @FXML public void goToMedicaments() { PopupHelper.showComingSoon("Medications"); }
     @FXML public void goToOrdonnances() { PopupHelper.showComingSoon("Prescriptions"); }
-    @FXML
-    public void goToDons() {
+    @FXML public void goToEvents()      { 
+        stopAnimation();
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/ListeDons.fxml"));
-            heroLabel.getScene().setRoot(root);
-            ThemeManager.apply(heroLabel.getScene());
+            Parent root = FXMLLoader.load(getClass().getResource("/event_front.fxml"));
+            ThemeManager.applyWithFade(animCanvas.getScene(), root, null);
         } catch (Exception e) {
-            PopupHelper.showError("Impossible d'ouvrir la gestion des dons.");
+            e.printStackTrace();
         }
-    }
-
-    // Backward-compatible handler if an older FXML still references goToEvents.
-    @FXML
-    public void goToEvents() {
-        goToDons();
     }
 
     @FXML
     public void handleLogout() {
-        if (PopupHelper.confirmLogout()) {
-            stopAnimation();
-            try {
-                Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
-                heroLabel.getScene().setRoot(root);
-                ThemeManager.apply(heroLabel.getScene());
-            } catch (Exception e) { e.printStackTrace(); }
-        }
+        RememberMeHelper.clear(); // ← ADD THIS LINE
+        stopAnimation();
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
+            ThemeManager.applyWithFade(animCanvas.getScene(), root, null);
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML
     public void toggleTheme() {
         ThemeManager.toggle(themeToggleBtn.getScene());
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
-        applyLogo();
-    }
-
-    private void applyLogo() {
-        if (logoImage == null) return;
-        String res = ThemeManager.isDark() ? "/logo2.png" : "/logo.png";
-        var url = getClass().getResource(res);
-        if (url != null) logoImage.setImage(new Image(url.toExternalForm()));
     }
 
     private void stopAnimation() {

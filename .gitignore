@@ -1,10 +1,7 @@
 target/
-# Avis IA hors base (fichiers locaux par don)
-gdons_avis_ia/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-.kotlin
 src/main/resources/config.properties
 ### IntelliJ IDEA ###
 .idea/modules.xml
@@ -39,5 +36,3 @@ build/
 
 ### Mac OS ###
 .DS_Store
-# Fichier de config sensible
-application.properties

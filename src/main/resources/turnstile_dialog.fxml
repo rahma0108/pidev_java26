@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.web.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="TurnstileController"
+      prefWidth="420" prefHeight="320"
+      spacing="0"
+      style="-fx-background-color: #0d1b2a;
+             -fx-background-radius: 16;">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="10"
+          style="-fx-padding: 16 20;
+                 -fx-background-color: #050d1a;
+                 -fx-background-radius: 16 16 0 0;">
+        <Label text="🛡️" style="-fx-font-size: 18px;"/>
+        <VBox spacing="2">
+            <Label text="Human Verification"
+                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Label text="Powered by Cloudflare Turnstile"
+                   style="-fx-font-size: 10px; -fx-text-fill: #445566;"/>
+        </VBox>
+    </HBox>
+
+    <!-- WebView for Turnstile widget -->
+    <WebView fx:id="webView" prefWidth="420" prefHeight="260"
+             style="-fx-background-color: #0d1b2a;"/>
+
+    <!-- Status + Cancel -->
+    <HBox alignment="CENTER_LEFT" spacing="12"
+          style="-fx-padding: 12 20;
+                 -fx-background-color: #050d1a;
+                 -fx-background-radius: 0 0 16 16;">
+        <Label fx:id="statusLabel"
+               text="Complete the verification above"
+               HBox.hgrow="ALWAYS"
+               style="-fx-font-size: 12px; -fx-text-fill: #7fc4fd;"/>
+        <Button fx:id="cancelBtn" text="Cancel" onAction="#handleCancel"
+                style="-fx-background-color: rgba(226,75,74,0.2);
+                       -fx-text-fill: #E24B4A; -fx-font-size: 12px;
+                       -fx-background-radius: 8; -fx-cursor: hand;
+                       -fx-border-color: rgba(226,75,74,0.3);
+                       -fx-border-radius: 8; -fx-border-width: 1;
+                       -fx-padding: 6 14;"/>
+    </HBox>
+</VBox>

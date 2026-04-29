@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.shape.*?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="LoadingController"
+           prefWidth="1000" prefHeight="650"
+           style="-fx-background-color: #050d1a;">
+
+    <!-- Particle canvas -->
+    <Canvas fx:id="animCanvas" width="1000" height="650"/>
+
+    <!-- Center content -->
+    <VBox alignment="CENTER" spacing="28">
+
+        <!-- Spinning ring -->
+        <StackPane alignment="CENTER">
+            <!-- Outer glow ring -->
+            <Circle fx:id="outerRing" radius="70"
+                    style="-fx-fill: transparent;
+                           -fx-stroke: rgba(24,95,165,0.15);
+                           -fx-stroke-width: 2;"/>
+            <!-- Middle ring -->
+            <Circle fx:id="middleRing" radius="58"
+                    style="-fx-fill: transparent;
+                           -fx-stroke: rgba(24,95,165,0.3);
+                           -fx-stroke-width: 1.5;"/>
+            <!-- Main spinner arc (ProgressIndicator styled) -->
+            <ProgressIndicator fx:id="spinner"
+                               prefWidth="90" prefHeight="90"
+                               style="-fx-progress-color: #7fc4fd;
+                                      -fx-background-color: transparent;"/>
+            <!-- Center logo text -->
+            <Label text="M"
+                   style="-fx-font-size: 28px; -fx-font-weight: bold;
+                          -fx-text-fill: #7fc4fd;"/>
+        </StackPane>
+
+        <!-- Loading text -->
+        <VBox alignment="CENTER" spacing="10">
+            <Label fx:id="loadingLabel" text="Loading..."
+                   style="-fx-font-size: 18px; -fx-font-weight: bold;
+                          -fx-text-fill: white;"/>
+            <Label fx:id="subLabel" text="Please wait a moment"
+                   style="-fx-font-size: 13px; -fx-text-fill: #667788;"/>
+        </VBox>
+
+        <!-- Progress bar -->
+        <VBox alignment="CENTER" spacing="8" prefWidth="280">
+            <ProgressBar fx:id="progressBar" prefWidth="280" prefHeight="4"
+                         style="-fx-accent: #185FA5;
+                                -fx-background-color: rgba(255,255,255,0.08);
+                                -fx-background-radius: 2;"/>
+            <Label fx:id="percentLabel" text="0%"
+                   style="-fx-font-size: 11px; -fx-text-fill: #445566;"/>
+        </VBox>
+
+        <!-- Dots -->
+        <HBox alignment="CENTER" spacing="8">
+            <Circle fx:id="dot1" radius="4"
+                    style="-fx-fill: #185FA5;"/>
+            <Circle fx:id="dot2" radius="4"
+                    style="-fx-fill: rgba(24,95,165,0.4);"/>
+            <Circle fx:id="dot3" radius="4"
+                    style="-fx-fill: rgba(24,95,165,0.2);"/>
+        </HBox>
+
+    </VBox>
+
+    <!-- Version tag bottom -->
+    <Label text="MediLink Care  ·  v1.0"
+           StackPane.alignment="BOTTOM_CENTER"
+           style="-fx-font-size: 11px; -fx-text-fill: #223344;
+                  -fx-padding: 0 0 20 0;"/>
+
+</StackPane>

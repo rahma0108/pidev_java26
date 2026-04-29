@@ -1,0 +1,25 @@
+/* ── Hide TextArea scrollbars for CAPTCHA ── */
+.text-area .scroll-bar:vertical,
+.text-area .scroll-bar:horizontal {
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-max-width: 0;
+    -fx-max-height: 0;
+    visibility: hidden;
+}
+.text-area .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+.text-area .content {
+    -fx-background-color: #e8f0ff;
+    -fx-background-radius: 8;
+    -fx-padding: 2;
+}
+.text-area {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}

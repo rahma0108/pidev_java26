@@ -4,16 +4,15 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.canvas.*?>
+<?import javafx.scene.shape.*?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
-           fx:controller="userfx.HomeController"
+           fx:controller="HomeController"
            prefWidth="1000" prefHeight="680"
            style="-fx-background-color: #050d1a;">
 
-    <!-- Animated canvas background -->
     <Canvas fx:id="animCanvas" width="1000" height="680"/>
 
-    <!-- Main content -->
     <VBox spacing="0">
 
         <!-- TOP NAV -->
@@ -26,7 +25,6 @@
                 <image><Image url="@/logo.png"/></image>
             </ImageView>
             <Region HBox.hgrow="ALWAYS"/>
-            <!-- User greeting -->
             <HBox spacing="12" alignment="CENTER">
                 <VBox alignment="CENTER_RIGHT" spacing="2">
                     <Label fx:id="greetingLabel" text="Hello!"
@@ -34,11 +32,10 @@
                     <Label fx:id="roleChipLabel" text="Patient"
                            style="-fx-font-size: 11px; -fx-text-fill: #7fc4fd;"/>
                 </VBox>
-                <!-- Avatar circle -->
-                <StackPane>
-                    <javafx.scene.shape.Circle fx:id="avatarCircle" radius="20"
-                               style="-fx-fill: rgba(24,95,165,0.4);
-                                      -fx-stroke: #185FA5; -fx-stroke-width: 1.5;"/>
+                <StackPane onMouseClicked="#goToProfile" style="-fx-cursor: hand;">
+                    <Circle fx:id="avatarCircle" radius="20"
+                            style="-fx-fill: rgba(24,95,165,0.4);
+                                   -fx-stroke: #185FA5; -fx-stroke-width: 1.5;"/>
                     <Label fx:id="avatarLabel" text="?"
                            style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
                 </StackPane>
@@ -59,7 +56,7 @@
         </HBox>
 
         <!-- HERO -->
-        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 36 80 20 80;">
+        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 30 80 16 80;">
             <Label fx:id="heroLabel" text="Your Health Dashboard"
                    style="-fx-font-size: 38px; -fx-font-weight: bold;
                           -fx-text-fill: white; -fx-text-alignment: center;"/>
@@ -68,96 +65,141 @@
                           -fx-text-alignment: center;"/>
         </VBox>
 
-        <!-- MAIN NAV CARDS -->
+        <!-- CARDS ROW -->
         <HBox spacing="18" alignment="CENTER" style="-fx-padding: 10 50;">
 
-            <!-- Rendez-vous -->
-            <VBox fx:id="cardRdv" alignment="CENTER" spacing="10"
-                  prefWidth="200" prefHeight="180"
-                  onMouseClicked="#goToRdv"
-                  onMouseEntered="#onCardHover"
-                  onMouseExited="#onCardExit"
-                  style="-fx-background-color: rgba(24,95,165,0.15);
-                         -fx-background-radius: 20;
-                         -fx-border-color: rgba(24,95,165,0.4);
-                         -fx-border-radius: 20; -fx-border-width: 1;
-                         -fx-cursor: hand; -fx-padding: 24;">
-                <Label text="📅" style="-fx-font-size: 36px;"/>
-                <Label text="Rendez-vous"
-                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white;"/>
-                <Label text="Book &amp; manage your\nschedule"
-                       style="-fx-font-size: 11px; -fx-text-fill: #667788; -fx-text-alignment: center;"/>
-                <Label fx:id="rdvCount" text="— rendez-vous"
-                       style="-fx-font-size: 11px; -fx-text-fill: #7fc4fd;
-                              -fx-background-color: rgba(24,95,165,0.2);
-                              -fx-background-radius: 8; -fx-padding: 3 8;"/>
-            </VBox>
+            <!-- Appointments -->
+            <StackPane prefWidth="200" prefHeight="190">
+                <VBox fx:id="cardRdv" alignment="CENTER" spacing="10"
+                      prefWidth="200" prefHeight="190"
+                      onMouseClicked="#goToRdv"
+                      onMouseEntered="#onCardHover"
+                      onMouseExited="#onCardExit"
+                      style="-fx-background-color: rgba(24,95,165,0.15);
+                             -fx-background-radius: 20;
+                             -fx-border-color: rgba(24,95,165,0.4);
+                             -fx-border-radius: 20; -fx-border-width: 1;
+                             -fx-cursor: hand; -fx-padding: 20;">
+                    <Label text="📅" style="-fx-font-size: 32px;"/>
+                    <Label text="Appointments"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                    <Label text="Book &amp; manage schedule"
+                           style="-fx-font-size: 11px; -fx-text-fill: #667788; -fx-text-alignment: center;"/>
+                    <Label fx:id="rdvCount" text="— upcoming"
+                           style="-fx-font-size: 11px; -fx-text-fill: #7fc4fd;
+                                  -fx-background-color: rgba(24,95,165,0.2);
+                                  -fx-background-radius: 8; -fx-padding: 3 8;"/>
+                </VBox>
+                <!-- Small badge top-right -->
+                <Label fx:id="badgeRdvLabel" text="0"
+                       StackPane.alignment="TOP_RIGHT"
+                       visible="false" managed="false"
+                       style="-fx-background-color: #E24B4A;
+                              -fx-text-fill: white; -fx-font-size: 10px;
+                              -fx-font-weight: bold;
+                              -fx-background-radius: 10;
+                              -fx-padding: 2 6;
+                              -fx-translate-x: 6; -fx-translate-y: -6;"/>
+            </StackPane>
 
-            <!-- Medicaments -->
-            <VBox fx:id="cardMed" alignment="CENTER" spacing="10"
-                  prefWidth="200" prefHeight="180"
-                  onMouseClicked="#goToMedicaments"
-                  onMouseEntered="#onCardHover"
-                  onMouseExited="#onCardExit"
-                  style="-fx-background-color: rgba(15,110,86,0.15);
-                         -fx-background-radius: 20;
-                         -fx-border-color: rgba(15,110,86,0.4);
-                         -fx-border-radius: 20; -fx-border-width: 1;
-                         -fx-cursor: hand; -fx-padding: 24;">
-                <Label text="💊" style="-fx-font-size: 36px;"/>
-                <Label text="Medications"
-                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white;"/>
-                <Label text="Track your meds\nand stock"
-                       style="-fx-font-size: 11px; -fx-text-fill: #667788; -fx-text-alignment: center;"/>
-                <Label fx:id="medCount" text="— items"
-                       style="-fx-font-size: 11px; -fx-text-fill: #5DCAA5;
-                              -fx-background-color: rgba(15,110,86,0.2);
-                              -fx-background-radius: 8; -fx-padding: 3 8;"/>
-            </VBox>
+            <!-- Medications -->
+            <StackPane prefWidth="200" prefHeight="190">
+                <VBox fx:id="cardMed" alignment="CENTER" spacing="10"
+                      prefWidth="200" prefHeight="190"
+                      onMouseClicked="#goToMedicaments"
+                      onMouseEntered="#onCardHover"
+                      onMouseExited="#onCardExit"
+                      style="-fx-background-color: rgba(15,110,86,0.15);
+                             -fx-background-radius: 20;
+                             -fx-border-color: rgba(15,110,86,0.4);
+                             -fx-border-radius: 20; -fx-border-width: 1;
+                             -fx-cursor: hand; -fx-padding: 20;">
+                    <Label text="💊" style="-fx-font-size: 32px;"/>
+                    <Label text="Medications"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                    <Label text="Track your meds and stock"
+                           style="-fx-font-size: 11px; -fx-text-fill: #667788; -fx-text-alignment: center;"/>
+                    <Label fx:id="medCount" text="— items"
+                           style="-fx-font-size: 11px; -fx-text-fill: #5DCAA5;
+                                  -fx-background-color: rgba(15,110,86,0.2);
+                                  -fx-background-radius: 8; -fx-padding: 3 8;"/>
+                </VBox>
+                <Label fx:id="badgeMedLabel" text="0"
+                       StackPane.alignment="TOP_RIGHT"
+                       visible="false" managed="false"
+                       style="-fx-background-color: #E24B4A;
+                              -fx-text-fill: white; -fx-font-size: 10px;
+                              -fx-font-weight: bold;
+                              -fx-background-radius: 10;
+                              -fx-padding: 2 6;
+                              -fx-translate-x: 6; -fx-translate-y: -6;"/>
+            </StackPane>
 
-            <!-- Ordonnances -->
-            <VBox fx:id="cardOrd" alignment="CENTER" spacing="10"
-                  prefWidth="200" prefHeight="180"
-                  onMouseClicked="#goToOrdonnances"
-                  onMouseEntered="#onCardHover"
-                  onMouseExited="#onCardExit"
-                  style="-fx-background-color: rgba(83,74,183,0.15);
-                         -fx-background-radius: 20;
-                         -fx-border-color: rgba(83,74,183,0.4);
-                         -fx-border-radius: 20; -fx-border-width: 1;
-                         -fx-cursor: hand; -fx-padding: 24;">
-                <Label text="📋" style="-fx-font-size: 36px;"/>
-                <Label text="Prescriptions"
-                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white;"/>
-                <Label text="View your doctor's\nprescriptions"
-                       style="-fx-font-size: 11px; -fx-text-fill: #667788; -fx-text-alignment: center;"/>
-                <Label fx:id="ordCount" text="— prescriptions"
-                       style="-fx-font-size: 11px; -fx-text-fill: #AFA9EC;
-                              -fx-background-color: rgba(83,74,183,0.2);
-                              -fx-background-radius: 8; -fx-padding: 3 8;"/>
-            </VBox>
+            <!-- Prescriptions -->
+            <StackPane prefWidth="200" prefHeight="190">
+                <VBox fx:id="cardOrd" alignment="CENTER" spacing="10"
+                      prefWidth="200" prefHeight="190"
+                      onMouseClicked="#goToOrdonnances"
+                      onMouseEntered="#onCardHover"
+                      onMouseExited="#onCardExit"
+                      style="-fx-background-color: rgba(83,74,183,0.15);
+                             -fx-background-radius: 20;
+                             -fx-border-color: rgba(83,74,183,0.4);
+                             -fx-border-radius: 20; -fx-border-width: 1;
+                             -fx-cursor: hand; -fx-padding: 20;">
+                    <Label text="📋" style="-fx-font-size: 32px;"/>
+                    <Label text="Prescriptions"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                    <Label text="View your prescriptions"
+                           style="-fx-font-size: 11px; -fx-text-fill: #667788; -fx-text-alignment: center;"/>
+                    <Label fx:id="ordCount" text="— prescriptions"
+                           style="-fx-font-size: 11px; -fx-text-fill: #AFA9EC;
+                                  -fx-background-color: rgba(83,74,183,0.2);
+                                  -fx-background-radius: 8; -fx-padding: 3 8;"/>
+                </VBox>
+                <Label fx:id="badgeOrdLabel" text="0"
+                       StackPane.alignment="TOP_RIGHT"
+                       visible="false" managed="false"
+                       style="-fx-background-color: #E24B4A;
+                              -fx-text-fill: white; -fx-font-size: 10px;
+                              -fx-font-weight: bold;
+                              -fx-background-radius: 10;
+                              -fx-padding: 2 6;
+                              -fx-translate-x: 6; -fx-translate-y: -6;"/>
+            </StackPane>
 
-            <!-- Dons -->
-            <VBox fx:id="cardEvent" alignment="CENTER" spacing="10"
-                  prefWidth="200" prefHeight="180"
-                  onMouseClicked="#goToDons"
-                  onMouseEntered="#onCardHover"
-                  onMouseExited="#onCardExit"
-                  style="-fx-background-color: rgba(29,158,117,0.15);
-                         -fx-background-radius: 20;
-                         -fx-border-color: rgba(29,158,117,0.4);
-                         -fx-border-radius: 20; -fx-border-width: 1;
-                         -fx-cursor: hand; -fx-padding: 24;">
-                <Label text="🤝" style="-fx-font-size: 36px;"/>
-                <Label text="Dons"
-                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white;"/>
-                <Label text="Acceder a votre\ngestion des dons"
-                       style="-fx-font-size: 11px; -fx-text-fill: #667788; -fx-text-alignment: center;"/>
-                <Label fx:id="eventCount" text="— dons"
-                       style="-fx-font-size: 11px; -fx-text-fill: #5DCAA5;
-                              -fx-background-color: rgba(29,158,117,0.2);
-                              -fx-background-radius: 8; -fx-padding: 3 8;"/>
-            </VBox>
+            <!-- Events -->
+            <StackPane prefWidth="200" prefHeight="190">
+                <VBox fx:id="cardEvent" alignment="CENTER" spacing="10"
+                      prefWidth="200" prefHeight="190"
+                      onMouseClicked="#goToEvents"
+                      onMouseEntered="#onCardHover"
+                      onMouseExited="#onCardExit"
+                      style="-fx-background-color: rgba(29,158,117,0.15);
+                             -fx-background-radius: 20;
+                             -fx-border-color: rgba(29,158,117,0.4);
+                             -fx-border-radius: 20; -fx-border-width: 1;
+                             -fx-cursor: hand; -fx-padding: 20;">
+                    <Label text="🎪" style="-fx-font-size: 32px;"/>
+                    <Label text="Events"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                    <Label text="Health events &amp; community"
+                           style="-fx-font-size: 11px; -fx-text-fill: #667788; -fx-text-alignment: center;"/>
+                    <Label fx:id="eventCount" text="— upcoming"
+                           style="-fx-font-size: 11px; -fx-text-fill: #5DCAA5;
+                                  -fx-background-color: rgba(29,158,117,0.2);
+                                  -fx-background-radius: 8; -fx-padding: 3 8;"/>
+                </VBox>
+                <Label fx:id="badgeEventLabel" text="0"
+                       StackPane.alignment="TOP_RIGHT"
+                       visible="false" managed="false"
+                       style="-fx-background-color: #E24B4A;
+                              -fx-text-fill: white; -fx-font-size: 10px;
+                              -fx-font-weight: bold;
+                              -fx-background-radius: 10;
+                              -fx-padding: 2 6;
+                              -fx-translate-x: 6; -fx-translate-y: -6;"/>
+            </StackPane>
 
         </HBox>
 
@@ -172,8 +214,7 @@
                 <HBox spacing="10" alignment="CENTER_LEFT">
                     <Label text="🤖" style="-fx-font-size: 18px;"/>
                     <Label text="AI Health Tip"
-                           style="-fx-font-size: 13px; -fx-font-weight: bold;
-                                  -fx-text-fill: #7fc4fd;"/>
+                           style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #7fc4fd;"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Button text="New tip ↻" onAction="#refreshAITip"
                             style="-fx-background-color: rgba(24,95,165,0.2);
@@ -181,8 +222,7 @@
                                    -fx-cursor: hand; -fx-border-color: transparent;
                                    -fx-background-radius: 8; -fx-padding: 4 10;"/>
                 </HBox>
-                <Label fx:id="aiTipLabel"
-                       text="Loading your personalized health tip..."
+                <Label fx:id="aiTipLabel" text="Loading your personalized health tip..."
                        wrapText="true"
                        style="-fx-font-size: 13px; -fx-text-fill: #aabbcc;"/>
             </VBox>

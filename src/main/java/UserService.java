@@ -1,7 +1,3 @@
-package userfx;
-
-import org.mindrot.jbcrypt.BCrypt;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,48 +17,22 @@ public class UserService {
     // ─────────────────────────────────────────
     public User login(String email, String password) {
         if (connection == null) {
-            System.err.println("Login error: database connection is null.");
+            System.err.println("Login error: database connection is null. Check MyConnection configuration.");
             return null;
         }
-        String query = "SELECT * FROM user WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))";
+        String query = "SELECT * FROM user WHERE email = ? AND password = ?";
         try {
             PreparedStatement ps = connection.prepareStatement(query);
             ps.setString(1, email);
+            ps.setString(2, password);
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                String storedPassword = rs.getString("password");
-                if (passwordMatches(password, storedPassword)) {
-                    return mapRow(rs);
-                }
+            if (rs.next()) {
+                return mapRow(rs);
             }
         } catch (SQLException e) {
             System.err.println("Login error: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("Login error: " + e.getMessage());
         }
         return null;
-    }
-
-    private boolean passwordMatches(String rawPassword, String storedPassword) {
-        if (storedPassword == null || rawPassword == null) {
-            return false;
-        }
-        // Keep compatibility with legacy plain-text test users.
-        if (rawPassword.equals(storedPassword)) {
-            return true;
-        }
-        // Support Symfony/BCrypt users already present in DB.
-        if (storedPassword.startsWith("$2a$") || storedPassword.startsWith("$2b$") || storedPassword.startsWith("$2y$")) {
-            try {
-                String normalized = storedPassword.startsWith("$2y$")
-                        ? "$2a$" + storedPassword.substring(4)
-                        : storedPassword;
-                return BCrypt.checkpw(rawPassword, normalized);
-            } catch (IllegalArgumentException ignored) {
-                return false;
-            }
-        }
-        return false;
     }
 
     // ─────────────────────────────────────────
@@ -125,22 +95,15 @@ public class UserService {
     // UPDATE — update an existing user
     // ─────────────────────────────────────────
     public void update(User user) {
-        boolean withPhone = hasColumn("user", "phone");
-        String query = withPhone
-                ? "UPDATE user SET email=?, full_name=?, roles=?, status=?, phone=? WHERE id=?"
-                : "UPDATE user SET email=?, full_name=?, roles=?, status=? WHERE id=?";
+        String query = "UPDATE user SET email=?, full_name=?, roles=?, status=?, phone=? WHERE id=?";
         try {
             PreparedStatement ps = connection.prepareStatement(query);
             ps.setString(1, user.getEmail());
             ps.setString(2, user.getFullName());
             ps.setString(3, user.getRoles());
             ps.setString(4, user.getStatus());
-            if (withPhone) {
-                ps.setString(5, user.getPhone());
-                ps.setInt(6, user.getId());
-            } else {
-                ps.setInt(5, user.getId());
-            }
+            ps.setString(5, user.getPhone());
+            ps.setInt(6, user.getId());
             ps.executeUpdate();
             System.out.println("User updated: " + user.getId());
         } catch (SQLException e) {
@@ -174,33 +137,7 @@ public class UserService {
         u.setFullName(rs.getString("full_name"));
         u.setRoles(rs.getString("roles"));
         u.setStatus(rs.getString("status"));
-        if (hasColumn(rs, "phone")) {
-            u.setPhone(rs.getString("phone"));
-        } else {
-            u.setPhone(null);
-        }
+        u.setPhone(rs.getString("phone"));
         return u;
-    }
-
-    private boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
-        ResultSetMetaData metaData = rs.getMetaData();
-        for (int i = 1; i <= metaData.getColumnCount(); i++) {
-            if (columnName.equalsIgnoreCase(metaData.getColumnLabel(i))
-                    || columnName.equalsIgnoreCase(metaData.getColumnName(i))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean hasColumn(String tableName, String columnName) {
-        if (connection == null) {
-            return false;
-        }
-        try (ResultSet columns = connection.getMetaData().getColumns(null, null, tableName, columnName)) {
-            return columns.next();
-        } catch (SQLException ignored) {
-            return false;
-        }
     }
 }

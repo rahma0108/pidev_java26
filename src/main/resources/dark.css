@@ -1,35 +1,55 @@
-/* ── Root ── */
+/* ═══════════════════════════════════════
+   MediLink Dark Mode — Login/Register/Dashboard
+   ═══════════════════════════════════════ */
+
+/* Page background */
 .root {
-    -fx-background-color: #0f1626;
+    -fx-background-color: #0d1b2a;
 }
 
-/* ── Labels ── */
+/* White cards become dark cards */
+.dark-card {
+    -fx-background-color: #16213e !important;
+    -fx-border-color: #1a3a5a !important;
+}
+
+/* All labels */
 .label {
     -fx-text-fill: #e0e0e0;
 }
 
-/* ── TextFields & PasswordFields ── */
+/* Input fields */
 .text-field, .password-field {
+    -fx-background-color: #0d1b2a;
+    -fx-text-fill: #e0e0e0;
+    -fx-prompt-text-fill: #445566;
+    -fx-border-color: #1a3a5a;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+/* Buttons — only the plain ones */
+.button {
     -fx-background-color: #16213e;
     -fx-text-fill: #e0e0e0;
-    -fx-prompt-text-fill: #556677;
-    -fx-border-color: #2a3a5a;
-    -fx-border-radius: 6;
-    -fx-background-radius: 6;
+    -fx-border-color: #1a3a5a;
 }
 
-/* ── Buttons ── */
-.button {
-    -fx-background-color: #1a2540;
-    -fx-text-fill: #e0e0e0;
-    -fx-border-color: #2a3a5a;
+/* CheckBox */
+.check-box .label {
+    -fx-text-fill: #aabbcc;
 }
 
-/* ── TableView ── */
+/* Separator */
+.separator .line {
+    -fx-border-color: #1a3a5a;
+}
+
+/* TableView */
 .table-view {
     -fx-background-color: #16213e;
     -fx-control-inner-background: #16213e;
-    -fx-control-inner-background-alt: #1a2540;
+    -fx-border-color: #1a3a5a;
 }
 .table-view .column-header {
     -fx-background-color: #0f3460;
@@ -41,10 +61,10 @@
 .table-row-cell {
     -fx-background-color: #16213e;
     -fx-text-fill: #e0e0e0;
-    -fx-border-color: #2a3a5a;
+    -fx-border-color: #1a2a3a;
 }
 .table-row-cell:odd {
-    -fx-background-color: #1a2540;
+    -fx-background-color: #0d1b2a;
 }
 .table-row-cell:selected {
     -fx-background-color: #185FA5;
@@ -53,26 +73,10 @@
     -fx-text-fill: #e0e0e0;
 }
 
-/* ── ScrollPane ── */
-.scroll-pane {
-    -fx-background-color: #0f1626;
-    -fx-background: #0f1626;
-}
-.scroll-pane > .viewport {
-    -fx-background-color: #0f1626;
-}
-.scroll-bar {
-    -fx-background-color: #16213e;
-}
-.scroll-bar .thumb {
-    -fx-background-color: #2a3a5a;
-    -fx-background-radius: 4;
-}
-
-/* ── ComboBox ── */
+/* ComboBox */
 .combo-box {
     -fx-background-color: #16213e;
-    -fx-border-color: #2a3a5a;
+    -fx-border-color: #1a3a5a;
 }
 .combo-box .list-cell {
     -fx-background-color: #16213e;
@@ -80,56 +84,41 @@
 }
 .combo-box-popup .list-view {
     -fx-background-color: #16213e;
-    -fx-border-color: #2a3a5a;
-}
-.combo-box-popup .list-view .list-cell:hover {
-    -fx-background-color: #1a2540;
 }
 
-/* ── Separator ── */
-.separator .line {
-    -fx-border-color: #2a3a5a;
+/* ScrollPane */
+.scroll-pane, .scroll-pane > .viewport {
+    -fx-background-color: #0d1b2a;
+    -fx-background: #0d1b2a;
 }
 
-/* ── Dialog ── */
+/* Chart */
+.chart-legend-item { -fx-text-fill: #e0e0e0; }
+.chart-pie-label   { -fx-fill: #e0e0e0; }
+.chart-legend      { -fx-background-color: transparent; }
+
+/* Dialog */
 .dialog-pane {
     -fx-background-color: #16213e;
 }
 .dialog-pane .label {
     -fx-text-fill: #e0e0e0;
 }
-.dialog-pane .button-bar .button {
-    -fx-background-color: #1a2540;
-    -fx-text-fill: #e0e0e0;
-    -fx-border-color: #2a3a5a;
-}
 
-/* ── PieChart ── */
-.chart {
+/* TextArea CAPTCHA */
+.text-area .scroll-bar:vertical,
+.text-area .scroll-bar:horizontal {
+    -fx-pref-width: 0; -fx-max-width: 0;
+    -fx-pref-height: 0; -fx-max-height: 0;
+    visibility: hidden;
+}
+.text-area .content {
+    -fx-background-color: #162540;
+    -fx-background-radius: 8;
+}
+.text-area {
     -fx-background-color: transparent;
-}
-.chart-content {
-    -fx-background-color: transparent;
-}
-.chart-legend {
-    -fx-background-color: transparent;
-}
-.chart-legend-item {
-    -fx-text-fill: #e0e0e0;
-}
-.chart-pie-label {
-    -fx-fill: #e0e0e0;
-}
-.chart-pie-label-line {
-    -fx-stroke: #556677;
-}
-
-/* ── FlowPane ── */
-.flow-pane {
-    -fx-background-color: #0f1626;
-}
-
-/* ── BorderPane ── */
-.border-pane {
-    -fx-background-color: #0f1626;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }

@@ -5,12 +5,12 @@
 <?import javafx.scene.image.*?>
 
 <HBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="userfx.RegisterController"
-      prefWidth="900" prefHeight="600"
+      fx:controller="RegisterController"
+      minWidth="800" minHeight="580"
       style="-fx-background-color: #f0f4f8;">
 
     <!-- LEFT PANEL -->
-    <VBox prefWidth="380" prefHeight="600" alignment="CENTER" spacing="20"
+    <VBox prefWidth="380" alignment="CENTER" spacing="20"
           style="-fx-background-color: #0F6E56; -fx-padding: 50 36;">
 
         <ImageView fitWidth="150" fitHeight="65" preserveRatio="true"
@@ -26,7 +26,6 @@
                style="-fx-font-size: 13px; -fx-text-fill: #9FE1CB;
                       -fx-wrap-text: true; -fx-text-alignment: center;"/>
 
-        <!-- Feature cards -->
         <VBox spacing="10" style="-fx-padding: 16 0 0 0;">
             <HBox spacing="12" alignment="CENTER_LEFT">
                 <VBox prefWidth="36" prefHeight="36" alignment="CENTER"
@@ -55,21 +54,27 @@
         </VBox>
     </VBox>
 
-    <!-- RIGHT PANEL — REGISTER CARD -->
+    <!-- RIGHT PANEL -->
     <VBox HBox.hgrow="ALWAYS" alignment="CENTER"
           style="-fx-background-color: #f0f4f8; -fx-padding: 30 40;">
 
-        <VBox spacing="12" maxWidth="340"
+        <VBox spacing="11" maxWidth="340"
               style="-fx-background-color: white; -fx-padding: 32 32;
                      -fx-background-radius: 16; -fx-border-radius: 16;
                      -fx-border-color: #e0e0e0; -fx-border-width: 0.5;">
+
+            <HBox alignment="CENTER_RIGHT">
+                <Button fx:id="themeToggleBtn" text="🌙" onAction="#toggleTheme"
+                        style="-fx-background-color: transparent; -fx-font-size: 18px;
+                               -fx-cursor: hand; -fx-border-color: transparent; -fx-padding: 0;"/>
+            </HBox>
 
             <Label text="Create account"
                    style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
             <Label text="Fill in your details to get started"
                    style="-fx-font-size: 13px; -fx-text-fill: #888;"/>
 
-            <VBox spacing="5">
+            <VBox spacing="4">
                 <Label text="Full Name" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
                 <TextField fx:id="nameField" promptText="Your full name"
                            prefHeight="38" prefWidth="276"
@@ -77,7 +82,7 @@
                                   -fx-border-color: #ddd; -fx-font-size: 13px;"/>
             </VBox>
 
-            <VBox spacing="5">
+            <VBox spacing="4">
                 <Label text="Email" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
                 <TextField fx:id="emailField" promptText="you@example.com"
                            prefHeight="38" prefWidth="276"
@@ -86,14 +91,14 @@
             </VBox>
 
             <HBox spacing="10">
-                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
                     <Label text="Password" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
                     <PasswordField fx:id="passwordField" promptText="••••••••"
                                    prefHeight="38"
                                    style="-fx-background-radius: 8; -fx-border-radius: 8;
                                           -fx-border-color: #ddd; -fx-font-size: 13px;"/>
                 </VBox>
-                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
                     <Label text="Confirm" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
                     <PasswordField fx:id="confirmPasswordField" promptText="••••••••"
                                    prefHeight="38"
@@ -102,7 +107,23 @@
                 </VBox>
             </HBox>
 
-            <VBox spacing="5">
+            <!-- PASSWORD STRENGTH INDICATOR -->
+            <VBox spacing="4">
+                <HBox spacing="6">
+                    <Region fx:id="strengthBar1" prefHeight="4" HBox.hgrow="ALWAYS"
+                            style="-fx-background-color: #e0e0e0; -fx-background-radius: 4;"/>
+                    <Region fx:id="strengthBar2" prefHeight="4" HBox.hgrow="ALWAYS"
+                            style="-fx-background-color: #e0e0e0; -fx-background-radius: 4;"/>
+                    <Region fx:id="strengthBar3" prefHeight="4" HBox.hgrow="ALWAYS"
+                            style="-fx-background-color: #e0e0e0; -fx-background-radius: 4;"/>
+                    <Region fx:id="strengthBar4" prefHeight="4" HBox.hgrow="ALWAYS"
+                            style="-fx-background-color: #e0e0e0; -fx-background-radius: 4;"/>
+                </HBox>
+                <Label fx:id="strengthLabel" text=""
+                       style="-fx-font-size: 11px; -fx-text-fill: #aaa;"/>
+            </VBox>
+
+            <VBox spacing="4">
                 <Label text="Phone (optional)" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
                 <TextField fx:id="phoneField" promptText="+216 xx xxx xxx"
                            prefHeight="38" prefWidth="276"
@@ -110,19 +131,31 @@
                                   -fx-border-color: #ddd; -fx-font-size: 13px;"/>
             </VBox>
 
+            <!-- AI suggestion box -->
+            <Label fx:id="aiSuggestionLabel" text="" wrapText="true"
+                   maxWidth="276" prefWidth="276"
+                   style="-fx-font-size: 12px; -fx-padding: 8;
+                          -fx-background-radius: 8;"/>
+
             <Label fx:id="messageLabel" text="" wrapText="true"
                    style="-fx-font-size: 12px;"/>
 
-            <Label fx:id="aiSuggestionLabel" text="" wrapText="true"
-                   style="-fx-font-size: 12px; -fx-text-fill: #0F6E56;
-                          -fx-background-color: #E1F5EE; -fx-background-radius: 8;
-                          -fx-padding: 8 12; -fx-border-radius: 8;"/>
+            <!-- Register button with spinner -->
+            <HBox alignment="CENTER" spacing="10">
+                <Button fx:id="registerBtn" text="Create Account" onAction="#handleRegister"
+                        prefWidth="276" prefHeight="42"
+                        style="-fx-background-color: #0F6E56; -fx-text-fill: white;
+                               -fx-font-size: 14px; -fx-font-weight: bold;
+                               -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
+            </HBox>
 
-            <Button fx:id="registerBtn" text="Create Account" onAction="#handleRegister"
-                    prefWidth="276" prefHeight="42"
-                    style="-fx-background-color: #0F6E56; -fx-text-fill: white;
-                           -fx-font-size: 14px; -fx-font-weight: bold;
-                           -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
+            <!-- AI Loading indicator -->
+            <HBox fx:id="loadingBox" alignment="CENTER" spacing="8"
+                  style="-fx-padding: 0;" visible="false" managed="false">
+                <ProgressIndicator fx:id="spinner" prefWidth="18" prefHeight="18"/>
+                <Label text="AI is checking your details..."
+                       style="-fx-font-size: 12px; -fx-text-fill: #185FA5;"/>
+            </HBox>
 
             <Separator/>
 

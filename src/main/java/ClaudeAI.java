@@ -1,5 +1,3 @@
-package userfx;
-
 import com.google.gson.*;
 import java.net.URI;
 import java.net.http.*;
@@ -32,7 +30,9 @@ public class ClaudeAI {
      */
     public static String ask(String systemPrompt, String userMessage) {
         try {
-            HttpClient client = HttpClient.newHttpClient();
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(java.time.Duration.ofSeconds(8))
+                    .build();
 
             JsonArray messages = new JsonArray();
 
@@ -60,8 +60,9 @@ public class ClaudeAI {
                     .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
                     .build();
 
-            HttpResponse<String> response = client.send(request,
-                    HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client.sendAsync(request,
+                            HttpResponse.BodyHandlers.ofString())
+                    .get(10, java.util.concurrent.TimeUnit.SECONDS);
 
             // Print full response for debugging
 
