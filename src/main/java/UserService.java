@@ -16,6 +16,10 @@ public class UserService {
     // For new users you create in Java, store plain or use a simple hash.
     // ─────────────────────────────────────────
     public User login(String email, String password) {
+        if (connection == null) {
+            System.err.println("Login error: database connection is null. Check MyConnection configuration.");
+            return null;
+        }
         String query = "SELECT * FROM user WHERE email = ? AND password = ?";
         try {
             PreparedStatement ps = connection.prepareStatement(query);

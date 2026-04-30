@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15.0" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 15;" prefWidth="350.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ParticipationFormController">
+   <children>
+      <Label fx:id="eventTitleLabel" text="Participate in Event" textFill="#1a3a5a">
+         <font>
+            <Font name="System Bold" size="20.0" />
+         </font>
+      </Label>
+      <Label text="Leave a comment or question for the organizers (optional):" textFill="#666" wrapText="true" />
+      <TextArea fx:id="commentArea" prefHeight="100.0" promptText="Your comment here..." style="-fx-background-radius: 10;" />
+      <HBox spacing="10.0" alignment="CENTER_RIGHT">
+         <children>
+            <Button onAction="#handleCancel" style="-fx-background-color: #ddd; -fx-background-radius: 20;" text="Cancel" />
+            <Button onAction="#handleSubmit" style="-fx-background-color: #185FA5; -fx-text-fill: white; -fx-background-radius: 20;" text="Confirm Participation" />
+         </children>
+      </HBox>
+   </children>
+</VBox>

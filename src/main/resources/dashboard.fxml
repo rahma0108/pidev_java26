@@ -28,9 +28,9 @@
                         style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white;
                                -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
                                -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
-                <Button text="  Users" onAction="#showUsers"
+                <Button text="  Users (Coming Soon)" onAction="#showUsers" disable="true"
                         prefWidth="196" prefHeight="42"
-                        style="-fx-background-color: transparent; -fx-text-fill: white;
+                        style="-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.5);
                                -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
                                -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
                 <Button text="  Appointments" onAction="#showAppointments"
@@ -98,9 +98,9 @@
                     <VBox HBox.hgrow="ALWAYS" prefHeight="90" alignment="CENTER" spacing="4"
                           style="-fx-background-color: white; -fx-background-radius: 14;
                                  -fx-border-color: #e0e0e0; -fx-border-radius: 14; -fx-border-width: 0.5;">
-                        <Label text="Total Users" style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
-                        <Label fx:id="totalUsersLabel" text="—"
-                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #185FA5;"/>
+                        <Label text="Users (Coming Soon)" style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
+                        <Label fx:id="totalUsersLabel" text="Coming Soon"
+                               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #888;"/>
                     </VBox>
                     <VBox HBox.hgrow="ALWAYS" prefHeight="90" alignment="CENTER" spacing="4"
                           style="-fx-background-color: white; -fx-background-radius: 14;
@@ -151,11 +151,11 @@
                         <Label text="Quick Actions"
                                style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
                         <VBox prefHeight="66" alignment="CENTER" spacing="4" onMouseClicked="#showUsers"
-                              style="-fx-background-color: #E6F1FB; -fx-background-radius: 12;
-                                     -fx-border-color: #B5D4F4; -fx-border-radius: 12;
-                                     -fx-border-width: 0.5; -fx-cursor: hand; -fx-padding: 10;">
-                            <Label text="Manage Users" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0C447C;"/>
-                            <Label text="Add, edit, delete users" style="-fx-font-size: 11px; -fx-text-fill: #185FA5;"/>
+                              style="-fx-background-color: #f5f5f5; -fx-background-radius: 12;
+                                     -fx-border-color: #dddddd; -fx-border-radius: 12;
+                                     -fx-border-width: 0.5; -fx-padding: 10;">
+                            <Label text="Users (Coming Soon)" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #888;"/>
+                            <Label text="Feature currently disabled" style="-fx-font-size: 11px; -fx-text-fill: #aaa;"/>
                         </VBox>
                         <VBox prefHeight="66" alignment="CENTER" spacing="4" onMouseClicked="#showAppointments"
                               style="-fx-background-color: #E1F5EE; -fx-background-radius: 12;

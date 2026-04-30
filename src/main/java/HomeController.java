@@ -42,6 +42,10 @@ public class HomeController {
         loggedInUser = user;
     }
 
+    public static User getLoggedInUser() {
+        return loggedInUser;
+    }
+
     @FXML
     public void initialize() {
         themeToggleBtn.setText(ThemeManager.isDark() ? "☀️" : "🌙");
@@ -217,7 +221,15 @@ public class HomeController {
     @FXML public void goToRdv()         { PopupHelper.showComingSoon("Appointments"); }
     @FXML public void goToMedicaments() { PopupHelper.showComingSoon("Medications"); }
     @FXML public void goToOrdonnances() { PopupHelper.showComingSoon("Prescriptions"); }
-    @FXML public void goToEvents()      { PopupHelper.showComingSoon("Events"); }
+    @FXML public void goToEvents()      { 
+        stopAnimation();
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/event_front.fxml"));
+            ThemeManager.applyWithFade(animCanvas.getScene(), root, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @FXML
     public void handleLogout() {
