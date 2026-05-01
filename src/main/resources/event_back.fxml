@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="EventBackController"
+            minWidth="900" minHeight="600"
+            style="-fx-background-color: #f0f4f8;">
+
+    <!-- TOP BAR -->
+    <top>
+        <VBox style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 14 24 10 24;">
+                <Label text="Event Management"
+                       style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="+ Add Event" onAction="#handleAdd"
+                        style="-fx-background-color: #0F6E56; -fx-text-fill: white;
+                               -fx-background-radius: 8; -fx-cursor: hand;
+                               -fx-border-color: transparent; -fx-padding: 8 16;"/>
+                <Button text="Back to Dashboard" onAction="#goToDashboard"
+                        style="-fx-background-color: #185FA5; -fx-text-fill: white;
+                               -fx-background-radius: 8; -fx-cursor: hand;
+                               -fx-border-color: transparent; -fx-padding: 8 16;"/>
+            </HBox>
+
+            <!-- SEARCH BAR ROW -->
+            <HBox spacing="10" style="-fx-padding: 0 24 14 24;" alignment="CENTER_LEFT">
+                <TextField fx:id="filterField"
+                           promptText="Filter by title, location, type..."
+                           prefHeight="36" prefWidth="240"
+                           style="-fx-background-radius: 8; -fx-border-radius: 8;
+                                  -fx-border-color: #ddd; -fx-font-size: 13px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="messageLabel" text=""
+                       style="-fx-font-size: 12px;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <HBox spacing="0">
+            <!-- CARDS AREA -->
+            <ScrollPane HBox.hgrow="ALWAYS" fitToWidth="true"
+                        style="-fx-background-color: transparent; -fx-background: transparent;">
+                <FlowPane fx:id="cardsContainer" hgap="14" vgap="14"
+                          style="-fx-padding: 20; -fx-background-color: transparent;"/>
+            </ScrollPane>
+
+            <!-- SIDE PANEL -->
+            <VBox prefWidth="280" spacing="14"
+                  style="-fx-background-color: white; -fx-padding: 24;
+                         -fx-border-color: #e0e0e0; -fx-border-width: 0 0 0 1;">
+
+                <Label text="AI Event Insights"
+                       style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #534AB7;"/>
+
+                <Label text="Select an event to see AI analysis of its popularity and content."
+                       wrapText="true"
+                       style="-fx-font-size: 12px; -fx-text-fill: #888;"/>
+
+                <Separator/>
+
+                <!-- AI result box -->
+                <VBox style="-fx-background-color: #EEEDFE; -fx-background-radius: 10;
+                             -fx-border-color: #CECBF6; -fx-border-radius: 10; -fx-border-width: 0.5;
+                             -fx-padding: 14;">
+                    <Label fx:id="aiTitleLabel" text=""
+                           style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #26215C;"/>
+                    <Label fx:id="aiDescriptionLabel" text="No event selected yet."
+                           wrapText="true" prefWidth="232"
+                           style="-fx-font-size: 12px; -fx-text-fill: #534AB7; -fx-padding: 6 0 0 0;"/>
+                </VBox>
+
+                <Region VBox.vgrow="ALWAYS"/>
+
+                <!-- Stats -->
+                <VBox spacing="8"
+                      style="-fx-background-color: #f8f8f8; -fx-background-radius: 10;
+                             -fx-padding: 14; -fx-border-color: #e0e0e0;
+                             -fx-border-radius: 10; -fx-border-width: 0.5;">
+                    <Label text="Quick Stats"
+                           style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                    <Label fx:id="totalEventsStatLabel" text="Total events: —"
+                           style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+                    <Label fx:id="upcomingEventsStatLabel" text="Upcoming: —"
+                           style="-fx-font-size: 12px; -fx-text-fill: #0F6E56;"/>
+                    <Label fx:id="totalParticipantsStatLabel" text="Total participants: —"
+                           style="-fx-font-size: 12px; -fx-text-fill: #185FA5;"/>
+                </VBox>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

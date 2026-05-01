@@ -69,6 +69,16 @@ public class DashboardController {
     }
 
     private void loadStats() {
+        // User stats are coming soon
+        totalUsersLabel.setText("Coming Soon");
+        rolesPieChart.getData().clear();
+        statusPieChart.getData().clear();
+
+        totalAppointmentsLabel.setText("—");
+        totalMedsLabel.setText("—");
+        totalEventsLabel.setText("3");
+
+        /*
         UserService us = new UserService();
         List<User> users = us.getAll();
 
@@ -91,9 +101,6 @@ public class DashboardController {
                 EffectsHelper.countUp(totalUsersLabel, users.size(), "", 200);
             } catch (Exception ignored) {}
         });
-        totalAppointmentsLabel.setText("—");
-        totalMedsLabel.setText("—");
-        totalEventsLabel.setText("3");
 
         rolesPieChart.getData().clear();
         if (admins > 0)   rolesPieChart.getData().add(new PieChart.Data("Admins ("   + admins   + ")", admins));
@@ -119,13 +126,14 @@ public class DashboardController {
                     s.getNode().setStyle("-fx-pie-color: " + statusColors[i % statusColors.length] + ";");
             }
         });
+        */
     }
 
     @FXML public void showDashboard()    { pageTitle.setText("Dashboard"); loadStats(); }
-    @FXML public void showUsers()        { navigateTo("/userlist.fxml"); }
+    @FXML public void showUsers()        { pageTitle.setText("Users — coming soon"); }
     @FXML public void showAppointments() { pageTitle.setText("Appointments — coming soon"); }
     @FXML public void showMedications()  { pageTitle.setText("Medications — coming soon"); }
-    @FXML public void showEvents()       { pageTitle.setText("Events — coming soon"); }
+    @FXML public void showEvents()       { navigateTo("/event_back.fxml"); }
     @FXML
     public void handleLogout() {
         RememberMeHelper.clear(); // ← ADD THIS LINE

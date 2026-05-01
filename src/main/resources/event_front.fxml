@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.shape.Circle?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="EventFrontController"
+           style="-fx-background-color: #050a14;"> <!-- Deep dark background -->
+
+    <!-- BACKGROUND PARTICLES SIMULATION (Placeholder for your particle logic) -->
+    <Pane fx:id="backgroundPane" opacity="0.3"/>
+
+    <VBox spacing="30" alignment="TOP_CENTER" style="-fx-padding: 50 40;">
+        
+        <!-- HEADER -->
+        <VBox spacing="8" alignment="CENTER">
+            <Label text="Discover Health Events" 
+                   style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white; -fx-font-family: 'System';"/>
+            <Label text="Join our community and stay healthy together" 
+                   style="-fx-font-size: 16px; -fx-text-fill: #8892b0;"/>
+        </VBox>
+
+        <Separator prefWidth="200" opacity="0.1" maxWidth="400"/>
+
+        <!-- CARDS CONTAINER -->
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="NEVER"
+                    style="-fx-background-color: transparent; -fx-background: transparent;">
+            <FlowPane fx:id="eventFlowPane" hgap="25" vgap="25" alignment="CENTER"
+                      style="-fx-padding: 10; -fx-background-color: transparent;"/>
+        </ScrollPane>
+
+        <Button text="Back to Dashboard" onAction="#goToDashboard"
+                style="-fx-background-color: rgba(255,255,255,0.05); -fx-text-fill: white;
+                       -fx-border-color: rgba(255,255,255,0.2); -fx-border-radius: 20;
+                       -fx-background-radius: 20; -fx-padding: 10 25; -fx-cursor: hand;"/>
+    </VBox>
+</StackPane>

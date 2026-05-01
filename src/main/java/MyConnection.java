@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 public class MyConnection {
 
-    private final String URL = "jdbc:mysql://localhost:3306/medilink1" +
+    private final String URL = "jdbc:mysql://localhost:3306/medilink" +
             "?connectTimeout=3000&socketTimeout=3000";
     private final String USER = "root";
     private final String PASSWORD = "";  // change if you have a password

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { height: 100vh; width: 100vw; cursor: crosshair; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        var map = L.map('map').setView([33.8869, 9.5375], 6);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var marker;
+
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+
+            if (marker) {
+                marker.setLatLng(e.latlng);
+            } else {
+                marker = L.marker(e.latlng).addTo(map);
+            }
+
+            // Immediately send coordinates as a fallback
+            var coords = lat.toFixed(5) + ", " + lng.toFixed(5);
+            if (window.javaConnector) {
+                window.javaConnector.onLocationSelected(coords);
+            }
+
+            // Then try to get the real address
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.display_name && window.javaConnector) {
+                        window.javaConnector.onLocationSelected(data.display_name);
+                    }
+                })
+                .catch(err => console.log("Geocoding error, sticking with coords."));
+        });
+    </script>
+</body>
+</html>
