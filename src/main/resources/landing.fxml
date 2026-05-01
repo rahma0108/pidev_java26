@@ -6,7 +6,7 @@
 <?import javafx.scene.canvas.*?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
-           fx:controller="LandingController"
+           fx:controller="userfx.LandingController"
            prefWidth="1000" prefHeight="650"
            style="-fx-background-color: #050d1a;">
 

@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="AIChatController"
+      fx:controller="userfx.AIChatController"
       prefWidth="380" prefHeight="500"
       style="-fx-background-color: white;
              -fx-background-radius: 16;

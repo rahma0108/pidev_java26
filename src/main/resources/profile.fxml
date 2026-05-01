@@ -5,7 +5,7 @@
 <?import javafx.scene.shape.*?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
-           fx:controller="ProfileController"
+           fx:controller="userfx.ProfileController"
            prefWidth="1000" prefHeight="660"
            style="-fx-background-color: #050d1a;">
 

@@ -5,7 +5,7 @@
 <?import javafx.scene.shape.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="CaptchaController"
+      fx:controller="userfx.CaptchaController"
       spacing="8"
       style="-fx-background-color: #f0f4ff;
              -fx-background-radius: 10;

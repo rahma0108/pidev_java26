@@ -6,7 +6,7 @@
 <?import javafx.scene.chart.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="DashboardController"
+            fx:controller="userfx.DashboardController"
             minWidth="900" minHeight="600"
             style="-fx-background-color: #f0f4f8;">
 
@@ -28,9 +28,9 @@
                         style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: white;
                                -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
                                -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
-                <Button text="  Users (Coming Soon)" onAction="#showUsers" disable="true"
+                <Button text="  Users" onAction="#showUsers"
                         prefWidth="196" prefHeight="42"
-                        style="-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.5);
+                        style="-fx-background-color: transparent; -fx-text-fill: white;
                                -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
                                -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
                 <Button text="  Appointments" onAction="#showAppointments"

@@ -4,7 +4,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="15.0" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 15;" prefWidth="350.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ParticipationFormController">
+<VBox spacing="15.0" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 15;" prefWidth="350.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="userfx.ParticipationFormController">
    <children>
       <Label fx:id="eventTitleLabel" text="Participate in Event" textFill="#1a3a5a">
          <font>

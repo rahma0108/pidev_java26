@@ -5,7 +5,7 @@
 <?import javafx.scene.shape.Circle?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
-           fx:controller="EventFrontController"
+           fx:controller="userfx.EventFrontController"
            style="-fx-background-color: #050a14;"> <!-- Deep dark background -->
 
     <!-- BACKGROUND PARTICLES SIMULATION (Placeholder for your particle logic) -->

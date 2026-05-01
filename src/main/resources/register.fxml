@@ -5,7 +5,7 @@
 <?import javafx.scene.image.*?>
 
 <HBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="RegisterController"
+      fx:controller="userfx.RegisterController"
       minWidth="800" minHeight="580"
       style="-fx-background-color: #f0f4f8;">
 

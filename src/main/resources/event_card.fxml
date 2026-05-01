@@ -5,7 +5,7 @@
 <?import javafx.scene.image.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml" 
-      fx:controller="EventCardController"
+      fx:controller="userfx.EventCardController"
       prefWidth="280" prefHeight="220" spacing="15" alignment="CENTER"
       style="-fx-background-color: rgba(15, 23, 42, 0.6); 
              -fx-background-radius: 24; 

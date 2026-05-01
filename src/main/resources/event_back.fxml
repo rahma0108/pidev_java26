@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="EventBackController"
+            fx:controller="userfx.EventBackController"
             minWidth="900" minHeight="600"
             style="-fx-background-color: #f0f4f8;">
 
