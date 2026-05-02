@@ -330,7 +330,8 @@ public final class GeminiAPIService implements DonAnalyseLLM {
     }
 
     private String postGenerateContentRaw(String url, String body, String modelUsed) throws IOException {
-        for (int tentative = 0; tentative < 2; tentative++) {
+        final int maxTentatives = 4;
+        for (int tentative = 0; tentative < maxTentatives; tentative++) {
             HttpURLConnection conn = (HttpURLConnection) URI.create(url).toURL().openConnection();
             conn.setRequestMethod("POST");
             conn.setConnectTimeout(60_000);
@@ -347,15 +348,10 @@ public final class GeminiAPIService implements DonAnalyseLLM {
 
             int code = conn.getResponseCode();
             String response = lireCorps(conn, code >= 200 && code < 300 ? conn.getInputStream() : conn.getErrorStream());
-            if (code == 429 && tentative == 0) {
-                long attente = parseRetryDelayMs(response);
-                if (attente > 0) {
-                    try {
-                        Thread.sleep(Math.min(attente + 500L, 90_000L));
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new IOException("Interrompu pendant l’attente du quota Gemini.", e);
-                    }
+            if (code == 429 || estIndisponibiliteTemporaire(code, response)) {
+                if (tentative < maxTentatives - 1) {
+                    long attente = attenteRetryMs(response, tentative);
+                    attendreSilencieusement(attente);
                     continue;
                 }
             }
@@ -386,6 +382,13 @@ public final class GeminiAPIService implements DonAnalyseLLM {
                                     + "https://ai.google.dev/gemini-api/docs/rate-limits\n\n"
                                     + "Détail API : " + response);
                 }
+                if (estIndisponibiliteTemporaire(code, response)) {
+                    throw new IOException(
+                            "Gemini temporairement indisponible (HTTP " + code + ") pour le modèle « " + modelUsed + " ».\n"
+                                    + "Le service est en surcharge côté Google. Réessaie dans quelques secondes, "
+                                    + "ou passe sur gemini-1.5-flash.\n\n"
+                                    + "Détail API : " + response);
+                }
                 throw new IOException("Gemini API HTTP " + code + " (modèle=" + modelUsed + ", url=" + url + ") : " + response);
             }
 
@@ -396,6 +399,39 @@ public final class GeminiAPIService implements DonAnalyseLLM {
             return texte;
         }
         throw new IOException("Gemini : échec inattendu après tentatives.");
+    }
+
+    private static boolean estIndisponibiliteTemporaire(int code, String response) {
+        if (code == 503 || code == 502 || code == 504) {
+            return true;
+        }
+        if (response == null) {
+            return false;
+        }
+        String r = response.toLowerCase();
+        return r.contains("\"status\":\"unavailable\"")
+                || r.contains("experiencing high demand")
+                || r.contains("please try again later");
+    }
+
+    private static long attenteRetryMs(String response, int tentative) {
+        long fromApi = parseRetryDelayMs(response);
+        long bornedApi = Math.max(1_000L, Math.min(fromApi, 12_000L));
+        long backoff = switch (tentative) {
+            case 0 -> 1_200L;
+            case 1 -> 2_500L;
+            default -> 4_500L;
+        };
+        return Math.max(bornedApi, backoff);
+    }
+
+    private static void attendreSilencieusement(long attenteMs) throws IOException {
+        try {
+            Thread.sleep(attenteMs);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrompu pendant l’attente d’une nouvelle tentative Gemini.", e);
+        }
     }
 
     /** Extrait le délai suggéré par Google (« Please retry in 17.2s » ou retryDelay « 17s »). */

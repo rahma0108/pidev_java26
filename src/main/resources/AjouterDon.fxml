@@ -6,6 +6,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -45,6 +46,8 @@
                <TextField fx:id="tfDescription" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                <Label fx:id="lblQty" text="Quantité :" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                <TextField fx:id="tfQuantite" promptText="Nombre entier" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               <Label fx:id="lblMontant" managed="false" text="Montant (TND) * :" visible="false" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+               <TextField fx:id="tfMontant" managed="false" promptText="Montant en TND (entier)" visible="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                <Label fx:id="lblUnite" text="Unité de mesure :" GridPane.columnIndex="0" GridPane.rowIndex="3" />
                <ComboBox fx:id="cbUnite" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                <Label fx:id="lblDetails" text="Détails supplémentaires :" GridPane.columnIndex="0" GridPane.rowIndex="4" />
@@ -60,6 +63,7 @@
          <HBox alignment="CENTER_RIGHT" spacing="10.0">
             <Button fx:id="btnEnregistrer" defaultButton="true" mnemonicParsing="false" text="Enregistrer" />
             <Button fx:id="btnAnnuler" cancelButton="true" mnemonicParsing="false" text="Annuler" />
+            <ProgressIndicator fx:id="piPaiement" managed="false" prefHeight="24.0" prefWidth="24.0" visible="false" />
          </HBox>
       </children>
    </VBox>

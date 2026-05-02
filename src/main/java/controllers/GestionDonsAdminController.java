@@ -495,7 +495,7 @@ public class GestionDonsAdminController implements Initializable {
         Label quantite = new Label("Quantité : " + don.getQuantite() + " " + safe(don.getUnite()));
         Label etat = new Label("État : " + safe(don.getEtat()));
         Label urgence = new Label("Urgence : " + safe(don.getNiveauUrgence()));
-        Label details = new Label("Détails : " + safe(don.getDetailsSupplementaires()));
+        Label details = new Label("Détails : " + safe(nettoyerDetailsPaiement(don.getDetailsSupplementaires())));
         details.setWrapText(true);
 
         VBox iaBloc = creerBlocAvisIa(don);
@@ -638,6 +638,16 @@ public class GestionDonsAdminController implements Initializable {
 
     private static String safe(String value) {
         return value == null || value.isBlank() ? "-" : value;
+    }
+
+    private static String nettoyerDetailsPaiement(String value) {
+        if (value == null || value.isBlank()) {
+            return value;
+        }
+        return value
+                .replaceAll("(?im)^\\s*Stripe\\s*$", "")
+                .replaceAll("(?im)^\\s*checkout_session\\s*=.*$", "")
+                .trim();
     }
 
     private static boolean texteUtile(String s) {

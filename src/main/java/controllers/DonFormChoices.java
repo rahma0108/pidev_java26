@@ -64,6 +64,7 @@ public final class DonFormChoices {
         categories.add(new CategorieOption(3, "Mobilité et équipement"));
         categories.add(new CategorieOption(4, "Masques et consommables"));
         categories.add(new CategorieOption(5, "Autre"));
+        categories.add(new CategorieOption(6, "Argent"));
         return categories;
     }
 

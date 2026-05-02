@@ -23,10 +23,12 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 
 import javafx.scene.control.ListCell;
+import javafx.scene.control.ProgressIndicator;
 
 import javafx.scene.control.TextArea;
 
 import javafx.scene.control.TextField;
+import javafx.concurrent.Task;
 
 import javafx.application.Platform;
 
@@ -36,9 +38,17 @@ import javafx.scene.paint.Color;
 
 import javafx.scene.canvas.Canvas;
 
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+
+import javafx.scene.web.WebView;
 
 import models.Don;
 
@@ -46,6 +56,7 @@ import ui.ParticleBackground;
 
 import services.DonIAService;
 import services.DonService;
+import services.StripePaymentService;
 
 import utils.MediLinkDialogs;
 
@@ -201,6 +212,16 @@ public class AjouterDonController implements Initializable {
 
 
 
+    @FXML
+    private Label lblMontant;
+
+    @FXML
+    private TextField tfMontant;
+
+    @FXML
+    private ProgressIndicator piPaiement;
+
+
     private ParticleBackground particules;
 
 
@@ -209,6 +230,7 @@ public class AjouterDonController implements Initializable {
 
     /** Initialisé à la demande (nécessite anthropic.api.key ou ANTHROPIC_API_KEY). */
     private DonIAService donIAService;
+    private StripePaymentService stripePaymentService;
 
 
 
@@ -229,6 +251,8 @@ public class AjouterDonController implements Initializable {
         DonFormChoices.preparerComboString(cbNiveauUrgence, DonFormChoices.NIVEAUX_URGENCE, "Moyen");
 
         appliquerStylesFormulaire();
+        cbCategorie.valueProperty().addListener((obs, oldV, newV) -> appliquerModeCategorie());
+        appliquerModeCategorie();
 
         btnEnregistrer.setOnAction(e -> enregistrer());
 
@@ -258,6 +282,7 @@ public class AjouterDonController implements Initializable {
         lblDesc.setStyle(lblMuted);
         lblQty.setStyle(lblMuted);
         lblUnite.setStyle(lblMuted);
+        lblMontant.setStyle(lblMuted);
         lblDetails.setStyle(lblMuted);
         lblEtat.setStyle(lblMuted);
         lblUrg.setStyle(lblMuted);
@@ -269,6 +294,7 @@ public class AjouterDonController implements Initializable {
                 + "-fx-text-fill: #f1f5f9; -fx-prompt-text-fill: #94a3b8; -fx-padding: 8 12;";
         tfDescription.setStyle(champ);
         tfQuantite.setStyle(champ);
+        tfMontant.setStyle(champ);
         taDetails.setStyle(champ);
         String combo = "-fx-background-color: rgba(30,41,59,0.92);"
                 + "-fx-border-color: rgba(148,163,184,0.35);"
@@ -289,6 +315,7 @@ public class AjouterDonController implements Initializable {
                 "-fx-background-color: rgba(51,65,85,0.9); -fx-text-fill: #e2e8f0; -fx-background-radius: 999;"
                         + "-fx-padding: 10 18; -fx-font-weight: bold;"
                         + "-fx-border-color: rgba(148,163,184,0.35); -fx-border-radius: 999; -fx-cursor: hand;");
+        piPaiement.setStyle("-fx-progress-color: #f59e0b;");
         Platform.runLater(() -> {
             javafx.scene.Node content = taDetails.lookup(".content");
             if (content != null) {
@@ -306,8 +333,11 @@ public class AjouterDonController implements Initializable {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
+                    setStyle("");
                 } else {
                     setText(item);
+                    // Assure la lisibilité dans la popup (fond sombre + texte clair).
+                    setStyle("-fx-background-color: #0f172a; -fx-text-fill: #e2e8f0;");
                 }
                 setTextFill(TEXTE_COMBO);
             }
@@ -333,8 +363,11 @@ public class AjouterDonController implements Initializable {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
+                    setStyle("");
                 } else {
                     setText(item.libelle());
+                    // Assure la lisibilité dans la popup (fond sombre + texte clair).
+                    setStyle("-fx-background-color: #0f172a; -fx-text-fill: #e2e8f0;");
                 }
                 if (item != null && item.id() <= 0) {
                     setTextFill(TEXTE_INVITE_COMBO);
@@ -363,6 +396,26 @@ public class AjouterDonController implements Initializable {
 
 
 
+    private boolean estCategorieArgent(DonFormChoices.CategorieOption cat) {
+        return cat != null && cat.libelle() != null && cat.libelle().trim().equalsIgnoreCase("argent");
+    }
+
+    private void appliquerModeCategorie() {
+        boolean argent = estCategorieArgent(cbCategorie.getValue());
+        setVisibleManaged(lblQty, !argent);
+        setVisibleManaged(tfQuantite, !argent);
+        setVisibleManaged(lblUnite, !argent);
+        setVisibleManaged(cbUnite, !argent);
+        setVisibleManaged(lblMontant, argent);
+        setVisibleManaged(tfMontant, argent);
+        setVisibleManaged(piPaiement, false);
+    }
+
+    private static void setVisibleManaged(javafx.scene.Node node, boolean visible) {
+        node.setVisible(visible);
+        node.setManaged(visible);
+    }
+
     private void enregistrer() {
 
         try {
@@ -380,6 +433,11 @@ public class AjouterDonController implements Initializable {
             }
 
             int categorieId = cat.id();
+
+            if (estCategorieArgent(cat)) {
+                enregistrerDonArgent(cat);
+                return;
+            }
 
             int quantite = Integer.parseInt(tfQuantite.getText().trim());
 
@@ -440,6 +498,11 @@ public class AjouterDonController implements Initializable {
             MediLinkDialogs.style(ae);
             ae.showAndWait();
 
+        } catch (IllegalArgumentException ex) {
+            Alert aw = new Alert(Alert.AlertType.WARNING, ex.getMessage());
+            MediLinkDialogs.style(aw);
+            aw.showAndWait();
+
         } catch (SQLException ex) {
 
             Alert a = new Alert(Alert.AlertType.ERROR);
@@ -462,6 +525,223 @@ public class AjouterDonController implements Initializable {
 
         }
 
+    }
+
+    private void enregistrerDonArgent(DonFormChoices.CategorieOption cat) {
+        int montant = Integer.parseInt(tfMontant.getText().trim());
+        if (montant <= 0) {
+            throw new IllegalArgumentException("Le montant doit etre strictement positif.");
+        }
+
+        String desc = tfDescription.getText() != null ? tfDescription.getText().trim() : "";
+        String details = taDetails.getText() != null ? taDetails.getText().trim() : "";
+        String etat = valeurCombo(cbEtat);
+        String urgence = valeurCombo(cbNiveauUrgence);
+        var dateExp = dpExpiration.getValue();
+
+        String erreur = DonSaisieValidator.validerFormulaireDon(cat.id(), desc, montant, "TND", etat, urgence, details, dateExp);
+        if (erreur != null) {
+            Alert aw = new Alert(Alert.AlertType.WARNING, erreur);
+            MediLinkDialogs.style(aw);
+            aw.showAndWait();
+            return;
+        }
+
+        setPaiementEnCours(true);
+        Task<StripePaymentService.CheckoutSessionResult> createTask = new Task<>() {
+            @Override
+            protected StripePaymentService.CheckoutSessionResult call() {
+                if (stripePaymentService == null) {
+                    stripePaymentService = new StripePaymentService();
+                }
+                return stripePaymentService.createCheckoutSession(montant * 100, "Don monetaire Medilink");
+            }
+        };
+
+        createTask.setOnSucceeded(e -> {
+            StripePaymentService.CheckoutSessionResult session = createTask.getValue();
+            lancerPollingStripe(session.sessionId(), cat, montant, desc, details, etat, urgence, dateExp);
+            ouvrirCheckoutDansWebView(session.checkoutUrl());
+        });
+        createTask.setOnFailed(e -> {
+            setPaiementEnCours(false);
+            Throwable ex = createTask.getException();
+            Alert err = new Alert(Alert.AlertType.ERROR, ex == null ? "Erreur Stripe." : ex.getMessage());
+            MediLinkDialogs.style(err);
+            err.showAndWait();
+        });
+
+        Thread t = new Thread(createTask, "stripe-create-intent");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void lancerPollingStripe(
+            String checkoutSessionId,
+            DonFormChoices.CategorieOption cat,
+            int montant,
+            String desc,
+            String details,
+            String etat,
+            String urgence,
+            java.time.LocalDate dateExp) {
+
+        Task<StripePaymentService.CheckoutSessionState> pollTask = new Task<>() {
+            @Override
+            protected StripePaymentService.CheckoutSessionState call() {
+                int tries = 0;
+                while (tries < 60) {
+                    tries++;
+                    StripePaymentService.CheckoutSessionState state =
+                            stripePaymentService.getCheckoutSessionState(checkoutSessionId);
+                    String sessionStatus = state.status();
+                    String paymentStatus = state.paymentStatus();
+
+                    if ("complete".equalsIgnoreCase(sessionStatus) && "paid".equalsIgnoreCase(paymentStatus)) {
+                        return state;
+                    }
+                    if ("expired".equalsIgnoreCase(sessionStatus)) {
+                        return state;
+                    }
+                    if ("complete".equalsIgnoreCase(sessionStatus) && "unpaid".equalsIgnoreCase(paymentStatus)) {
+                        return state;
+                    }
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return new StripePaymentService.CheckoutSessionState("interrupted", "failed");
+                    }
+                }
+                return new StripePaymentService.CheckoutSessionState("timeout", "unpaid");
+            }
+        };
+
+        pollTask.setOnSucceeded(e -> {
+            setPaiementEnCours(false);
+            StripePaymentService.CheckoutSessionState state = pollTask.getValue();
+            String sessionStatus = state == null ? "" : state.status();
+            String paymentStatus = state == null ? "" : state.paymentStatus();
+            if (!("complete".equalsIgnoreCase(sessionStatus) && "paid".equalsIgnoreCase(paymentStatus))) {
+                Alert ko = new Alert(Alert.AlertType.ERROR, "Paiement non reussi. Don non enregistre.");
+                MediLinkDialogs.style(ko);
+                ko.showAndWait();
+                return;
+            }
+            try {
+                Date expiration = dateExp == null ? null : Date.valueOf(dateExp);
+                String detailsFinal = details;
+                Don d = new Don(cat.id(), desc, montant, "TND", detailsFinal, etat, urgence, "en_attente", expiration);
+                d.setTitre(desc);
+                d.setCategorie(cat.libelle());
+                d.setDescription(detailsFinal);
+                // Pas d'analyse IA immediate pour Argent.
+                donService.add(d);
+                donService.addPaiementDonStripe(
+                        d.getId(),
+                        montant,
+                        checkoutSessionId,
+                        sessionStatus,
+                        paymentStatus
+                );
+                Alert ok = new Alert(Alert.AlertType.INFORMATION, "Paiement reussi. Don enregistre.");
+                MediLinkDialogs.style(ok);
+                ok.showAndWait();
+                retourListe();
+            } catch (SQLException ex) {
+                Alert err = new Alert(Alert.AlertType.ERROR, ex.getMessage());
+                MediLinkDialogs.style(err);
+                err.showAndWait();
+            }
+        });
+
+        pollTask.setOnFailed(e -> {
+            setPaiementEnCours(false);
+            Throwable ex = pollTask.getException();
+            Alert err = new Alert(Alert.AlertType.ERROR, ex == null ? "Erreur verification Stripe." : ex.getMessage());
+            MediLinkDialogs.style(err);
+            err.showAndWait();
+        });
+
+        Thread t = new Thread(pollTask, "stripe-polling");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /**
+     * Affiche Stripe Checkout dans une fenêtre intégrée (WebView) au lieu du navigateur externe.
+     * La fenêtre se ferme lorsque Stripe redirige vers les URLs success / cancel configurées.
+     */
+    private void ouvrirCheckoutDansWebView(String checkoutUrl) {
+        if (checkoutUrl == null || checkoutUrl.isBlank()) {
+            throw new IllegalArgumentException("URL Checkout Stripe invalide.");
+        }
+        if (stripePaymentService == null) {
+            stripePaymentService = new StripePaymentService();
+        }
+        String successUrl = stripePaymentService.getCheckoutSuccessUrl();
+        String cancelUrl = stripePaymentService.getCheckoutCancelUrl();
+
+        Stage owner = (Stage) rootStack.getScene().getWindow();
+        Stage payStage = new Stage();
+        payStage.initOwner(owner);
+        payStage.initModality(Modality.WINDOW_MODAL);
+        payStage.setTitle("Paiement securise — MediLink Care");
+
+        WebView webView = new WebView();
+        webView.setPrefSize(880, 620);
+        webView.getEngine().locationProperty().addListener((obs, oldLoc, newLoc) -> {
+            if (newLoc == null || newLoc.isBlank()) {
+                return;
+            }
+            if (urlCorrespondSansQueryNiFragment(newLoc, successUrl)
+                    || urlCorrespondSansQueryNiFragment(newLoc, cancelUrl)) {
+                payStage.close();
+            }
+        });
+        webView.getEngine().load(checkoutUrl);
+
+        Button fermer = new Button("Fermer");
+        fermer.setStyle("-fx-background-color: #64748b; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 16;");
+        fermer.setOnAction(ev -> payStage.close());
+        HBox barre = new HBox(fermer);
+        barre.setAlignment(Pos.CENTER_RIGHT);
+        barre.setPadding(new Insets(8, 12, 8, 12));
+        barre.setStyle("-fx-background-color: #f1f5f9;");
+
+        BorderPane root = new BorderPane();
+        root.setCenter(webView);
+        root.setBottom(barre);
+
+        Scene sc = new Scene(root, 900, 680);
+        payStage.setScene(sc);
+        payStage.show();
+    }
+
+    private static boolean urlCorrespondSansQueryNiFragment(String actuelle, String attendue) {
+        if (actuelle == null || attendue == null || attendue.isBlank()) {
+            return false;
+        }
+        String a = retirerQueryEtFragment(actuelle.trim());
+        String b = retirerQueryEtFragment(attendue.trim());
+        return a.equalsIgnoreCase(b);
+    }
+
+    private static String retirerQueryEtFragment(String url) {
+        int cut = url.length();
+        for (int i = 0; i < url.length(); i++) {
+            char c = url.charAt(i);
+            if (c == '?' || c == '#') {
+                cut = i;
+                break;
+            }
+        }
+        return url.substring(0, cut);
+    }
+
+    private void setPaiementEnCours(boolean enCours) {
+        btnEnregistrer.setDisable(enCours);
+        setVisibleManaged(piPaiement, enCours);
     }
 
     /** Alerte large avec texte défilant : le constructeur Alert(type, msg) tronque souvent les longs messages. */
