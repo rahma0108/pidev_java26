@@ -42,4 +42,4 @@ build/
 .DS_Store
 
 # Fichier de config sensible
-application.propertiessrc/main/resources/application.properties
+application.properties
