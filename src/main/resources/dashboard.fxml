@@ -48,6 +48,11 @@
                         style="-fx-background-color: transparent; -fx-text-fill: white;
                                -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
                                -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
+                <Button fx:id="btnNavDons" text="  Dons" onAction="#showDons"
+                        prefWidth="196" prefHeight="42"
+                        style="-fx-background-color: transparent; -fx-text-fill: white;
+                               -fx-font-size: 13px; -fx-alignment: CENTER-LEFT;
+                               -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: transparent;"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
@@ -177,6 +182,13 @@
                                      -fx-border-width: 0.5; -fx-cursor: hand; -fx-padding: 10;">
                             <Label text="Events" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #26215C;"/>
                             <Label text="Upcoming events" style="-fx-font-size: 11px; -fx-text-fill: #534AB7;"/>
+                        </VBox>
+                        <VBox fx:id="quickDonsBox" prefHeight="66" alignment="CENTER" spacing="4" onMouseClicked="#showDons"
+                              style="-fx-background-color: #FDF6E9; -fx-background-radius: 12;
+                                     -fx-border-color: #E8C99A; -fx-border-radius: 12;
+                                     -fx-border-width: 0.5; -fx-cursor: hand; -fx-padding: 10;">
+                            <Label text="Dons" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #7A4A0F;"/>
+                            <Label text="Espace admin des dons" style="-fx-font-size: 11px; -fx-text-fill: #A66B1F;"/>
                         </VBox>
                     </VBox>
                 </HBox>

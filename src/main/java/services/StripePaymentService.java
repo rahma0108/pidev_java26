@@ -26,12 +26,38 @@ public class StripePaymentService {
 
     public StripePaymentService() {
         Properties p = loadProps();
-        secretKey = getOrDefault(p, "stripe.secret.key", "");
+        String env = firstNonBlank(
+                System.getenv("STRIPE_SECRET_KEY"),
+                System.getenv("STRIPE_API_KEY"));
+        String fromFile = getOrDefault(p, "stripe.secret.key", "");
+        if (env != null && !env.isBlank()) {
+            this.secretKey = env.trim();
+        } else {
+            this.secretKey = fromFile.trim();
+        }
         currency = getOrDefault(p, "stripe.currency", "eur");
         successUrl = getOrDefault(p, "stripe.checkout.success.url", "https://example.com/success");
         cancelUrl = getOrDefault(p, "stripe.checkout.cancel.url", "https://example.com/cancel");
-        if (secretKey.isBlank()) {
-            throw new StripePaymentException("stripe.secret.key est vide dans application.properties.");
+    }
+
+    private static String firstNonBlank(String a, String b) {
+        if (a != null && !a.isBlank()) {
+            return a;
+        }
+        if (b != null && !b.isBlank()) {
+            return b;
+        }
+        return "";
+    }
+
+    private void exigerCleSecretStripe() {
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new StripePaymentException(
+                    "Paiement Stripe : aucune clé secrète configurée.\n\n"
+                            + "Ajoute ta clé secrète (sk_test_… ou sk_live_…) :\n"
+                            + "• variable d’environnement STRIPE_SECRET_KEY (recommandé, ne pas commiter), ou\n"
+                            + "• dans application.properties : stripe.secret.key=sk_test_...\n\n"
+                            + "Tableau de bord Stripe : https://dashboard.stripe.com/apikeys");
         }
     }
 
@@ -49,6 +75,7 @@ public class StripePaymentService {
     public record CheckoutSessionState(String status, String paymentStatus) {}
 
     public CheckoutSessionResult createCheckoutSession(int amountMinorUnits, String label) {
+        exigerCleSecretStripe();
         String body = form(
                 "mode", "payment",
                 "success_url", successUrl,
@@ -76,6 +103,7 @@ public class StripePaymentService {
     }
 
     public CheckoutSessionState getCheckoutSessionState(String sessionId) {
+        exigerCleSecretStripe();
         HttpRequest request = HttpRequest.newBuilder(URI.create(STRIPE_BASE + "/checkout/sessions/" + sessionId))
                 .timeout(Duration.ofSeconds(20))
                 .header("Authorization", "Bearer " + secretKey)

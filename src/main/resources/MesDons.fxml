@@ -83,7 +83,6 @@
             <Button fx:id="btnSupprimer" disable="true" mnemonicParsing="false" styleClass="btn-care-secondary" text="Supprimer" />
             <Button fx:id="btnAccueil" mnemonicParsing="false" styleClass="btn-care-primary" text="Accueil" />
             <Button fx:id="btnMesCampagnes" mnemonicParsing="false" styleClass="btn-care-primary" text="Mes campagnes" />
-            <Button fx:id="btnEspaceAdmin" mnemonicParsing="false" styleClass="btn-care-primary" text="Espace admin" />
          </HBox>
       </VBox>
    </top>

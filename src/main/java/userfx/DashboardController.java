@@ -4,12 +4,11 @@ package userfx;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Popup;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.stage.Popup;
 
 import java.util.List;
 
@@ -26,6 +25,8 @@ public class DashboardController {
     @FXML private Button themeToggleBtn;
     @FXML private PieChart rolesPieChart;
     @FXML private PieChart statusPieChart;
+    @FXML private Button btnNavDons;
+    @FXML private VBox quickDonsBox;
 
     private static User loggedInUser;
 
@@ -35,6 +36,16 @@ public class DashboardController {
 
     @FXML
     public void initialize() {
+        boolean adminDons = isAdmin();
+        if (btnNavDons != null) {
+            btnNavDons.setVisible(adminDons);
+            btnNavDons.setManaged(adminDons);
+        }
+        if (quickDonsBox != null) {
+            quickDonsBox.setVisible(adminDons);
+            quickDonsBox.setManaged(adminDons);
+        }
+
         if (loggedInUser != null) {
             welcomeLabel.setText(loggedInUser.getFullName());
             String role = loggedInUser.getRoles() != null
@@ -132,6 +143,21 @@ public class DashboardController {
     @FXML public void showAppointments() { pageTitle.setText("Appointments — coming soon"); }
     @FXML public void showMedications()  { pageTitle.setText("Medications — coming soon"); }
     @FXML public void showEvents()       { navigateTo("/event_back.fxml"); }
+
+    /** Tableau de bord KPI + accès gestion des dons (admin uniquement dans la barre latérale). */
+    @FXML
+    public void showDons() {
+        if (!isAdmin()) {
+            return;
+        }
+        navigateTo("/AdminDons.fxml");
+    }
+
+    private static boolean isAdmin() {
+        return loggedInUser != null
+                && loggedInUser.getRoles() != null
+                && loggedInUser.getRoles().contains("ROLE_ADMIN");
+    }
     @FXML
     public void handleLogout() {
         RememberMeHelper.clear(); // ← ADD THIS LINE

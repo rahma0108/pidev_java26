@@ -33,7 +33,7 @@ public class ClaudeAI {
      */
     public static String ask(String systemPrompt, String userMessage) {
         // If no key is provided, use free Pollinations AI as fallback
-        if (API_KEY == null || API_KEY.isEmpty() || API_KEY.contains("YAIzaSyBV7YvXy2jnc1lE6L_wOMqmWAuhqDHrxOY")) {
+        if (API_KEY == null || API_KEY.isEmpty()) {
             try {
                 String fullPrompt = (systemPrompt != null ? systemPrompt + "\n\n" : "") + userMessage;
                 String encodedPrompt = java.net.URLEncoder.encode(fullPrompt, java.nio.charset.StandardCharsets.UTF_8);

@@ -201,6 +201,39 @@
                               -fx-translate-x: 6; -fx-translate-y: -6;"/>
             </StackPane>
 
+            <!-- Dons -->
+            <StackPane prefWidth="200" prefHeight="190">
+                <VBox fx:id="cardDons" alignment="CENTER" spacing="10"
+                      prefWidth="200" prefHeight="190"
+                      onMouseClicked="#goToDons"
+                      onMouseEntered="#onCardHover"
+                      onMouseExited="#onCardExit"
+                      style="-fx-background-color: rgba(196,120,40,0.15);
+                             -fx-background-radius: 20;
+                             -fx-border-color: rgba(196,120,40,0.45);
+                             -fx-border-radius: 20; -fx-border-width: 1;
+                             -fx-cursor: hand; -fx-padding: 20;">
+                    <Label text="🎁" style="-fx-font-size: 32px;"/>
+                    <Label text="Dons"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                    <Label text="Gérer les dons matériels"
+                           style="-fx-font-size: 11px; -fx-text-fill: #667788; -fx-text-alignment: center;"/>
+                    <Label fx:id="donCount" text="— dons"
+                           style="-fx-font-size: 11px; -fx-text-fill: #E8B86D;
+                                  -fx-background-color: rgba(196,120,40,0.22);
+                                  -fx-background-radius: 8; -fx-padding: 3 8;"/>
+                </VBox>
+                <Label fx:id="badgeDonLabel" text="0"
+                       StackPane.alignment="TOP_RIGHT"
+                       visible="false" managed="false"
+                       style="-fx-background-color: #E24B4A;
+                              -fx-text-fill: white; -fx-font-size: 10px;
+                              -fx-font-weight: bold;
+                              -fx-background-radius: 10;
+                              -fx-padding: 2 6;
+                              -fx-translate-x: 6; -fx-translate-y: -6;"/>
+            </StackPane>
+
         </HBox>
 
         <!-- AI TIP CARD -->

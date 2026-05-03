@@ -116,9 +116,6 @@ public class ListeDonsController implements Initializable {
     private Button btnMesCampagnes;
 
     @FXML
-    private Button btnEspaceAdmin;
-
-    @FXML
     private Button btnDemandeUrgence;
 
     @FXML
@@ -187,7 +184,6 @@ public class ListeDonsController implements Initializable {
         btnAjouter.setOnAction(e -> ouvrirAjouter());
         btnMesDons.setOnAction(e -> ouvrirMesDons());
         btnMesCampagnes.setOnAction(e -> ouvrirMesCampagnes());
-        btnEspaceAdmin.setOnAction(e -> ouvrirEspaceAdmin());
         btnDemandeUrgence.setOnAction(e -> ouvrirDemandeUrgence());
 
         initialiserCampagnesAccueil();
@@ -282,17 +278,6 @@ public class ListeDonsController implements Initializable {
             stage.setScene(new Scene(root, 520, 480));
         } catch (IOException ex) {
             afficherErreur("Ouverture du formulaire", ex.getMessage());
-        }
-    }
-
-    private void ouvrirEspaceAdmin() {
-        try {
-            Stage stage = stageCourant();
-            Parent root = FXMLLoader.load(Objects.requireNonNull(
-                    getClass().getResource("/AdminDons.fxml")));
-            stage.setScene(new Scene(root, 960, 680));
-        } catch (IOException ex) {
-            afficherErreur("Ouverture de l'espace admin", ex.getMessage());
         }
     }
 

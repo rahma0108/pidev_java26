@@ -22,6 +22,7 @@ module gdons {
     requires org.apache.fontbox;
     requires commons.logging;
     requires jakarta.mail;
+    requires spring.security.crypto;
 
     requires com.google.gson;
     /* google-api-client JAR */

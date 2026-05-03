@@ -29,12 +29,14 @@ public class HomeController {
     @FXML private Label medCount;
     @FXML private Label ordCount;
     @FXML private Label eventCount;
+    @FXML private Label donCount;
     @FXML private Button themeToggleBtn;
 
     @FXML private VBox cardRdv;
     @FXML private VBox cardMed;
     @FXML private VBox cardOrd;
     @FXML private VBox cardEvent;
+    @FXML private VBox cardDons;
 
     private static User loggedInUser;
     private final Random rand = new Random();
@@ -96,6 +98,7 @@ public class HomeController {
         animateCardIn(cardMed,   150);
         animateCardIn(cardOrd,   300);
         animateCardIn(cardEvent, 450);
+        animateCardIn(cardDons,  600);
 
         // Add hover glow to cards
         javafx.application.Platform.runLater(() -> {
@@ -103,6 +106,7 @@ public class HomeController {
             EffectsHelper.addHoverGlow(cardMed,   "#0F6E56");
             EffectsHelper.addHoverGlow(cardOrd,   "#534AB7");
             EffectsHelper.addHoverGlow(cardEvent, "#1D9E75");
+            EffectsHelper.addHoverGlow(cardDons,  "#C47828");
         });
 
         // Typing effect on hero
@@ -164,11 +168,19 @@ public class HomeController {
                 int meds   = getCount(conn, "SELECT COUNT(*) FROM medicaments");
                 int ords   = getCount(conn, "SELECT COUNT(*) FROM ordonnances");
                 int events = getCount(conn, "SELECT COUNT(*) FROM evenements");
+                int dons = -1;
+                try {
+                    dons = getCount(conn, "SELECT COUNT(*) FROM dons");
+                } catch (Exception ignored) {
+                    /* table absente sur certaines bases */
+                }
+                final int donsFinal = dons;
                 Platform.runLater(() -> {
                     rdvCount.setText(rdv + " upcoming");
                     medCount.setText(meds + " items");
                     ordCount.setText(ords + " prescriptions");
                     eventCount.setText(events + " upcoming");
+                    donCount.setText(donsFinal >= 0 ? donsFinal + " dons" : "— dons");
                 });
             } catch (Exception e) {
                 System.err.println("Count error: " + e.getMessage());
@@ -228,6 +240,17 @@ public class HomeController {
         stopAnimation();
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/event_front.fxml"));
+            ThemeManager.applyWithFade(animCanvas.getScene(), root, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void goToDons() {
+        stopAnimation();
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/ListeDons.fxml"));
             ThemeManager.applyWithFade(animCanvas.getScene(), root, null);
         } catch (Exception e) {
             e.printStackTrace();

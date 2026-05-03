@@ -76,9 +76,6 @@ public class MesCampagnesController implements Initializable {
     @FXML
     private Button btnAccueil;
 
-    @FXML
-    private Button btnEspaceAdmin;
-
     private final UrgenceDemandeService urgenceDemandeService = new UrgenceDemandeService();
     private final CampagneAideService campagneAideService = new CampagneAideService();
     private ParticleBackground particules;
@@ -95,7 +92,6 @@ public class MesCampagnesController implements Initializable {
         btnActualiser.setOnAction(e -> recharger());
         btnNouvelleDemande.setOnAction(e -> ouvrirNouvelleDemande());
         btnAccueil.setOnAction(e -> ouvrirAccueil());
-        btnEspaceAdmin.setOnAction(e -> ouvrirEspaceAdmin());
         recharger();
     }
 
@@ -344,16 +340,6 @@ public class MesCampagnesController implements Initializable {
             stage.setScene(new Scene(root, 960, 680));
         } catch (IOException ex) {
             afficherErreur("Retour accueil impossible", ex.getMessage());
-        }
-    }
-
-    private void ouvrirEspaceAdmin() {
-        try {
-            Stage stage = (Stage) rootStack.getScene().getWindow();
-            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/AdminDons.fxml")));
-            stage.setScene(new Scene(root, 1100, 720));
-        } catch (IOException ex) {
-            afficherErreur("Ouverture admin", ex.getMessage());
         }
     }
 

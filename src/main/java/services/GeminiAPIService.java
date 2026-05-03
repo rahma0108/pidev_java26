@@ -12,8 +12,10 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,17 +26,17 @@ import java.util.regex.Pattern;
  */
 public final class GeminiAPIService implements DonAnalyseLLM {
 
-    private static final String[] API_VERSIONS = {"v1beta", "v1"};
+    /** Uniquement {@code v1beta} : l’API {@code v1} refuse souvent les mêmes ids (404) pour generateContent. */
+    private static final String[] API_VERSIONS = {"v1beta"};
 
     /**
-     * Ordre de secours si l’API ListModels n’est pas disponible. Les noms changent selon les versions Google ;
-     * {@link #listerModelesAvecGenerateContent()} permet d’utiliser uniquement les modèles réellement listés.
+     * Si ListModels est vide : ids versionnés — pas {@code gemini-1.5-flash} seul (404 fréquent).
      */
     private static final String[] PRIORITE_SECOURS = {
-            "gemini-2.5-flash",
+            "gemini-2.0-flash-001",
             "gemini-2.0-flash",
-            "gemini-1.5-flash",
-            "gemini-1.5-pro"
+            "gemini-2.5-flash",
+            "gemini-1.5-flash-8b"
     };
 
     private static final Pattern JSON_NAME_MODEL = Pattern.compile(
@@ -63,7 +65,7 @@ public final class GeminiAPIService implements DonAnalyseLLM {
             this.apiKey = fromFile;
             this.cleSourceDescription = "application.properties (gemini.api.key)";
         }
-        String rawModel = p.getProperty("gemini.model", "gemini-1.5-flash").trim();
+        String rawModel = p.getProperty("gemini.model", "gemini-2.0-flash-001").trim();
         this.preferredModel = sanitizeModelId(rawModel);
         if (apiKey.isBlank()) {
             throw new IllegalStateException(
@@ -81,7 +83,7 @@ public final class GeminiAPIService implements DonAnalyseLLM {
 
     public GeminiAPIService(String apiKey, String model) {
         this.apiKey = normalizeKey(apiKey);
-        this.preferredModel = sanitizeModelId(model != null && !model.isBlank() ? model : "gemini-1.5-flash");
+        this.preferredModel = sanitizeModelId(model != null && !model.isBlank() ? model : "gemini-2.0-flash-001");
         this.cleSourceDescription = "constructeur explicite";
     }
 
@@ -176,6 +178,7 @@ public final class GeminiAPIService implements DonAnalyseLLM {
                     dernier = ex;
                     String msg = ex.getMessage() != null ? ex.getMessage() : "";
                     if (msg.contains("HTTP 400")
+                            || msg.contains("HTTP 403")
                             || msg.contains("HTTP 404")
                             || msg.contains("HTTP 429")) {
                         continue;
@@ -185,7 +188,7 @@ public final class GeminiAPIService implements DonAnalyseLLM {
             }
         }
         if (dernier != null) {
-            throw dernier;
+            throw enrichirExceptionFinale(dernier);
         }
         throw new IOException("Gemini : aucun modèle n’a répondu.");
     }
@@ -209,6 +212,7 @@ public final class GeminiAPIService implements DonAnalyseLLM {
                     dernier = ex;
                     String msg = ex.getMessage() != null ? ex.getMessage() : "";
                     if (msg.contains("HTTP 400")
+                            || msg.contains("HTTP 403")
                             || msg.contains("HTTP 404")
                             || msg.contains("HTTP 429")) {
                         continue;
@@ -218,7 +222,7 @@ public final class GeminiAPIService implements DonAnalyseLLM {
             }
         }
         if (dernier != null) {
-            throw dernier;
+            throw enrichirExceptionFinale(dernier);
         }
         throw new IOException("Gemini : aucun modèle n’a répondu.");
     }
@@ -231,8 +235,8 @@ public final class GeminiAPIService implements DonAnalyseLLM {
         List<String> dispo = null;
         try {
             dispo = listerModelesAvecGenerateContent();
-        } catch (IOException ignored) {
-            // fallback noms statiques
+        } catch (IOException ex) {
+            System.err.println("[Gemini] ListModels indisponible, secours statique : " + ex.getMessage());
         }
         LinkedHashSet<String> candidats = new LinkedHashSet<>();
         candidats.add(preferredModel);
@@ -240,35 +244,124 @@ public final class GeminiAPIService implements DonAnalyseLLM {
             candidats.add(p);
         }
         if (dispo != null && !dispo.isEmpty()) {
-            List<String> ordre = new ArrayList<>();
-            for (String c : candidats) {
-                if (dispo.contains(c)) {
-                    ordre.add(c);
+            LinkedHashSet<String> ordre = new LinkedHashSet<>();
+            for (String variante : variantesNomModele(preferredModel)) {
+                String resolu = resoudreIdDepuisListe(variante, dispo);
+                if (resolu != null) {
+                    ordre.add(resolu);
+                    break;
                 }
-            }
-            if (!ordre.isEmpty()) {
-                return ordre.toArray(new String[0]);
             }
             List<String> flash = new ArrayList<>();
             for (String id : dispo) {
-                if (id.contains("flash") && !id.toLowerCase().contains("embedding")) {
+                if (id.toLowerCase().contains("flash") && !id.toLowerCase().contains("embedding")) {
                     flash.add(id);
                 }
             }
-            if (!flash.isEmpty()) {
-                return flash.toArray(new String[0]);
+            flash.sort(Comparator.comparingInt(GeminiAPIService::prioriteIdListe).thenComparing(Comparator.naturalOrder()));
+            ordre.addAll(flash);
+            for (String c : candidats) {
+                if (c.equals(preferredModel)) {
+                    continue;
+                }
+                for (String variante : variantesNomModele(c)) {
+                    String resolu = resoudreIdDepuisListe(variante, dispo);
+                    if (resolu != null) {
+                        ordre.add(resolu);
+                        break;
+                    }
+                }
             }
-            return dispo.toArray(new String[0]);
+            for (String id : dispo) {
+                ordre.add(id);
+            }
+            return ordre.toArray(new String[0]);
         }
         return candidats.toArray(new String[0]);
     }
 
+    /** Ex. {@code gemini-2.0-flash-001} → tente aussi {@code gemini-2.0-flash} pour le préfixe dans ListModels. */
+    static List<String> variantesNomModele(String model) {
+        LinkedHashSet<String> v = new LinkedHashSet<>();
+        if (model == null || model.isBlank()) {
+            return List.of();
+        }
+        String m = model.trim();
+        while (m != null && !m.isEmpty()) {
+            v.add(m);
+            int d = m.lastIndexOf('-');
+            if (d <= 0) {
+                break;
+            }
+            String tail = m.substring(d + 1);
+            if (tail.matches("\\d+")) {
+                m = m.substring(0, d);
+            } else {
+                break;
+            }
+        }
+        return new ArrayList<>(v);
+    }
+
+    /**
+     * Google liste souvent des ids versionnés ({@code gemini-1.5-flash-8b}) alors que la config utilise le nom court.
+     */
+    static String resoudreIdDepuisListe(String baseSouhaite, List<String> dispo) {
+        if (baseSouhaite == null || baseSouhaite.isBlank() || dispo == null) {
+            return null;
+        }
+        String base = baseSouhaite.trim();
+        if (dispo.contains(base)) {
+            return base;
+        }
+        String prefix = base + "-";
+        List<String> matches = new ArrayList<>();
+        for (String id : dispo) {
+            if (id.startsWith(prefix)) {
+                matches.add(id);
+            }
+        }
+        if (matches.isEmpty()) {
+            return null;
+        }
+        matches.sort(Comparator.comparingInt(String::length).thenComparing(Comparator.naturalOrder()));
+        return matches.get(0);
+    }
+
+    /** Préfère 2.0 stable pour l’auto-sélection quand la config demande un nom générique. */
+    private static int prioriteIdListe(String id) {
+        if (id == null) {
+            return 99;
+        }
+        String s = id.toLowerCase();
+        if (s.contains("embedding") || s.contains("aqa")) {
+            return 50;
+        }
+        if (s.contains("2.0-flash") && !s.contains("exp")) {
+            return 0;
+        }
+        if (s.contains("2.5-flash")) {
+            return 1;
+        }
+        if (s.contains("1.5-flash")) {
+            return 2;
+        }
+        return 10;
+    }
+
+    /** Liste les modèles via {@code v1beta} uniquement (cohérent avec {@link #API_VERSIONS}). */
     private List<String> listerModelesAvecGenerateContent() throws IOException {
-        List<String> tous = new ArrayList<>();
+        LinkedHashSet<String> merge = new LinkedHashSet<>();
+        listerModelesDepuisApiVersion("v1beta", merge);
+        return new ArrayList<>(merge);
+    }
+
+    private void listerModelesDepuisApiVersion(String apiVersion, LinkedHashSet<String> mergeInto) throws IOException {
+        List<String> tous = new ArrayList<>(mergeInto);
         String pageToken = null;
         for (int page = 0; page < 8; page++) {
             StringBuilder url = new StringBuilder(
-                    "https://generativelanguage.googleapis.com/v1beta/models?pageSize=100");
+                    "https://generativelanguage.googleapis.com/" + apiVersion + "/models?pageSize=100");
             if (pageToken != null) {
                 url.append("&pageToken=").append(URLEncoder.encode(pageToken, StandardCharsets.UTF_8));
             }
@@ -280,7 +373,10 @@ public final class GeminiAPIService implements DonAnalyseLLM {
             int code = conn.getResponseCode();
             String body = lireCorps(conn, code >= 200 && code < 300 ? conn.getInputStream() : conn.getErrorStream());
             if (code < 200 || code >= 300) {
-                throw new IOException("Gemini ListModels HTTP " + code + " : " + body);
+                if (code == 403) {
+                    verifierCleRevokeeOuLever(body, "ListModels " + apiVersion);
+                }
+                throw new IOException("Gemini ListModels " + apiVersion + " HTTP " + code + " : " + body);
             }
             extraireModelesGenerateContentDepuisJson(body, tous);
             pageToken = extraireNextPageToken(body);
@@ -288,16 +384,19 @@ public final class GeminiAPIService implements DonAnalyseLLM {
                 break;
             }
         }
-        return tous;
+        mergeInto.addAll(tous);
     }
+
+    /** Fenêtre assez large : dans la réponse ListModels, {@code supportedGenerationMethods} peut être loin du {@code name}. */
+    private static final int FENETRE_METHODES_APRES_NAME = 14_000;
 
     private static void extraireModelesGenerateContentDepuisJson(String json, List<String> out) {
         Matcher m = JSON_NAME_MODEL.matcher(json);
         while (m.find()) {
             int start = m.start();
-            int finBloc = Math.min(json.length(), start + 900);
+            int finBloc = Math.min(json.length(), start + FENETRE_METHODES_APRES_NAME);
             String bloc = json.substring(start, finBloc);
-            if (!bloc.contains("generateContent")) {
+            if (!contientGenerateContentOuMethodes(bloc)) {
                 continue;
             }
             String id = m.group(1);
@@ -305,6 +404,29 @@ public final class GeminiAPIService implements DonAnalyseLLM {
                 out.add(id);
             }
         }
+        if (out.isEmpty()) {
+            secoursExtraireIdsGeminiFlash(json, out);
+        }
+    }
+
+    /** Si la structure JSON change et que le filtre {@code generateContent} ne matche plus, dernier recours. */
+    private static void secoursExtraireIdsGeminiFlash(String json, List<String> out) {
+        Matcher m = JSON_NAME_MODEL.matcher(json);
+        while (m.find()) {
+            String id = m.group(1);
+            if (!id.startsWith("gemini-") || id.toLowerCase().contains("embedding")) {
+                continue;
+            }
+            if (id.contains("flash") || id.contains("Flash")) {
+                if (!out.contains(id)) {
+                    out.add(id);
+                }
+            }
+        }
+    }
+
+    private static boolean contientGenerateContentOuMethodes(String bloc) {
+        return bloc != null && bloc.toLowerCase().contains("generatecontent");
     }
 
     private static String extraireNextPageToken(String json) {
@@ -356,6 +478,9 @@ public final class GeminiAPIService implements DonAnalyseLLM {
                 }
             }
             if (code < 200 || code >= 300) {
+                if (code == 403) {
+                    verifierCleRevokeeOuLever(response, "generateContent");
+                }
                 if (reponseIndiqueCleInvalide(response)) {
                     StringBuilder sb = new StringBuilder();
                     sb.append("Clé API Gemini refusée par Google (« API key not valid »).\n\n");
@@ -388,6 +513,9 @@ public final class GeminiAPIService implements DonAnalyseLLM {
                                     + "Le service est en surcharge côté Google. Réessaie dans quelques secondes, "
                                     + "ou passe sur gemini-1.5-flash.\n\n"
                                     + "Détail API : " + response);
+                }
+                if (code == 403) {
+                    throw new IOException(messageHttp403(modelUsed, url, response));
                 }
                 throw new IOException("Gemini API HTTP " + code + " (modèle=" + modelUsed + ", url=" + url + ") : " + response);
             }
@@ -473,6 +601,83 @@ public final class GeminiAPIService implements DonAnalyseLLM {
             }
         }
         return 20_000L;
+    }
+
+    private IOException enrichirExceptionFinale(IOException dernier) {
+        String msg = dernier.getMessage() != null ? dernier.getMessage() : "";
+        if (msg.contains("HTTP 403")) {
+            int detail = msg.indexOf(" : ");
+            String corps = detail > 0 && detail + 3 < msg.length() ? msg.substring(detail + 3) : msg;
+            try {
+                verifierCleRevokeeOuLever(corps, "Gemini");
+            } catch (IllegalStateException ex) {
+                return new IOException(ex.getMessage(), ex);
+            }
+            return new IOException(messageHttp403("(tous modèles essayés)", "", corps), dernier);
+        }
+        if (msg.contains("HTTP 404")) {
+            return new IOException(msg + message404HintFinale(), dernier);
+        }
+        return dernier;
+    }
+
+    private static String message404HintFinale() {
+        return "\n\n---\nConseil : les ids changent souvent (ex. gemini-1.5-flash-8b au lieu de gemini-1.5-flash). "
+                + "Dans application.properties, essaye par exemple :\n"
+                + "  gemini.model=gemini-2.5-flash\n"
+                + "ou  gemini.model=gemini-2.0-flash-001\n"
+                + "ou  gemini.model=gemini-1.5-flash-8b\n"
+                + "puis redémarre l’application (l’app résout aussi les variantes listées par Google).";
+    }
+
+    /**
+     * HTTP 403 : souvent Generative Language API désactivée, restrictions de clé (référents HTTP / appli Android
+     * alors que l’app est un client Java bureau), ou projet sans accès au modèle.
+     */
+    private String messageHttp403(String modelUsed, String url, String response) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Gemini API HTTP 403 — accès refusé");
+        if (modelUsed != null && !modelUsed.isBlank()) {
+            sb.append(" (modèle=").append(modelUsed).append(")");
+        }
+        sb.append(".\n\n");
+        sb.append("Vérifications (Google Cloud / AI Studio) :\n");
+        sb.append("• Active l’API « Generative Language API » sur le projet lié à la clé : ");
+        sb.append("https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com\n");
+        sb.append("• Clé API : restrictions « Applications » → pour un test depuis ton PC, mets « Aucune » ");
+        sb.append("ou « Adresses IP » — pas seulement « Sites web (référents HTTP) » (incompatible avec JavaFX).\n");
+        sb.append("• Source de la clé utilisée : ").append(cleSourceDescription).append(".\n");
+        sb.append("  Si une variable GEMINI_API_KEY ou GOOGLE_API_KEY est définie dans l’OS, elle remplace application.properties.\n");
+        sb.append("• Nouvelle clé : https://aistudio.google.com/app/apikey — puis redémarrer l’application.\n\n");
+        if (url != null && !url.isBlank()) {
+            sb.append("URL : ").append(url).append("\n");
+        }
+        sb.append("Réponse Google : ").append(response != null ? response : "(vide)");
+        return sb.toString();
+    }
+
+    /**
+     * Google désactive les clés publiées (GitHub, capture d’écran, chat). Il faut en créer une nouvelle.
+     */
+    private static void verifierCleRevokeeOuLever(String response, String contexte) {
+        if (response == null) {
+            return;
+        }
+        String r = response.toLowerCase(Locale.ROOT);
+        if (r.contains("leaked") || r.contains("reported as leaked") || r.contains("has been restricted")) {
+            throw new IllegalStateException(messageCleRevokee(contexte, response));
+        }
+    }
+
+    private static String messageCleRevokee(String contexte, String corpsApi) {
+        return "Clé API Gemini révoquée ou restreinte par Google (" + contexte + ").\n\n"
+                + "Une clé qui a fuité (commit Git, capture d’écran, forum) ne fonctionne plus.\n\n"
+                + "À faire :\n"
+                + "1) Crée une NOUVELLE clé : https://aistudio.google.com/app/apikey\n"
+                + "2) Colle-la dans src/main/resources/application.properties → gemini.api.key=…\n"
+                + "   (ou variable d’environnement GEMINI_API_KEY — elle remplace le fichier.)\n"
+                + "3) Ne commite JAMAIS la clé. Vérifie l’historique Git et supprime l’ancienne clé côté Google.\n\n"
+                + "Réponse API : " + (corpsApi != null ? corpsApi : "");
     }
 
     private static boolean reponseIndiqueCleInvalide(String response) {

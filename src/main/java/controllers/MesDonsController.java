@@ -126,9 +126,6 @@ public class MesDonsController implements Initializable {
     private Button btnMesCampagnes;
 
     @FXML
-    private Button btnEspaceAdmin;
-
-    @FXML
     private VBox cardsContainer;
 
     private final DonService donService = new DonService();
@@ -179,7 +176,6 @@ public class MesDonsController implements Initializable {
         btnSupprimer.setOnAction(e -> supprimerDon(selectedDon));
         btnAccueil.setOnAction(e -> ouvrirAccueil());
         btnMesCampagnes.setOnAction(e -> ouvrirMesCampagnes());
-        btnEspaceAdmin.setOnAction(e -> ouvrirEspaceAdmin());
 
         appliquerTri();
         appliquerFiltre();
@@ -275,17 +271,6 @@ public class MesDonsController implements Initializable {
             stage.setScene(new Scene(root, 960, 680));
         } catch (IOException ex) {
             afficherErreur("Ouverture Mes campagnes", ex.getMessage());
-        }
-    }
-
-    private void ouvrirEspaceAdmin() {
-        try {
-            Stage stage = stageCourant();
-            Parent root = FXMLLoader.load(Objects.requireNonNull(
-                    getClass().getResource("/AdminDons.fxml")));
-            stage.setScene(new Scene(root, 960, 680));
-        } catch (IOException ex) {
-            afficherErreur("Ouverture de l'espace admin", ex.getMessage());
         }
     }
 

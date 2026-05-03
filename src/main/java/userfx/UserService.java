@@ -1,11 +1,15 @@
 package userfx;
 
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserService {
+
+    private static final BCryptPasswordEncoder BCRYPT = new BCryptPasswordEncoder();
 
     private Connection connection;
 
@@ -14,35 +18,40 @@ public class UserService {
     }
 
     // ─────────────────────────────────────────
-    // LOGIN — check email + password
-    // Note: passwords in DB are bcrypt hashed (from Symfony).
-    // For new users you create in Java, store plain or use a simple hash.
+    // LOGIN — email + mot de passe (clair) vs hash bcrypt Symfony ($2y$ / $2a$) ou texte brut legacy
     // ─────────────────────────────────────────
     public User login(String email, String password) {
         if (connection == null) {
             System.err.println("Login error: database connection is null. Check MyConnection configuration.");
             return null;
         }
-        String query = "SELECT * FROM user WHERE email = ? AND password = ?";
-        try {
-            PreparedStatement ps = connection.prepareStatement(query);
-            ps.setString(1, email);
-            ps.setString(2, password);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return mapRow(rs);
-            }
-        } catch (SQLException e) {
-            System.err.println("Login error: " + e.getMessage());
+        User user = getByEmail(email);
+        if (user == null) {
+            return null;
+        }
+        String stored = user.getPassword();
+        if (stored == null || stored.isBlank()) {
+            return null;
+        }
+        if (passwordMatches(password, stored)) {
+            return user;
         }
         return null;
+    }
+
+    private static boolean passwordMatches(String raw, String stored) {
+        String s = stored.trim();
+        if (s.startsWith("$2a$") || s.startsWith("$2b$") || s.startsWith("$2y$")) {
+            return BCRYPT.matches(raw, s);
+        }
+        return raw.equals(s);
     }
 
     // ─────────────────────────────────────────
     // CREATE — insert a new user
     // ─────────────────────────────────────────
     public void insert(User user) {
-        String query = "INSERT INTO user (email, password, full_name, roles, status, created_at) " +
+        String query = "INSERT INTO `user` (email, password, full_name, roles, status, created_at) " +
                 "VALUES (?, ?, ?, ?, ?, NOW())";
         try {
             PreparedStatement ps = connection.prepareStatement(query);
@@ -63,7 +72,7 @@ public class UserService {
     // ─────────────────────────────────────────
     public List<User> getAll() {
         List<User> users = new ArrayList<>();
-        String query = "SELECT * FROM user";
+        String query = "SELECT * FROM `user`";
         try {
             Statement st = connection.createStatement();
             ResultSet rs = st.executeQuery(query);
@@ -80,7 +89,7 @@ public class UserService {
     // READ ONE — get user by id
     // ─────────────────────────────────────────
     public User getById(int id) {
-        String query = "SELECT * FROM user WHERE id = ?";
+        String query = "SELECT * FROM `user` WHERE id = ?";
         try {
             PreparedStatement ps = connection.prepareStatement(query);
             ps.setInt(1, id);
@@ -98,7 +107,7 @@ public class UserService {
     // UPDATE — update an existing user
     // ─────────────────────────────────────────
     public void update(User user) {
-        String query = "UPDATE user SET email=?, password=?, full_name=?, roles=?, status=?, phone=? WHERE id=?";
+        String query = "UPDATE `user` SET email=?, password=?, full_name=?, roles=?, status=?, phone=? WHERE id=?";
         try {
             PreparedStatement ps = connection.prepareStatement(query);
             ps.setString(1, user.getEmail());
@@ -119,7 +128,7 @@ public class UserService {
     // DELETE — delete user by id
     // ─────────────────────────────────────────
     public void delete(int id) {
-        String query = "DELETE FROM user WHERE id = ?";
+        String query = "DELETE FROM `user` WHERE id = ?";
         try {
             PreparedStatement ps = connection.prepareStatement(query);
             ps.setInt(1, id);
@@ -141,11 +150,23 @@ public class UserService {
         u.setFullName(rs.getString("full_name"));
         u.setRoles(rs.getString("roles"));
         u.setStatus(rs.getString("status"));
-        u.setPhone(rs.getString("phone"));
+        if (hasColumn(rs, "phone")) {
+            u.setPhone(rs.getString("phone"));
+        }
         return u;
     }
+
+    private static boolean hasColumn(ResultSet rs, String name) throws SQLException {
+        var md = rs.getMetaData();
+        for (int i = 1; i <= md.getColumnCount(); i++) {
+            if (name.equalsIgnoreCase(md.getColumnLabel(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
     public User getByEmail(String email) {
-        String query = "SELECT * FROM user WHERE email = ?";
+        String query = "SELECT * FROM `user` WHERE email = ?";
         try {
             PreparedStatement ps = connection.prepareStatement(query);
             ps.setString(1, email);

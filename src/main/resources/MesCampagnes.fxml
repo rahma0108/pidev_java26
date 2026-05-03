@@ -27,7 +27,6 @@
             <Button fx:id="btnActualiser" mnemonicParsing="false" styleClass="btn-care-primary" text="Actualiser" />
             <Button fx:id="btnNouvelleDemande" mnemonicParsing="false" styleClass="btn-care-urgence" text="Nouvelle demande" />
             <Button fx:id="btnAccueil" mnemonicParsing="false" styleClass="btn-care-primary" text="Accueil" />
-            <Button fx:id="btnEspaceAdmin" mnemonicParsing="false" styleClass="btn-care-primary" text="Espace admin" />
          </HBox>
       </VBox>
    </top>
