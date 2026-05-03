@@ -1,4 +1,4 @@
-package services;
+package com.medilink.service;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.Gson;

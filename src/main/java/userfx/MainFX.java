@@ -7,12 +7,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import utils.MyConnection;
+
 public class MainFX extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
         // Test DB connection
-        java.sql.Connection conn = MyConnection.getInstance().getConnection();
+        java.sql.Connection conn = MyConnection.getInstance().getConn();
         if (conn != null) System.out.println("Database connected!");
 
         // Load landing page

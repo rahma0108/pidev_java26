@@ -105,7 +105,7 @@
                     <mainClass>userfx.MainFX</mainClass>
                     <options>
                         <option>--add-modules</option>
-                        <option>javafx.controls,javafx.fxml</option>
+                        <option>javafx.controls,javafx.fxml,javafx.graphics,javafx.web,javafx.media,jdk.jsobject,jdk.httpserver</option>
                     </options>
                 </configuration>
             </plugin>

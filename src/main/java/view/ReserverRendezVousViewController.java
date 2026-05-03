@@ -20,7 +20,7 @@ import models.Disponibilite;
 import models.RendezVous;
 import models.User;
 import services.DisponibiliteService;
-import services.PlanningAIService;
+import com.medilink.service.PlanningAIService;
 import services.UserService;
 
 import java.io.IOException;
