@@ -1,5 +1,6 @@
 package controllers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -7,6 +8,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -161,7 +163,7 @@ public class ListeDonsController implements Initializable {
         DonFiltreTriUtil.preparerCombosTri(tri1ChampCombo, tri2ChampCombo, tri3ChampCombo);
         DonFiltreTriUtil.preparerCombosOrdre(tri1OrdreCombo, tri2OrdreCombo, tri3OrdreCombo);
 
-        chargerDepuisBase();
+        chargerDepuisBaseAsync();
 
         filteredData = new FilteredList<>(masterData, don -> true);
         sortedData = new SortedList<>(filteredData);
@@ -220,14 +222,30 @@ public class ListeDonsController implements Initializable {
         }
     }
 
-    private void chargerDepuisBase() {
-        try {
-            masterData.setAll(donService.getAll());
-        } catch (SQLException ex) {
-            afficherErreur("Impossible de charger les dons", ex.getMessage());
-        }
-        DonFiltreTriUtil.remplirFiltresSecondaires(masterData,
-                filtreUrgenceCombo, filtreEtatCombo, filtreUniteCombo, filtreCategorieCombo);
+    private void chargerDepuisBaseAsync() {
+        Task<List<Don>> task = new Task<>() {
+            @Override
+            protected List<Don> call() throws Exception {
+                return donService.getAll();
+            }
+        };
+        task.setOnSucceeded(evt -> {
+            masterData.setAll(task.getValue());
+            DonFiltreTriUtil.remplirFiltresSecondaires(masterData,
+                    filtreUrgenceCombo, filtreEtatCombo, filtreUniteCombo, filtreCategorieCombo);
+            appliquerFiltre();
+        });
+        task.setOnFailed(evt -> {
+            Throwable ex = task.getException();
+            DonFiltreTriUtil.remplirFiltresSecondaires(masterData,
+                    filtreUrgenceCombo, filtreEtatCombo, filtreUniteCombo, filtreCategorieCombo);
+            String message = ex == null ? "Erreur inconnue." : ex.getMessage();
+            afficherErreur("Impossible de charger les dons", message);
+            appliquerFiltre();
+        });
+        Thread t = new Thread(task, "chargement-dons");
+        t.setDaemon(true);
+        t.start();
     }
 
     private void appliquerFiltre() {
@@ -532,7 +550,7 @@ public class ListeDonsController implements Initializable {
         etat.setStyle("-fx-text-fill: #cbd5e1;");
         Label urgence = new Label("Urgence : " + safe(don.getNiveauUrgence()));
         urgence.setStyle("-fx-text-fill: #cbd5e1;");
-        Label details = new Label("Détails : " + safe(don.getDetailsSupplementaires()));
+        Label details = new Label("Détails : " + safe(nettoyerDetailsPaiement(don.getDetailsSupplementaires())));
         details.setStyle("-fx-text-fill: #94a3b8;");
         details.setWrapText(true);
         Region spacer = new Region();
@@ -547,6 +565,16 @@ public class ListeDonsController implements Initializable {
 
     private static String safe(String value) {
         return value == null || value.isBlank() ? "-" : value;
+    }
+
+    private static String nettoyerDetailsPaiement(String value) {
+        if (value == null || value.isBlank()) {
+            return value;
+        }
+        return value
+                .replaceAll("(?im)^\\s*Stripe\\s*$", "")
+                .replaceAll("(?im)^\\s*checkout_session\\s*=.*$", "")
+                .trim();
     }
 
     private static String styleStatut(String statutRaw) {

@@ -386,7 +386,7 @@ public class MesDonsController implements Initializable {
         urgence.setStyle("-fx-text-fill: #cbd5e1;");
         Label cat = new Label("Catégorie : " + libellesCategorieCourants.getOrDefault(don.getCategorieId(), "—"));
         cat.setStyle("-fx-text-fill: #cbd5e1;");
-        Label details = new Label("Détails : " + safe(don.getDetailsSupplementaires()));
+        Label details = new Label("Détails : " + safe(nettoyerDetailsPaiement(don.getDetailsSupplementaires())));
         details.setStyle("-fx-text-fill: #94a3b8;");
         details.setWrapText(true);
         Region spacer = new Region();
@@ -437,6 +437,16 @@ public class MesDonsController implements Initializable {
 
     private static String safe(String value) {
         return value == null || value.isBlank() ? "-" : value;
+    }
+
+    private static String nettoyerDetailsPaiement(String value) {
+        if (value == null || value.isBlank()) {
+            return value;
+        }
+        return value
+                .replaceAll("(?im)^\\s*Stripe\\s*$", "")
+                .replaceAll("(?im)^\\s*checkout_session\\s*=.*$", "")
+                .trim();
     }
 
     /** Aligné sur l'admin : don passé en « valide » après acceptation. */

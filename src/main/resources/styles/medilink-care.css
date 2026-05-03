@@ -1,6 +1,6 @@
 /* MediLink Care — thème sombre (inspiré landing dark / glass) */
 
-/* Fond animé (canvas #050a14) — racine transparente pour éviter le double fond */
+/* Fond plein écran (canvas #050a14, sans particules) — racine transparente pour éviter le double fond */
 .root-care {
     -fx-background-color: transparent;
 }
