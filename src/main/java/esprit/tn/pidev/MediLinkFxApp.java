@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import services.WindowsNotificationService;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -16,6 +17,7 @@ public class MediLinkFxApp extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        WindowsNotificationService.enregistrerApp();
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
                 MediLinkFxApp.class.getResource("/landing.fxml")));
         Scene scene = new Scene(loader.load(), 1000, 650);

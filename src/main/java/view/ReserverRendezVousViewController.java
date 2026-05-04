@@ -44,6 +44,7 @@ import services.DisponibiliteService;
 import services.GoogleCalendarService;
 import services.PlanningAIService;
 import services.UserService;
+import services.WindowsNotificationService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -209,6 +210,7 @@ public class ReserverRendezVousViewController {
                                     "Vous avez un rendez-vous demain a "
                                             + heure + " avec " + medecin + "."
                             );
+                            WindowsNotificationService.rdvProchain(heure, medecin);
                         });
                         break;
                     }
@@ -295,6 +297,10 @@ public class ReserverRendezVousViewController {
             ViewAlertUtil.info("Reservation", "Rendez-vous cree (n " + rdv.getId() + ").");
             Stage stage = (Stage) btnTrouverIA.getScene().getWindow();
             ToastNotificationService.succes(stage, "Rendez-vous reserve avec succes. Statut : en attente.");
+            WindowsNotificationService.rdvReserve(
+                    resolveMedecinName(selectedDisponibilite),
+                    formatDate(selectedDisponibilite)
+            );
             try {
                 new AppointmentMailerService().sendReservationEmail(rdv);
             } catch (Exception ignored) {}

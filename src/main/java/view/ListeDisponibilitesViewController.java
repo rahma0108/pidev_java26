@@ -39,6 +39,7 @@ import models.RendezVous;
 import services.AppointmentMailerService;
 import services.GoogleCalendarService;
 import services.PlanningMedecinAIService;
+import services.WindowsNotificationService;
 import userfx.LoginController;
 import userfx.User;
 import view.ToastNotificationService;
@@ -706,6 +707,13 @@ public class ListeDisponibilitesViewController {
             );
             Stage stage = (Stage) rendezVousListContainer.getScene().getWindow();
             ToastNotificationService.succes(stage, "Rendez-vous confirme.");
+            WindowsNotificationService.rdvConfirme(
+                    rdv.getDisponibilite() != null && rdv.getDisponibilite().getMedecin() != null
+                            ? rdv.getDisponibilite().getMedecin().getFullName() : "Medecin",
+                    rdv.getDateHeure() != null
+                            ? rdv.getDateHeure().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                            : "-"
+            );
             try {
                 new AppointmentMailerService().sendConfirmationEmail(rdv);
             } catch (Exception ignored) {}
@@ -736,6 +744,10 @@ public class ListeDisponibilitesViewController {
             );
             Stage stage = (Stage) rendezVousListContainer.getScene().getWindow();
             ToastNotificationService.warning(stage, "Rendez-vous annule. Le creneau est a nouveau disponible.");
+            WindowsNotificationService.rdvAnnule(
+                    rdv.getDisponibilite() != null && rdv.getDisponibilite().getMedecin() != null
+                            ? rdv.getDisponibilite().getMedecin().getFullName() : "Medecin"
+            );
             try {
                 new AppointmentMailerService().sendCancellationEmail(rdv);
             } catch (Exception ignored) {}
